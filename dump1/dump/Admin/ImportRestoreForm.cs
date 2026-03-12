@@ -25,6 +25,11 @@ namespace dump
         private List<string> tableList = new List<string>();
 
         /// <summary>
+        /// Словарь для хранения количества столбцов в каждой таблице
+        /// </summary>
+        private Dictionary<string, int> tableColumnsCount = new Dictionary<string, int>();
+
+        /// <summary>
         /// Конструктор формы импорта и восстановления
         /// </summary>
         public ImportRestoreForm()
@@ -135,6 +140,7 @@ namespace dump
 
                     cmbTables.Items.Clear();
                     tableList.Clear();
+                    tableColumnsCount.Clear();
 
                     foreach (DataRow row in schema.Rows)
                     {
@@ -144,6 +150,10 @@ namespace dump
                         {
                             cmbTables.Items.Add(tableName);
                             tableList.Add(tableName);
+
+                            // Получаем количество столбцов в таблице
+                            int columnCount = GetTableColumnsCount(conn, tableName);
+                            tableColumnsCount[tableName] = columnCount;
                         }
                     }
 
@@ -155,6 +165,22 @@ namespace dump
             {
                 MessageBox.Show($"Ошибка при загрузке списка таблиц: {ex.Message}",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Получение количества столбцов в таблице
+        /// </summary>
+        private int GetTableColumnsCount(MySqlConnection conn, string tableName)
+        {
+            try
+            {
+                DataTable schema = conn.GetSchema("Columns", new string[] { null, null, tableName });
+                return schema.Rows.Count;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
@@ -504,12 +530,220 @@ namespace dump
         }
 
         /// <summary>
-        /// Обработчик кнопки импорта (будет реализован позже)
+        /// Обработчик кнопки импорта
         /// </summary>
         private void BtnImport_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Функция импорта будет реализована позже.",
-                "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                // Проверка выбора таблицы
+                if (cmbTables.SelectedItem == null)
+                {
+                    MessageBox.Show("Выберите таблицу для импорта!",
+                        "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string tableName = cmbTables.SelectedItem.ToString();
+                string filePath = txtFilePath.Text;
+
+                // Проверка существования файла
+                if (!File.Exists(filePath))
+                {
+                    MessageBox.Show("Файл не существует!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Получаем количество столбцов в таблице
+                int expectedColumns = tableColumnsCount.ContainsKey(tableName) ? tableColumnsCount[tableName] : 0;
+
+                if (expectedColumns == 0)
+                {
+                    MessageBox.Show("Не удалось определить количество столбцов в таблице!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Чтение CSV файла
+                string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
+
+                if (lines.Length == 0)
+                {
+                    MessageBox.Show("Файл пуст!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Проверяем, есть ли заголовок (первая строка)
+                bool hasHeader = lines[0].Contains("id_") || lines[0].ToLower().Contains("id");
+
+                int startLine = hasHeader ? 1 : 0;
+                int importedCount = 0;
+                int errorCount = 0;
+                StringBuilder errorMessages = new StringBuilder();
+
+                using (MySqlConnection conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+
+                    // Отключаем проверку внешних ключей временно
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    for (int i = startLine; i < lines.Length; i++)
+                    {
+                        string line = lines[i].Trim();
+
+                        // Пропускаем пустые строки
+                        if (string.IsNullOrEmpty(line))
+                            continue;
+
+                        try
+                        {
+                            // Определяем разделитель (запятая или точка с запятой)
+                            char delimiter = DetectDelimiter(line);
+
+                            // Разделяем строку на значения
+                            string[] values = ParseCSVLine(line, delimiter);
+
+                            // Проверка количества столбцов
+                            if (values.Length != expectedColumns)
+                            {
+                                errorCount++;
+                                errorMessages.AppendLine($"Строка {i + 1}: Ожидалось {expectedColumns} полей, получено {values.Length}");
+                                continue;
+                            }
+
+                            // Формируем INSERT запрос
+                            string placeholders = string.Join(",", values.Select((v, index) => $"@p{index}"));
+                            string query = $"INSERT INTO `{tableName}` VALUES ({placeholders})";
+
+                            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                            {
+                                for (int j = 0; j < values.Length; j++)
+                                {
+                                    string paramName = $"@p{j}";
+                                    string value = values[j].Trim();
+
+                                    // Обработка пустых значений
+                                    if (string.IsNullOrEmpty(value) || value == "NULL" || value.ToUpper() == "NULL")
+                                    {
+                                        cmd.Parameters.AddWithValue(paramName, DBNull.Value);
+                                    }
+                                    else
+                                    {
+                                        cmd.Parameters.AddWithValue(paramName, value);
+                                    }
+                                }
+
+                                cmd.ExecuteNonQuery();
+                                importedCount++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            errorCount++;
+                            errorMessages.AppendLine($"Строка {i + 1}: {ex.Message}");
+                        }
+                    }
+
+                    // Включаем проверку внешних ключей обратно
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Вывод результатов импорта
+                string resultMessage = $"Импорт завершен!\n\n" +
+                                     $"Успешно импортировано: {importedCount} записей\n" +
+                                     $"Ошибок: {errorCount}";
+
+                if (errorCount > 0)
+                {
+                    resultMessage += $"\n\nДетали ошибок:\n{errorMessages.ToString()}";
+                    MessageBox.Show(resultMessage, "Результаты импорта (с ошибками)",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show(resultMessage, "Импорт успешно завершен",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Очищаем поля после успешного импорта
+                    txtFilePath.Text = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте: {ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Определение разделителя в CSV строке
+        /// </summary>
+        private char DetectDelimiter(string line)
+        {
+            // Считаем количество запятых и точек с запятой
+            int commaCount = line.Count(c => c == ',');
+            int semicolonCount = line.Count(c => c == ';');
+
+            // Выбираем тот разделитель, которого больше
+            if (semicolonCount > commaCount)
+                return ';';
+            else
+                return ',';
+        }
+
+        /// <summary>
+        /// Парсинг CSV строки с учетом кавычек и указанным разделителем
+        /// </summary>
+        private string[] ParseCSVLine(string line, char delimiter)
+        {
+            List<string> result = new List<string>();
+            bool inQuotes = false;
+            StringBuilder currentValue = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    // Проверяем, не экранирована ли кавычка
+                    if (i < line.Length - 1 && line[i + 1] == '"')
+                    {
+                        // Двойные кавычки внутри строки - это одна кавычка
+                        currentValue.Append('"');
+                        i++; // Пропускаем следующую кавычку
+                    }
+                    else
+                    {
+                        // Открываем или закрываем кавычки
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == delimiter && !inQuotes)
+                {
+                    // Разделитель вне кавычек
+                    result.Add(currentValue.ToString().Trim());
+                    currentValue.Clear();
+                }
+                else
+                {
+                    currentValue.Append(c);
+                }
+            }
+
+            // Добавляем последнее значение
+            result.Add(currentValue.ToString().Trim());
+
+            return result.ToArray();
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-id_user,FIO,id_role,login,password_hash
-7,Иванов Иван Иванович,2,director,8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-8,Сидоров Олег Александрович,1,manager,8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-10,Самойлова Диана Дмитриевна,3,admin,8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-11,админ админов,3,admin2,8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+id_user;FIO;id_role;login;password_hash
+7;РРІР°РЅРѕРІ РРІР°РЅ РРІР°РЅРѕРІРёС‡;2;director;8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+8;РЎРёРґРѕСЂРѕРІ РћР»РµРі РђР»РµРєСЃР°РЅРґСЂРѕРІРёС‡;1;manager;8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+10;РЎР°РјРѕР№Р»РѕРІР° Р”РёР°РЅР° Р”РјРёС‚СЂРёРµРІРЅР°;3;admin;8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+11;Р°РґРјРёРЅ Р°РґРјРёРЅРѕРІ;3;admin2;8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
