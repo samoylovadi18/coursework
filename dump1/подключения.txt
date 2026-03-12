@@ -1,0 +1,12 @@
+    public static string ConnectionString { get; } =
+            "server=localhost;" +          
+            "username=root;" +              
+            "password=;" +                
+            "database=damp;"; 
+
+
+public static string ConnectionString { get; } =
+            "server=10.207.106.12;" +
+            "username=user98;" +
+            "password=kn70;" +
+            "database=db98;";   

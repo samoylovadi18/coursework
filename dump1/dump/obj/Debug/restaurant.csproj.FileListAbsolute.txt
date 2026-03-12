@@ -1,0 +1,134 @@
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\MySql.Data.dll
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\MySql.Data.xml
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\restaurant.csproj.AssemblyReference.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Menu.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.BasketForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Orders.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\restaurant.csproj.GenerateResource.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\restaurant.csproj.Up2Date
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AddOrderForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.RevenueForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\Interop.Microsoft.Office.Core.dll
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Excel.dll
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\Interop.VBIDE.dll
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\restaurant.csproj.ResolveComReference.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.CertificateStatisticsForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.TopClientsForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.TopDishForm.resources
+C:\Users\student250\Desktop\dump1\dump\bin\Debug\dump.exe.config
+C:\Users\student250\Desktop\dump1\dump\bin\Debug\dump.exe
+C:\Users\student250\Desktop\dump1\dump\bin\Debug\dump.pdb
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\restaurant.csproj.AssemblyReference.cache
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\Interop.Microsoft.Office.Core.dll
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Excel.dll
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\Interop.VBIDE.dll
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\restaurant.csproj.ResolveComReference.cache
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.CertificateStatisticsForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.TopDishForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.Menu.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.BasketForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.AddOrderForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.Orders.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.RevenueForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.TopClientsForm.resources
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\restaurant.csproj.GenerateResource.cache
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.exe
+C:\Users\student250\Desktop\dump1\dump\obj\Debug\dump.pdb
+C:\vizit-karta\dump1\dump\obj\Debug\restaurant.csproj.AssemblyReference.cache
+C:\vizit-karta\dump1\dump\obj\Debug\dump.exe.config
+C:\vizit-karta\dump1\dump\obj\Debug\Interop.Microsoft.Office.Core.dll
+C:\vizit-karta\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Excel.dll
+C:\vizit-karta\dump1\dump\obj\Debug\Interop.VBIDE.dll
+C:\vizit-karta\dump1\dump\obj\Debug\restaurant.csproj.ResolveComReference.cache
+C:\vizit-karta\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.CertificateStatisticsForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.TopDishForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.Menu.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.Orders.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.TopClientsForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\restaurant.csproj.GenerateResource.cache
+C:\vizit-karta\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
+C:\vizit-karta\dump1\dump\obj\Debug\dump.exe
+C:\vizit-karta\dump1\dump\obj\Debug\dump.pdb
+C:\vizit-karta\dump1\dump\bin\Debug\dump.exe.config
+C:\vizit-karta\dump1\dump\bin\Debug\dump.exe
+C:\vizit-karta\dump1\dump\bin\Debug\dump.pdb
+C:\vizit-karta\dump1\dump\bin\Debug\MySql.Data.dll
+C:\vizit-karta\dump1\dump\bin\Debug\MySql.Data.xml
+C:\vizit-karta\dump1\dump\obj\Debug\restaurant.csproj.Up2Date
+C:\vizit-karta\dump1\dump\obj\Debug\dump.OrdersReportForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\dump.ProfitForm.resources
+C:\vizit-karta\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Word.dll
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\bin\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\bin\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\bin\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.AssemblyReference.cache
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\Interop.Microsoft.Office.Core.dll
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Excel.dll
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\Interop.Microsoft.Office.Interop.Word.dll
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\Interop.VBIDE.dll
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.ResolveComReference.cache
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.CertificateStatisticsForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.TopDishForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ImportRestoreForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Menu.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Orders.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ProfitForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.OrdersReportForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.TopClientsForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.GenerateResource.cache
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.pdb

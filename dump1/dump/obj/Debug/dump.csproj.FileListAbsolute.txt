@@ -1,0 +1,64 @@
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.csproj.AssemblyReference.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\MySql.Data.dll
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\bin\Debug\MySql.Data.xml
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.BasketForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.OrderForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Orders.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.PerehodForm.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.csproj.GenerateResource.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.csproj.CoreCompileInputs.cache
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.csproj.Up2Date
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.exe
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.exe.config
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.Menu.resources
+C:\Users\karta\OneDrive\Рабочий стол\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.csproj.AssemblyReference.cache
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.exe
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.pdb
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\dump.exe.config
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\dump.exe.manifest
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\dump.application
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\dump.exe
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\dump.pdb
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\MySql.Data.dll
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\System.Buffers.dll
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\student250\Desktop\основная\dump1\dump\bin\Debug\MySql.Data.xml
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.AdminForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.Menu.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.OrdersForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.UsersForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.DirectorForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.AddSertificateForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.BasketForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.basket_empty.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.LoginForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.EmloyForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.ManagerForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.AdminMenu.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.OrderForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.Orders.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.PerehodForm.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.Properties.Resources.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.Spravochnici.resources
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.csproj.GenerateResource.cache
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.csproj.CoreCompileInputs.cache
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.TrustInfo.xml
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.exe.manifest
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.application
+C:\Users\student250\Desktop\основная\dump1\dump\obj\Debug\dump.csproj.CopyComplete
