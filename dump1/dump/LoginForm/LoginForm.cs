@@ -15,9 +15,12 @@ namespace dump
     public partial class LoginForm : Form
     {
         private bool isPasswordVisible = false;
-
-        // Список разрешенных специальных символов (можно настроить)
         private string allowedSpecialChars = "!@#$%^&*()_-+=[]{}|;:'\",.<>?/`~";
+
+        // Поля для CAPTCHA
+        private int failedAttempts = 0;              // Счетчик неудачных попыток
+        private DateTime blockUntil = DateTime.MinValue; // Время до блокировки
+        private bool captchaRequired = false;        // Флаг необходимости капчи
 
         private void SetupUnderlineTextBox(TextBox textBox)
         {
@@ -28,15 +31,12 @@ namespace dump
             underline.BackColor = Color.Gray;
             underline.Name = textBox.Name + "_Underline";
 
-            // Добавляем на форму
             this.Controls.Add(underline);
             underline.BringToFront();
 
-            // Обработчики событий для изменения цвета
             textBox.Enter += (s, e) => { underline.BackColor = Color.DarkSeaGreen; };
             textBox.Leave += (s, e) => { underline.BackColor = Color.Gray; };
 
-            // Обновляем позицию линии если изменится размер или позиция TextBox
             textBox.LocationChanged += (s, e) =>
             {
                 underline.Location = new Point(textBox.Location.X, textBox.Location.Y + textBox.Height);
@@ -53,13 +53,9 @@ namespace dump
         {
             InitializeComponent();
 
-            // Устанавливаем ограничения на количество символов согласно структуре БД
             SetMaxLengthLimits();
-
-            // Настраиваем валидацию ввода
             SetupInputValidation();
 
-            // Пароль скрыт по умолчанию
             isPasswordVisible = false;
             Password.UseSystemPasswordChar = true;
 
@@ -69,7 +65,6 @@ namespace dump
             }
             catch
             {
-                // Если файл не найден, создаем простую иконку
                 visible_password.Image = CreateSimpleEyeIcon(false);
             }
 
@@ -81,20 +76,19 @@ namespace dump
             Enter.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             Enter.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
 
-            // Добавляем обработчики для возврата border при отпускании мыши
             Enter.MouseDown += (s, e) =>
             {
-                Enter.FlatAppearance.BorderColor = Color.DarkBlue; // Темнее при нажатии
+                Enter.FlatAppearance.BorderColor = Color.DarkBlue;
             };
 
             Enter.MouseUp += (s, e) =>
             {
-                Enter.FlatAppearance.BorderColor = Color.Black; // Возвращаем черный
+                Enter.FlatAppearance.BorderColor = Color.Black;
             };
 
             Enter.MouseLeave += (s, e) =>
             {
-                Enter.FlatAppearance.BorderColor = Color.Black; // Возвращаем черный при уходе мыши
+                Enter.FlatAppearance.BorderColor = Color.Black;
             };
 
             Enter.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
@@ -114,13 +108,11 @@ namespace dump
                 {
                     if (open)
                     {
-                        // Открытый глаз
                         g.DrawEllipse(pen, 8, 8, 16, 12);
                         g.FillEllipse(Brushes.Black, 14, 12, 4, 4);
                     }
                     else
                     {
-                        // Закрытый глаз
                         g.DrawLine(pen, 8, 16, 24, 16);
                         g.DrawLine(pen, 8, 14, 24, 18);
                         g.DrawLine(pen, 8, 18, 24, 14);
@@ -132,82 +124,66 @@ namespace dump
 
         private void SetMaxLengthLimits()
         {
-            // Согласно структуре базы данных:
-            // login - VARCHAR(50) → максимум 50 символов
-            Login.MaxLength = 50;           // VARCHAR(50)
-            Password.MaxLength = 50;        // Ограничим пароль при вводе
+            Login.MaxLength = 50;
+            Password.MaxLength = 50;
         }
 
         private void SetupInputValidation()
         {
-            // Настройка валидации для логина
             Login.KeyPress += TextBox_KeyPress;
             Login.TextChanged += Login_TextChanged;
 
-            // Настройка валидации для пароля
             Password.KeyPress += TextBox_KeyPress;
             Password.TextChanged += Password_TextChanged;
 
-            // Разрешаем все стандартные функции (копирование, вставку и т.д.)
             Login.ShortcutsEnabled = true;
             Password.ShortcutsEnabled = true;
 
-            // Разрешаем контекстное меню (правая кнопка мыши)
             Login.ContextMenuStrip = new ContextMenuStrip();
             Password.ContextMenuStrip = new ContextMenuStrip();
         }
 
         private void TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Если нажата управляющая клавиша (Backspace, Delete, Ctrl+V, Ctrl+C и т.д.), разрешаем
             if (char.IsControl(e.KeyChar))
             {
                 return;
             }
 
-            // Проверяем символ на соответствие разрешенным
             if (!IsValidCharacter(e.KeyChar))
             {
-                e.Handled = true; // Отменяем ввод символа
-
-                // Простой звуковой сигнал (необязательно)
+                e.Handled = true;
                 System.Media.SystemSounds.Beep.Play();
             }
         }
 
         private bool IsValidCharacter(char c)
         {
-            // Проверяем, является ли символ русской буквой
             if ((c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я'))
             {
-                return false; // Русские буквы не разрешены
+                return false;
             }
 
-            // Проверяем, является ли символ пробелом
             if (c == ' ')
             {
-                return false; // Пробелы не разрешены
+                return false;
             }
 
-            // Разрешаем английские буквы
             if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
             {
                 return true;
             }
 
-            // Разрешаем цифры
             if (c >= '0' && c <= '9')
             {
                 return true;
             }
 
-            // Разрешаем специальные символы из списка
             if (allowedSpecialChars.Contains(c))
             {
                 return true;
             }
 
-            // Все остальные символы запрещены
             return false;
         }
 
@@ -216,7 +192,6 @@ namespace dump
             TextBox textBox = sender as TextBox;
             string originalText = textBox.Text;
 
-            // Фильтруем текст, удаляя недопустимые символы
             StringBuilder filteredText = new StringBuilder();
             foreach (char c in originalText)
             {
@@ -226,7 +201,6 @@ namespace dump
                 }
             }
 
-            // Если текст изменился, обновляем TextBox
             if (filteredText.ToString() != originalText)
             {
                 int selectionStart = textBox.SelectionStart;
@@ -237,7 +211,6 @@ namespace dump
                 textBox.SelectionLength = selectionLength;
             }
 
-            // Проверяем длину логина
             if (textBox.Text.Length > textBox.MaxLength)
             {
                 textBox.Text = textBox.Text.Substring(0, textBox.MaxLength);
@@ -250,7 +223,6 @@ namespace dump
             TextBox textBox = sender as TextBox;
             string originalText = textBox.Text;
 
-            // Фильтруем текст, удаляя недопустимые символы
             StringBuilder filteredText = new StringBuilder();
             foreach (char c in originalText)
             {
@@ -260,7 +232,6 @@ namespace dump
                 }
             }
 
-            // Если текст изменился, обновляем TextBox
             if (filteredText.ToString() != originalText)
             {
                 int selectionStart = textBox.SelectionStart;
@@ -271,7 +242,6 @@ namespace dump
                 textBox.SelectionLength = selectionLength;
             }
 
-            // Проверяем длину пароля
             if (textBox.Text.Length > textBox.MaxLength)
             {
                 textBox.Text = textBox.Text.Substring(0, textBox.MaxLength);
@@ -286,10 +256,18 @@ namespace dump
 
         private void btnLog_Click(object sender, EventArgs e)
         {
+            // Проверка блокировки
+            if (DateTime.Now < blockUntil)
+            {
+                int secondsLeft = (int)(blockUntil - DateTime.Now).TotalSeconds;
+                MessageBox.Show($"Слишком много неудачных попыток!\nПодождите {secondsLeft} секунд.",
+                    "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string login = Login.Text.Trim();
             string password = Password.Text;
 
-            // Дополнительная валидация перед отправкой
             if (!ValidateLoginInput(login, password))
             {
                 return;
@@ -300,7 +278,6 @@ namespace dump
                 using (var connection = SettingsBD.GetConnection())
                 {
                     connection.Open();
-                    // ИЗМЕНЕН ЗАПРОС: получаем ВСЕ данные пользователя
                     string query = @"SELECT u.id_user, u.FIO, u.login, u.id_role, r.role_name, u.password_hash 
                              FROM users u 
                              LEFT JOIN roles r ON u.id_role = r.id_role 
@@ -319,29 +296,82 @@ namespace dump
 
                                 if (inputHash.Equals(storedHash, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // ПОЛУЧАЕМ ВСЕ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ И СОХРАНЯЕМ В CurrentUser
+                                    // УСПЕШНЫЙ ВХОД
+                                    failedAttempts = 0;
+
                                     int userId = reader.GetInt32("id_user");
                                     string fio = reader.GetString("FIO");
                                     int roleId = reader.GetInt32("id_role");
                                     string roleName = reader.GetString("role_name");
 
-                                    // Инициализируем статический класс
                                     CurrentUser.Initialize(userId, login, fio, roleId, roleName);
-
-                                    // Открываем соответствующую форму в зависимости от роли
                                     OpenFormByRole(roleId);
                                     this.Hide();
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Неверный пароль", "Информация",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    return;
                                 }
                             }
+
+                            // НЕУДАЧНАЯ АВТОРИЗАЦИЯ
+                            failedAttempts++;
+
+                            // Первая неудачная попытка - просто сообщение
+                            if (failedAttempts == 1)
+                            {
+                                MessageBox.Show("Неверный логин или пароль", "Ошибка авторизации",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            // Вторая попытка - показываем капчу (не блокируем)
+                            else if (failedAttempts == 2)
+                            {
+                                MessageBox.Show("Неверный логин или пароль.\nТребуется подтверждение безопасности.",
+                                    "Ошибка авторизации", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                                // Скрываем форму логина
+                                this.Hide();
+
+                                // Показываем капчу
+                                using (var captchaForm = new CaptchaForm())
+                                {
+                                    var result = captchaForm.ShowDialog();
+
+                                    if (result == DialogResult.OK && captchaForm.IsVerified)
+                                    {
+                                        // Капча пройдена - показываем форму логина и сбрасываем счетчик
+                                        this.Show();
+                                        failedAttempts = 1; // Сбрасываем до 1, чтобы при следующей ошибке снова показать капчу
+                                        Login.Clear();
+                                        Password.Clear();
+                                        Login.Focus();
+                                    }
+                                    else
+                                    {
+                                        // Капча НЕ пройдена - БЛОКИРОВКА НА 10 СЕКУНД
+                                        blockUntil = DateTime.Now.AddSeconds(10);
+
+                                        // Показываем форму логина
+                                        this.Show();
+
+                                        MessageBox.Show("Неверный ввод CAPTCHA!\nВход заблокирован на 10 секунд.",
+                                            "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                                        // Очищаем поля
+                                        Login.Clear();
+                                        Password.Clear();
+                                        Login.Focus();
+                                    }
+                                }
+                            }
+                            // Третья и последующие попытки - блокировка сразу
                             else
                             {
-                                MessageBox.Show("Пользователь не найден", "Ошибка",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                blockUntil = DateTime.Now.AddSeconds(10);
+                                MessageBox.Show("Слишком много неудачных попыток!\nВход заблокирован на 10 секунд.",
+                                    "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                                // Очищаем поля
+                                Login.Clear();
+                                Password.Clear();
+                                Login.Focus();
                             }
                         }
                     }
@@ -357,7 +387,6 @@ namespace dump
 
         private bool ValidateLoginInput(string login, string password)
         {
-            // Проверка на пустые поля
             if (string.IsNullOrEmpty(login))
             {
                 MessageBox.Show("Введите логин", "Информация",
@@ -374,7 +403,6 @@ namespace dump
                 return false;
             }
 
-            // Проверка длины логина
             if (login.Length < 3)
             {
                 MessageBox.Show("Логин должен содержать не менее 3 символов", "Информация",
@@ -393,7 +421,6 @@ namespace dump
                 return false;
             }
 
-            // Проверка длины пароля
             if (password.Length < 3)
             {
                 MessageBox.Show("Пароль должен содержать не менее 3 символов", "Информация",
@@ -412,7 +439,6 @@ namespace dump
                 return false;
             }
 
-            // Дополнительная проверка на недопустимые символы (на всякий случай)
             if (ContainsInvalidCharacters(login) || ContainsInvalidCharacters(password))
             {
                 MessageBox.Show("Логин и пароль могут содержать только:\n" +
@@ -444,17 +470,17 @@ namespace dump
         {
             switch (roleId)
             {
-                case 1: // Менеджер
+                case 1:
                     ManagerForm managerForm = new ManagerForm();
                     managerForm.Show();
                     break;
 
-                case 2: // Директор
+                case 2:
                     DirectorForm directorForm = new DirectorForm();
                     directorForm.Show();
                     break;
 
-                case 3: // Администратор
+                case 3:
                     AdminForm adminForm = new AdminForm();
                     adminForm.Show();
                     break;
@@ -496,17 +522,16 @@ namespace dump
                 if (isPasswordVisible)
                 {
                     Password.UseSystemPasswordChar = false;
-                    visible_password.Image = Image.FromFile("otc.png"); // Открытый глаз
+                    visible_password.Image = Image.FromFile("otc.png");
                 }
                 else
                 {
                     Password.UseSystemPasswordChar = true;
-                    visible_password.Image = Image.FromFile("zac.png"); // Закрытый глаз
+                    visible_password.Image = Image.FromFile("zac.png");
                 }
             }
             catch
             {
-                // Если файлы не найдены, создаем простые иконки
                 if (isPasswordVisible)
                 {
                     Password.UseSystemPasswordChar = false;
@@ -524,11 +549,10 @@ namespace dump
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show( "Вы действительно хотите закрыть приложение?","Подтверждение закрытия",
+            DialogResult result = MessageBox.Show("Вы действительно хотите закрыть приложение?", "Подтверждение закрытия",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Question);
 
-            // Если пользователь нажал "Да", закрываем приложение
             if (result == DialogResult.Yes)
             {
                 Application.Exit();
@@ -545,25 +569,20 @@ namespace dump
 
         }
 
-        // Обработка горячих клавиш для формы
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            // Enter для входа
             if (keyData == Keys.Enter)
             {
                 btnLog_Click(null, null);
                 return true;
             }
 
-            // Escape для выхода
             if (keyData == Keys.Escape)
             {
-                // Полностью закрываем приложение
                 Application.Exit();
                 return true;
             }
 
-            // Ctrl+A для выделения всего текста в активном поле
             if (keyData == (Keys.Control | Keys.A))
             {
                 if (Login.Focused)

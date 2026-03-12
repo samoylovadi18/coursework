@@ -132,3 +132,4 @@ C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\du
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.exe
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.pdb
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.CaptchaForm.resources
