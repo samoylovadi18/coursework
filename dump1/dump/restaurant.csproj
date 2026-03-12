@@ -90,6 +90,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LoginForm\CaptchaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoginForm\CaptchaForm.Designer.cs">
+      <DependentUpon>CaptchaForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Director\CertificateStatisticsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -204,6 +210,9 @@
     </Compile>
     <EmbeddedResource Include="Admin\AdminForm.resx">
       <DependentUpon>AdminForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoginForm\CaptchaForm.resx">
+      <DependentUpon>CaptchaForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Director\CertificateStatisticsForm.resx">
       <DependentUpon>CertificateStatisticsForm.cs</DependentUpon>

@@ -113,7 +113,6 @@
             this.btnBrowse.TabIndex = 43;
             this.btnBrowse.Text = "Обзор";
             this.btnBrowse.UseVisualStyleBackColor = false;
-
             // 
             // txtFilePath
             // 
@@ -164,6 +163,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(649, 594);
             this.ControlBox = false;
             this.Controls.Add(this.pictureBox2);
