@@ -107,7 +107,86 @@ namespace dump
             public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
         }
 
-        // ===== МЕТОД ДЛЯ ПРОСМОТРА ДЕТАЛЕЙ ЗАКАЗА И ИЗМЕНЕНИЯ СТАТУСА =====
+        // ===== МЕТОДЫ ДЛЯ ЧАСТИЧНОЙ МАСКИРОВКИ ПЕРСОНАЛЬНЫХ ДАННЫХ =====
+        private string MaskFullName(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return "";
+
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].Length > 2)
+                {
+                    // Показываем первую букву и последнюю, середину заменяем звездочками
+                    // Иванов -> И***в
+                    parts[i] = parts[i][0] + new string('*', parts[i].Length - 2) + parts[i][parts[i].Length - 1];
+                }
+                else if (parts[i].Length == 2)
+                {
+                    // Для коротких слов показываем первую букву, вторую звездочкой
+                    parts[i] = parts[i][0] + "*";
+                }
+            }
+            return string.Join(" ", parts);
+        }
+
+        private string MaskPhone(string phone)
+        {
+            if (string.IsNullOrEmpty(phone)) return "";
+
+            // Показываем первые 2 цифры и последние 2 цифры, остальное звездочки
+            // +7 (910) 123-45-67 -> +7 (***) ***-**-67
+            char[] chars = phone.ToCharArray();
+            int digitCount = 0;
+            int lastDigitPos = -1;
+
+            // Находим последнюю цифру
+            for (int i = chars.Length - 1; i >= 0; i--)
+            {
+                if (char.IsDigit(chars[i]))
+                {
+                    lastDigitPos = i;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (char.IsDigit(chars[i]))
+                {
+                    digitCount++;
+                    // Оставляем первые 2 цифры и последние 2 цифры
+                    if (digitCount > 2 && i < lastDigitPos - 1)
+                    {
+                        chars[i] = '*';
+                    }
+                }
+            }
+            return new string(chars);
+        }
+
+        private string MaskAddress(string address)
+        {
+            if (string.IsNullOrEmpty(address)) return "";
+
+            // Показываем первую букву каждого слова и последнюю букву
+            string[] words = address.Split(new[] { ' ', ',', '.' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length > 2 && !char.IsDigit(words[i][0]))
+                {
+                    // Улица -> У***а
+                    words[i] = words[i][0] + new string('*', words[i].Length - 2) + words[i][words[i].Length - 1];
+                }
+                else if (words[i].Length == 2 && !char.IsDigit(words[i][0]))
+                {
+                    words[i] = words[i][0] + "*";
+                }
+            }
+            return string.Join(" ", words);
+        }
+
+        // ===== МЕТОД ДЛЯ ПРОСМОТРА ДЕТАЛЕЙ ЗАКАЗА =====
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
             ShowOrderDetails();
@@ -161,8 +240,10 @@ namespace dump
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
+                // Панель информации с ПОЛНЫМИ персональными данными (без маскировки)
                 Panel infoPanel = CreateInfoPanel(orderId, clientName, phoneNumber, address,
                     persons, orderDate, paymentMethod);
+
                 Panel statusPanel = CreateStatusPanel(currentStatusId, currentStatus, statusState);
                 Panel commentPanel = CreateCommentPanel(comment);
 
@@ -232,6 +313,33 @@ namespace dump
                 MessageBox.Show($"Ошибка при загрузке деталей заказа: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        // ===== СОЗДАНИЕ ПАНЕЛИ С ИНФОРМАЦИЕЙ О ЗАКАЗЕ (ПОЛНЫЕ ДАННЫЕ) =====
+        private Panel CreateInfoPanel(int orderId, string clientName, string phoneNumber,
+            string address, int persons, DateTime orderDate, string paymentMethod)
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(765, 130);
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.BackColor = Color.FromArgb(255, 255, 220); // Желтый фон для персональных данных
+
+            Label lblInfo = new Label();
+            lblInfo.Text = $"ЗАКАЗ №{orderId} (ПЕРСОНАЛЬНЫЕ ДАННЫЕ)\n" +
+                          $"Клиент: {clientName}\n" +
+                          $"Телефон: {phoneNumber}\n" +
+                          $"Адрес: {address}\n" +
+                          $"Количество персон: {persons} | Дата доставки: {orderDate:dd.MM.yyyy}\n" +
+                          $"Способ оплаты: {paymentMethod}";
+            lblInfo.Location = new Point(10, 10);
+            lblInfo.Size = new Size(740, 110);
+            lblInfo.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            lblInfo.ForeColor = Color.DarkRed;
+            lblInfo.TextAlign = ContentAlignment.TopLeft;
+            lblInfo.BackColor = Color.Transparent;
+
+            panel.Controls.Add(lblInfo);
+            return panel;
         }
 
         // ===== ИСПРАВЛЕННЫЙ МЕТОД: ЗАГРУЗКА ДЕТАЛЕЙ ЗАКАЗА (БЛЮДА + ПОДАРКИ) =====
@@ -317,32 +425,6 @@ namespace dump
             }
 
             return dt;
-        }
-
-        // ===== СОЗДАНИЕ ПАНЕЛИ С ИНФОРМАЦИЕЙ О ЗАКАЗЕ =====
-        private Panel CreateInfoPanel(int orderId, string clientName, string phoneNumber,
-            string address, int persons, DateTime orderDate, string paymentMethod)
-        {
-            Panel panel = new Panel();
-            panel.Size = new Size(765, 130);
-            panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.BackColor = Color.FromArgb(240, 240, 240);
-
-            Label lblInfo = new Label();
-            lblInfo.Text = $"Заказ №{orderId}\n" +
-                          $"Клиент: {clientName}\n" +
-                          $"Телефон: {phoneNumber}\n" +
-                          $"Адрес: {address}\n" +
-                          $"Количество персон: {persons} | Дата доставки: {orderDate:dd.MM.yyyy}\n" +
-                          $"Способ оплаты: {paymentMethod}";
-            lblInfo.Location = new Point(10, 10);
-            lblInfo.Size = new Size(740, 110);
-            lblInfo.Font = new Font("Times New Roman", 11, FontStyle.Regular);
-            lblInfo.TextAlign = ContentAlignment.TopLeft;
-            lblInfo.BackColor = Color.Transparent;
-
-            panel.Controls.Add(lblInfo);
-            return panel;
         }
 
         // ===== СОЗДАНИЕ ПАНЕЛИ ДЛЯ ИЗМЕНЕНИЯ СТАТУСА =====
@@ -864,8 +946,10 @@ namespace dump
             dataGridView1.CellFormatting += DataGridView1_CellFormatting;
         }
 
+        // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК ДЛЯ МАСКИРОВКИ =====
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            // Форматирование даты
             if (dataGridView1.Columns[e.ColumnIndex].Name == "delivery_date" && e.RowIndex >= 0)
             {
                 if (e.Value != null && e.Value != DBNull.Value)
@@ -875,6 +959,28 @@ namespace dump
                         e.Value = date.ToString("dd.MM.yyyy");
                         e.FormattingApplied = true;
                     }
+                }
+            }
+
+            // ЧАСТИЧНАЯ МАСКИРОВКА персональных данных
+            if (e.RowIndex >= 0 && e.Value != null)
+            {
+                string columnName = dataGridView1.Columns[e.ColumnIndex].Name;
+
+                if (columnName == "name_client")
+                {
+                    e.Value = MaskFullName(e.Value.ToString());
+                    e.FormattingApplied = true;
+                }
+                else if (columnName == "phone_number")
+                {
+                    e.Value = MaskPhone(e.Value.ToString());
+                    e.FormattingApplied = true;
+                }
+                else if (columnName == "address")
+                {
+                    e.Value = MaskAddress(e.Value.ToString());
+                    e.FormattingApplied = true;
                 }
             }
         }
