@@ -949,7 +949,6 @@ namespace dump
         // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК ДЛЯ МАСКИРОВКИ =====
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Форматирование даты
             if (dataGridView1.Columns[e.ColumnIndex].Name == "delivery_date" && e.RowIndex >= 0)
             {
                 if (e.Value != null && e.Value != DBNull.Value)
