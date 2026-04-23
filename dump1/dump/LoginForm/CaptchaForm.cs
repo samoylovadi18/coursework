@@ -24,8 +24,6 @@ namespace dump
 
         private void SetupForm()
         {
-            // Настройка стилей кнопок
-            SetupButtonStyle(btnRefresh);
             SetupButtonStyle(btnVerify);
 
             // Подписка на события

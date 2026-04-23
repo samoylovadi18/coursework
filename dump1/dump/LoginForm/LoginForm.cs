@@ -22,6 +22,10 @@ namespace dump
         private DateTime blockUntil = DateTime.MinValue; // Время до блокировки
         private bool captchaRequired = false;        // Флаг необходимости капчи
 
+        // Таймер для обратного отсчета на кнопке
+        private Timer blockTimer = new Timer();
+        private int remainingSeconds = 0;
+
         private void SetupUnderlineTextBox(TextBox textBox)
         {
             Panel underline = new Panel();
@@ -96,6 +100,32 @@ namespace dump
 
             SetupUnderlineTextBox(Login);
             SetupUnderlineTextBox(Password);
+
+            // Настройка таймера для блокировки кнопки
+            blockTimer.Interval = 1000; // 1 секунда
+            blockTimer.Tick += BlockTimer_Tick;
+        }
+
+        private void BlockTimer_Tick(object sender, EventArgs e)
+        {
+            if (DateTime.Now >= blockUntil)
+            {
+                // Блокировка закончилась
+                blockTimer.Stop();
+                Enter.Enabled = true;
+                Enter.Text = "ВОЙТИ";
+                remainingSeconds = 0;
+
+                // Сбрасываем счетчик неудачных попыток после блокировки
+                failedAttempts = 0;
+            }
+            else
+            {
+                // Обновляем текст на кнопке
+                remainingSeconds = (int)(blockUntil - DateTime.Now).TotalSeconds;
+                Enter.Text = $"Заблокировано на {remainingSeconds} секунд";
+                Enter.Enabled = false;
+            }
         }
 
         private Image CreateSimpleEyeIcon(bool open)
@@ -256,7 +286,7 @@ namespace dump
 
         private void btnLog_Click(object sender, EventArgs e)
         {
-            // Проверка блокировки
+            // Проверка блокировки (дополнительная защита)
             if (DateTime.Now < blockUntil)
             {
                 int secondsLeft = (int)(blockUntil - DateTime.Now).TotalSeconds;
@@ -298,6 +328,7 @@ namespace dump
                                 {
                                     // УСПЕШНЫЙ ВХОД
                                     failedAttempts = 0;
+                                    captchaRequired = false;
 
                                     int userId = reader.GetInt32("id_user");
                                     string fio = reader.GetString("FIO");
@@ -320,7 +351,7 @@ namespace dump
                                 MessageBox.Show("Неверный логин или пароль", "Ошибка авторизации",
                                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
-                            // Вторая попытка - показываем капчу (не блокируем)
+                            // Вторая попытка - показываем капчу
                             else if (failedAttempts == 2)
                             {
                                 MessageBox.Show("Неверный логин или пароль.\nТребуется подтверждение безопасности.",
@@ -336,9 +367,9 @@ namespace dump
 
                                     if (result == DialogResult.OK && captchaForm.IsVerified)
                                     {
-                                        // Капча пройдена - показываем форму логина и сбрасываем счетчик
+                                        // Капча пройдена - показываем форму логина
                                         this.Show();
-                                        failedAttempts = 1; // Сбрасываем до 1, чтобы при следующей ошибке снова показать капчу
+                                        failedAttempts = 1; // Сбрасываем до 1
                                         Login.Clear();
                                         Password.Clear();
                                         Login.Focus();
@@ -347,6 +378,13 @@ namespace dump
                                     {
                                         // Капча НЕ пройдена - БЛОКИРОВКА НА 10 СЕКУНД
                                         blockUntil = DateTime.Now.AddSeconds(10);
+
+                                        // Запускаем таймер для обновления кнопки
+                                        blockTimer.Start();
+
+                                        // Обновляем кнопку сразу
+                                        Enter.Enabled = false;
+                                        Enter.Text = $"Заблокировано на 10 секунд";
 
                                         // Показываем форму логина
                                         this.Show();
@@ -365,6 +403,14 @@ namespace dump
                             else
                             {
                                 blockUntil = DateTime.Now.AddSeconds(10);
+
+                                // Запускаем таймер для обновления кнопки
+                                blockTimer.Start();
+
+                                // Обновляем кнопку сразу
+                                Enter.Enabled = false;
+                                Enter.Text = $"Заблокировано на 10 секунд";
+
                                 MessageBox.Show("Слишком много неудачных попыток!\nВход заблокирован на 10 секунд.",
                                     "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -566,7 +612,9 @@ namespace dump
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-
+            this.Visible = false;
+            SettingsForm s = new SettingsForm();
+            s.ShowDialog();
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

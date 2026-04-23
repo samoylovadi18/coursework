@@ -34,7 +34,12 @@ namespace dump
             mtxtPhone.BeepOnError = true;
             mtxtPhone.ValidatingType = typeof(int);
 
-            // Настройка текстовых полей для ФИО
+            // ===== ЗАПРЕТ ПРОБЕЛОВ =====
+            txtLastName.KeyPress += TextBox_KeyPress_NoSpaces;
+            txtFirstName.KeyPress += TextBox_KeyPress_NoSpaces;
+            txtMiddleName.KeyPress += TextBox_KeyPress_NoSpaces;
+
+            // Настройка текстовых полей для ФИО (только русские буквы)
             txtLastName.KeyPress += TextBox_KeyPress_RussianOnly;
             txtFirstName.KeyPress += TextBox_KeyPress_RussianOnly;
             txtMiddleName.KeyPress += TextBox_KeyPress_RussianOnly;
@@ -63,6 +68,15 @@ namespace dump
             btnIssue.MouseDown += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.DarkBlue;
             btnIssue.MouseUp += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
             btnIssue.MouseLeave += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
+        }
+
+        // ===== ЗАПРЕТ ПРОБЕЛОВ =====
+        private void TextBox_KeyPress_NoSpaces(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == ' ')
+            {
+                e.Handled = true;  // Пробел не будет введён
+            }
         }
 
         private void LoadPricesToComboBox()
@@ -97,7 +111,9 @@ namespace dump
             char c = e.KeyChar;
             bool isRussian = (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я') || c == 'ё' || c == 'Ё';
 
-            if (!char.IsControl(e.KeyChar) && !isRussian && c != ' ' && c != '-')
+            // Разрешаем: управляющие символы (Backspace, Enter), русские буквы и дефис
+            // ПРОБЕЛ ЗАПРЕЩЁН
+            if (!char.IsControl(e.KeyChar) && !isRussian && c != '-')
             {
                 e.Handled = true;
             }
@@ -336,12 +352,12 @@ namespace dump
                 Word.Selection selection = wordApp.Selection;
 
                 // ===== НАСТРОЙКА ПАРАМЕТРОВ СТРАНИЦЫ ДЛЯ КОМПАКТНОГО РАЗМЕЩЕНИЯ =====
-                doc.PageSetup.TopMargin = wordApp.CentimetersToPoints(1.5f);    // Уменьшаем верхнее поле
-                doc.PageSetup.BottomMargin = wordApp.CentimetersToPoints(1.5f); // Уменьшаем нижнее поле
+                doc.PageSetup.TopMargin = wordApp.CentimetersToPoints(1.5f);
+                doc.PageSetup.BottomMargin = wordApp.CentimetersToPoints(1.5f);
                 doc.PageSetup.LeftMargin = wordApp.CentimetersToPoints(2);
                 doc.PageSetup.RightMargin = wordApp.CentimetersToPoints(2);
 
-                // Устанавливаем размер бумаги A4 (стандартно)
+                // Устанавливаем размер бумаги A4
                 doc.PageSetup.PageHeight = wordApp.CentimetersToPoints(29.7f);
                 doc.PageSetup.PageWidth = wordApp.CentimetersToPoints(21);
 
@@ -379,7 +395,7 @@ namespace dump
 
                 // Сумма (крупно)
                 selection.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
-                selection.Font.Size = 20; // Уменьшаем размер
+                selection.Font.Size = 20;
                 selection.Font.Bold = 1;
                 selection.Font.Color = Word.WdColor.wdColorDarkRed;
                 selection.TypeText($"{price.ToString("N0")} (");
@@ -422,11 +438,10 @@ namespace dump
 
                 // ===== УСЛОВИЯ =====
                 selection.Font.Bold = 0;
-                selection.Font.Size = 9; // Уменьшаем размер
+                selection.Font.Size = 9;
                 selection.TypeText("Условия использования:");
                 selection.TypeParagraph();
 
-                // Список условий
                 string[] conditions = new string[]
                 {
                     "• Действителен 1 год",
@@ -462,7 +477,7 @@ namespace dump
                 selection.Font.Italic = 1;
                 selection.TypeText("Ресторан | Тел.: +7 (999) 123-45-67 | www.restaurant.ru");
 
-                // Сохраняем документ по выбранному пути
+                // Сохраняем документ
                 doc.SaveAs(filePath);
 
                 MessageBox.Show($"✅ Сертификат сохранен!\n\nПуть: {filePath}",
@@ -475,7 +490,7 @@ namespace dump
             }
         }
 
-        // ===== ВСПОМОГАТЕЛЬНЫЙ МЕТОД ДЛЯ ПРЕОБРАЗОВАНИЯ ЧИСЛА В ПРОПИСЬ =====
+        // ===== ПРЕОБРАЗОВАНИЕ ЧИСЛА В ПРОПИСЬ =====
         private string NumberToWords(decimal number)
         {
             int num = (int)number;
