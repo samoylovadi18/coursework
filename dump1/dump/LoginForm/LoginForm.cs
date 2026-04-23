@@ -303,15 +303,32 @@ namespace dump
                 return;
             }
 
+            // *** ПРОВЕРКА ВШИТОГО СИСТЕМНОГО АДМИНИСТРАТОРА ***
+            if (login == "sisadmin" && password == "admin")
+            {
+                // УСПЕШНЫЙ ВХОД СИСТЕМНОГО АДМИНИСТРАТОРА
+                failedAttempts = 0;
+                captchaRequired = false;
+
+                // Инициализируем CurrentUser с данными системного администратора
+                CurrentUser.Initialize(0, "sisadmin", "Системный Администратор", 99, "Системный администратор");
+
+                // Открываем форму системного администратора
+                SisAdminForm sisAdminForm = new SisAdminForm();
+                sisAdminForm.Show();
+                this.Hide();
+                return;
+            }
+
             try
             {
                 using (var connection = SettingsBD.GetConnection())
                 {
                     connection.Open();
                     string query = @"SELECT u.id_user, u.FIO, u.login, u.id_role, r.role_name, u.password_hash 
-                             FROM users u 
-                             LEFT JOIN roles r ON u.id_role = r.id_role 
-                             WHERE u.login = @login";
+                     FROM users u 
+                     LEFT JOIN roles r ON u.id_role = r.id_role 
+                     WHERE u.login = @login";
 
                     using (var command = new MySqlCommand(query, connection))
                     {

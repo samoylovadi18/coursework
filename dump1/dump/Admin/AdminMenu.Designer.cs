@@ -31,6 +31,8 @@
             this.btnEdit = new System.Windows.Forms.Button();
             this.btnAdd = new System.Windows.Forms.Button();
             this.panelEditDish = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtWeightVolume = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.txtCost = new System.Windows.Forms.TextBox();
             this.btnDeletePhoto = new System.Windows.Forms.Button();
@@ -151,6 +153,8 @@
             // 
             this.panelEditDish.BackColor = System.Drawing.Color.Silver;
             this.panelEditDish.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panelEditDish.Controls.Add(this.label9);
+            this.panelEditDish.Controls.Add(this.txtWeightVolume);
             this.panelEditDish.Controls.Add(this.label8);
             this.panelEditDish.Controls.Add(this.txtCost);
             this.panelEditDish.Controls.Add(this.btnDeletePhoto);
@@ -166,11 +170,26 @@
             this.panelEditDish.Controls.Add(this.numEditPrice);
             this.panelEditDish.Controls.Add(this.txtEditCompound);
             this.panelEditDish.Controls.Add(this.txtEditDishName);
-            this.panelEditDish.Location = new System.Drawing.Point(163, 264);
+            this.panelEditDish.Location = new System.Drawing.Point(168, 247);
             this.panelEditDish.Name = "panelEditDish";
-            this.panelEditDish.Size = new System.Drawing.Size(891, 404);
+            this.panelEditDish.Size = new System.Drawing.Size(891, 393);
             this.panelEditDish.TabIndex = 44;
-            this.panelEditDish.Paint += new System.Windows.Forms.PaintEventHandler(this.panelEditDish_Paint);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(63, 344);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(102, 21);
+            this.label9.TabIndex = 43;
+            this.label9.Text = "Вес/Объем:";
+            // 
+            // txtWeightVolume
+            // 
+            this.txtWeightVolume.Location = new System.Drawing.Point(171, 336);
+            this.txtWeightVolume.Name = "txtWeightVolume";
+            this.txtWeightVolume.Size = new System.Drawing.Size(328, 29);
+            this.txtWeightVolume.TabIndex = 42;
             // 
             // label8
             // 
@@ -392,5 +411,7 @@
         private System.Windows.Forms.PictureBox pbDishPhoto;
         private System.Windows.Forms.TextBox txtCost;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txtWeightVolume;
     }
 }

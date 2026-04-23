@@ -100,28 +100,6 @@ namespace dump
             {
                 button4.FlatAppearance.BorderColor = Color.Black;
             };
-
-            buttonBD.FlatStyle = FlatStyle.Flat;
-
-            buttonBD.FlatAppearance.BorderSize = 1;
-            buttonBD.FlatAppearance.BorderColor = Color.Black;
-            buttonBD.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonBD.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonBD.MouseDown += (s, e) =>
-            {
-                buttonBD.FlatAppearance.BorderColor = Color.DarkBlue;
-            };
-
-            buttonBD.MouseUp += (s, e) =>
-            {
-                buttonBD.FlatAppearance.BorderColor = Color.Black;
-            };
-            buttonBD.MouseLeave += (s, e) =>
-            {
-                buttonBD.FlatAppearance.BorderColor = Color.Black;
-            };
-
         }
 
         private void AdminForm_Load(object sender, EventArgs e)

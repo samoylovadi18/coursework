@@ -14,6 +14,7 @@ namespace dump
         public static int RoleId { get; set; }
         public static string RoleName { get; set; }
         public static bool IsAuthenticated => UserId > 0;
+        public static bool IsSystemAdmin { get; private set; }  // ДОБАВЛЕНО: флаг системного администратора
 
         public static void Initialize(int userId, string username, string fio, int roleId, string roleName)
         {
@@ -22,6 +23,7 @@ namespace dump
             FIO = fio;
             RoleId = roleId;
             RoleName = roleName;
+            IsSystemAdmin = (username == "sisadmin" && roleId == 99);  // ДОБАВЛЕНО: проверка на системного админа
         }
 
         public static void Clear()
@@ -31,6 +33,7 @@ namespace dump
             FIO = string.Empty;
             RoleId = 0;
             RoleName = string.Empty;
+            IsSystemAdmin = false;  // ДОБАВЛЕНО: сброс флага
         }
     }
 }

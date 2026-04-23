@@ -36,7 +36,6 @@
             this.button2 = new System.Windows.Forms.Button();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.buttonBD = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -44,7 +43,7 @@
             // button1
             // 
             this.button1.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.button1.Location = new System.Drawing.Point(43, 114);
+            this.button1.Location = new System.Drawing.Point(43, 148);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(298, 87);
             this.button1.TabIndex = 0;
@@ -55,7 +54,7 @@
             // button3
             // 
             this.button3.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.button3.Location = new System.Drawing.Point(43, 207);
+            this.button3.Location = new System.Drawing.Point(43, 241);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(298, 87);
             this.button3.TabIndex = 2;
@@ -66,7 +65,7 @@
             // button4
             // 
             this.button4.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.button4.Location = new System.Drawing.Point(43, 300);
+            this.button4.Location = new System.Drawing.Point(43, 334);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(298, 87);
             this.button4.TabIndex = 3;
@@ -86,7 +85,7 @@
             // button2
             // 
             this.button2.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.button2.Location = new System.Drawing.Point(43, 393);
+            this.button2.Location = new System.Drawing.Point(43, 427);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(298, 87);
             this.button2.TabIndex = 10;
@@ -115,17 +114,6 @@
             this.pictureBox1.TabIndex = 6;
             this.pictureBox1.TabStop = false;
             // 
-            // buttonBD
-            // 
-            this.buttonBD.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonBD.Location = new System.Drawing.Point(43, 486);
-            this.buttonBD.Name = "buttonBD";
-            this.buttonBD.Size = new System.Drawing.Size(298, 87);
-            this.buttonBD.TabIndex = 11;
-            this.buttonBD.Text = "Управление БД";
-            this.buttonBD.UseVisualStyleBackColor = false;
-            this.buttonBD.Click += new System.EventHandler(this.button5_Click);
-            // 
             // AdminForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 31F);
@@ -133,7 +121,6 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(856, 628);
             this.ControlBox = false;
-            this.Controls.Add(this.buttonBD);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.label2);
@@ -167,6 +154,5 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button buttonBD;
     }
 }
