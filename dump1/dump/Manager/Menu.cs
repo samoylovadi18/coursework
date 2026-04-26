@@ -46,8 +46,18 @@ namespace dump
             ApplyRealTimeFiltering();
             UpdateCartCount();
             SetupButtonStyles();
+            this.FormClosing += Menu_FormClosing;
         }
-
+        private void Menu_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.Visible = false;
+                ManagerForm manager = new ManagerForm();
+                manager.Show();
+            }
+        }
         // Класс подарка из базы
         public class Gift
         {

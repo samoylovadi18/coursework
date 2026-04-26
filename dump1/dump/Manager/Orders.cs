@@ -35,6 +35,17 @@ namespace dump
         {
             InitializeComponent();
             InitializeComponents();
+            this.FormClosing += OrderDetailsForm_FormClosing;
+        }
+        private void OrderDetailsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.Hide();
+                ManagerForm manager = new ManagerForm();
+                manager.Show();
+            }
         }
 
         private void InitializeComponents()

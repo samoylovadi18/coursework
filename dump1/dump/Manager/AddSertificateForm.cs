@@ -17,6 +17,27 @@ namespace dump
             InitializeComponent();
             InitializeForm();
             LoadPricesToComboBox();
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += AddSertificateForm_FormClosing;
+        }
+
+        // ОБРАБОТЧИК - при закрытии формы (крестик)
+        private void AddSertificateForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // ОТКРЫВАЕМ ManagerForm
+                ManagerForm manager = new ManagerForm();
+                manager.Show();
+            }
         }
 
         private void InitializeForm()
@@ -58,12 +79,7 @@ namespace dump
             btnIssue.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
             btnIssue.Click += BtnIssue_Click;
 
-            // Настройка кнопки "Назад"
-            if (pictureBox2 != null)
-            {
-                pictureBox2.Click += PictureBox2_Click;
-                pictureBox2.Cursor = Cursors.Hand;
-            }
+   
 
             btnIssue.MouseDown += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.DarkBlue;
             btnIssue.MouseUp += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
@@ -230,8 +246,8 @@ namespace dump
                         {
                             long newId = cmd.LastInsertedId;
 
-                            MessageBox.Show($"Сертификат №{newId} успешно выдан!", "Успех",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"Сертификат №{newId} успешно выдан!\n\nСтатус: АКТИВЕН\nСрок действия: 1 год",
+     "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                             // СПРАШИВАЕМ, СОЗДАВАТЬ ЛИ СЕРТИФИКАТ В WORD
                             DialogResult createWordResult = MessageBox.Show(
@@ -487,6 +503,10 @@ namespace dump
             {
                 MessageBox.Show($"Ошибка при создании сертификата Word: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // НЕ ЗАКРЫВАЕМ WORD! Пользователь сам закроет его
             }
         }
 
