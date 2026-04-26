@@ -40,7 +40,6 @@
             this.buttonProfit = new System.Windows.Forms.Button();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.buttonMenu = new System.Windows.Forms.Button();
             this.panelStatistics.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -76,6 +75,7 @@
             this.panelStatistics.Name = "panelStatistics";
             this.panelStatistics.Size = new System.Drawing.Size(872, 640);
             this.panelStatistics.TabIndex = 16;
+            this.panelStatistics.Paint += new System.Windows.Forms.PaintEventHandler(this.panelStatistics_Paint);
             // 
             // buttonTopDish
             // 
@@ -164,17 +164,6 @@
             this.pictureBox1.TabIndex = 12;
             this.pictureBox1.TabStop = false;
             // 
-            // buttonMenu
-            // 
-            this.buttonMenu.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonMenu.Location = new System.Drawing.Point(42, 455);
-            this.buttonMenu.Name = "buttonMenu";
-            this.buttonMenu.Size = new System.Drawing.Size(298, 87);
-            this.buttonMenu.TabIndex = 23;
-            this.buttonMenu.Text = "Меню блюд";
-            this.buttonMenu.UseVisualStyleBackColor = false;
-            this.buttonMenu.Click += new System.EventHandler(this.buttonMenu_Click);
-            // 
             // DirectorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 31F);
@@ -182,7 +171,6 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(872, 644);
             this.ControlBox = false;
-            this.Controls.Add(this.buttonMenu);
             this.Controls.Add(this.buttonProfit);
             this.Controls.Add(this.ButtonReport);
             this.Controls.Add(this.panelStatistics);
@@ -224,6 +212,5 @@
         private System.Windows.Forms.Button buttonTopDish;
         private System.Windows.Forms.Button ButtonReport;
         private System.Windows.Forms.Button buttonProfit;
-        private System.Windows.Forms.Button buttonMenu;
     }
 }

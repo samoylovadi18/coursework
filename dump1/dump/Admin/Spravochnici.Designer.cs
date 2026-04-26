@@ -32,7 +32,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.AddButton = new System.Windows.Forms.Button();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabPresent = new System.Windows.Forms.TabPage();
             this.label6 = new System.Windows.Forms.Label();
             this.textBoxFromPrice = new System.Windows.Forms.TextBox();
@@ -57,7 +56,8 @@
             this.button5 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.dataGridViewStatus = new System.Windows.Forms.DataGridView();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.buttonEdit = new System.Windows.Forms.Button();
+            this.buttonSave = new System.Windows.Forms.Button();
             this.tabPresent.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPresents)).BeginInit();
             this.tabCategories.SuspendLayout();
@@ -82,35 +82,24 @@
             // buttonDelete
             // 
             this.buttonDelete.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonDelete.Location = new System.Drawing.Point(573, 541);
+            this.buttonDelete.Location = new System.Drawing.Point(475, 555);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(170, 44);
             this.buttonDelete.TabIndex = 29;
             this.buttonDelete.Text = "Удалить";
             this.buttonDelete.UseVisualStyleBackColor = false;
-            this.buttonDelete.Click += new System.EventHandler(this.buttonDelete_Click);
+
             // 
             // AddButton
             // 
             this.AddButton.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.AddButton.Location = new System.Drawing.Point(397, 541);
+            this.AddButton.Location = new System.Drawing.Point(122, 555);
             this.AddButton.Name = "AddButton";
             this.AddButton.Size = new System.Drawing.Size(170, 44);
             this.AddButton.TabIndex = 27;
             this.AddButton.Text = "Добавить";
             this.AddButton.UseVisualStyleBackColor = false;
             this.AddButton.Click += new System.EventHandler(this.AddButton_Click);
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::dump.Properties.Resources.remove;
-            this.pictureBox2.Location = new System.Drawing.Point(815, 1);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(41, 33);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 29;
-            this.pictureBox2.TabStop = false;
-            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // tabPresent
             // 
@@ -294,6 +283,7 @@
             // 
             // tabStatus
             // 
+            this.tabStatus.Controls.Add(this.buttonSave);
             this.tabStatus.Controls.Add(this.label3);
             this.tabStatus.Controls.Add(this.textBoxStatusName);
             this.tabStatus.Controls.Add(this.button4);
@@ -306,7 +296,7 @@
             this.tabStatus.TabIndex = 1;
             this.tabStatus.Text = "Статусы заказов";
             this.tabStatus.UseVisualStyleBackColor = true;
-            this.tabStatus.Click += new System.EventHandler(this.tabStatus_Click);
+   
             // 
             // label3
             // 
@@ -368,19 +358,39 @@
             this.dataGridViewStatus.Size = new System.Drawing.Size(562, 257);
             this.dataGridViewStatus.TabIndex = 0;
             // 
+            // buttonEdit
+            // 
+            this.buttonEdit.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.buttonEdit.Location = new System.Drawing.Point(299, 555);
+            this.buttonEdit.Name = "buttonEdit";
+            this.buttonEdit.Size = new System.Drawing.Size(170, 44);
+            this.buttonEdit.TabIndex = 30;
+            this.buttonEdit.Text = "Редактировать";
+            this.buttonEdit.UseVisualStyleBackColor = false;
+            // 
+            // buttonSave
+            // 
+            this.buttonSave.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.buttonSave.Location = new System.Drawing.Point(425, 350);
+            this.buttonSave.Name = "buttonSave";
+            this.buttonSave.Size = new System.Drawing.Size(170, 44);
+            this.buttonSave.TabIndex = 31;
+            this.buttonSave.Text = "Сохранить ";
+            this.buttonSave.UseVisualStyleBackColor = false;
+            // 
             // Spravochnici
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(856, 628);
-            this.ControlBox = false;
+            this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonDelete);
             this.Controls.Add(this.AddButton);
-            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.tabConrol1);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5);
             this.MaximizeBox = false;
@@ -388,7 +398,6 @@
             this.Name = "Spravochnici";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.Spravochnici_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.tabPresent.ResumeLayout(false);
             this.tabPresent.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPresents)).EndInit();
@@ -409,7 +418,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonDelete;
         private System.Windows.Forms.Button AddButton;
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TabPage tabPresent;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBoxFromPrice;
@@ -434,5 +442,7 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.DataGridView dataGridViewStatus;
+        private System.Windows.Forms.Button buttonEdit;
+        private System.Windows.Forms.Button buttonSave;
     }
 }

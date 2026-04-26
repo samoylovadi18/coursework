@@ -25,76 +25,136 @@ namespace dump
                 tabConrol1.SelectedIndexChanged += tabConrol1_SelectedIndexChanged;
             }
 
+            // КНОПКА ДОБАВИТЬ
             AddButton.FlatStyle = FlatStyle.Flat;
             AddButton.FlatAppearance.BorderSize = 1;
             AddButton.FlatAppearance.BorderColor = Color.Black;
             AddButton.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             AddButton.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            AddButton.Click += AddButton_Click;
+            AddButton.Visible = true;
+            AddButton.Text = "Добавить";
 
-            // Удаляем все изменения стиля кнопки Удалить - оставляем как было
+            // КНОПКА СОХРАНИТЬ (НОВАЯ)
+            buttonSave.FlatStyle = FlatStyle.Flat;
+            buttonSave.FlatAppearance.BorderSize = 1;
+            buttonSave.FlatAppearance.BorderColor = Color.Black;
+            buttonSave.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            buttonSave.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            buttonSave.Click += ButtonSave_Click;
+            buttonSave.Visible = false; // Скрыта по умолчанию
+
+            // КНОПКА РЕДАКТИРОВАТЬ
+            buttonEdit.FlatStyle = FlatStyle.Flat;
+            buttonEdit.FlatAppearance.BorderSize = 1;
+            buttonEdit.FlatAppearance.BorderColor = Color.Black;
+            buttonEdit.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            buttonEdit.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            buttonEdit.Click += ButtonEdit_Click;
+
+            // КНОПКА УДАЛИТЬ
             buttonDelete.FlatStyle = FlatStyle.Flat;
             buttonDelete.FlatAppearance.BorderSize = 1;
             buttonDelete.FlatAppearance.BorderColor = Color.Black;
-            // Возвращаем оригинальные цвета
             buttonDelete.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             buttonDelete.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            buttonDelete.Click += DeleteButton_Click;
 
             SetupRussianOnlyTextBox(textBoxStatusName);
             SetupRussianOnlyTextBox(textBoxCategoryName);
             SetupRussianOnlyTextBox(textBoxPresentName);
-            SetupPriceTextBox(textBoxFromPrice); // Изменено: SetupPriceTextBox вместо SetupNumericTextBox
+            SetupPriceTextBox(textBoxFromPrice);
             SetMaxLengthLimits();
+
             // Настройка двойного клика на DataGridView
             dataGridViewStatus.CellDoubleClick += DataGridView_CellDoubleClick;
             dataGridViewCategories.CellDoubleClick += DataGridView_CellDoubleClick;
             dataGridViewPresents.CellDoubleClick += DataGridView_CellDoubleClick;
+
+            // Настройка одиночного клика для выделения строки
+            dataGridViewStatus.CellClick += DataGridView_CellClick;
+            dataGridViewCategories.CellClick += DataGridView_CellClick;
+            dataGridViewPresents.CellClick += DataGridView_CellClick;
+
             SetupDataGridViewRowSelection();
 
-            // Подписываемся на клик по кнопке Удалить
-            buttonDelete.Click += DeleteButton_Click;
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += Spravochnici_FormClosing;
+        }
+
+        // ОБРАБОТЧИК - при нажатии на крестик
+        private void Spravochnici_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.Visible = false;
+                AdminForm admin = new AdminForm();
+                admin.Show();
+            }
+        }
+
+        // ОБРАБОТЧИК - клик по ячейке DataGridView для выделения строки
+        private void DataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                DataGridView dgv = sender as DataGridView;
+                if (dgv != null)
+                {
+                    dgv.ClearSelection();
+                    dgv.Rows[e.RowIndex].Selected = true;
+                }
+            }
+        }
+
+        // ОБРАБОТЧИК - кнопка Редактировать
+        private void ButtonEdit_Click(object sender, EventArgs e)
+        {
+            DataGridView activeDGV = GetActiveDataGridView();
+
+            if (activeDGV == null || activeDGV.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Выберите запись для редактирования!", "Информация",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            PrepareForEdit();
+        }
+
+        // ОБРАБОТЧИК - кнопка Сохранить
+        private void ButtonSave_Click(object sender, EventArgs e)
+        {
+            SaveChanges();
         }
 
         private void SetupDataGridViewRowSelection()
         {
-            // Настройка для dataGridViewStatus
             dataGridViewStatus.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewStatus.MultiSelect = false;
 
-            // Настройка для dataGridViewCategories
             dataGridViewCategories.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCategories.MultiSelect = false;
 
-            // Настройка для dataGridViewPresents
             dataGridViewPresents.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewPresents.MultiSelect = false;
         }
 
-        // Ограничения на количество символов в соответствии с БД
         private void SetMaxLengthLimits()
         {
-            // Согласно скриншотам, все текстовые поля имеют VARCHAR(255)
-            textBoxStatusName.MaxLength = 255;     // status_name VARCHAR(255) NOT NULL
-            textBoxCategoryName.MaxLength = 255;   // category_name VARCHAR(255) NOT NULL
-            textBoxPresentName.MaxLength = 255;    // name VARCHAR(255) NOT NULL
-
-            // Для поля цены оставляем больше места для форматирования
-            textBoxFromPrice.MaxLength = 20; // Увеличили для форматированной цены
-
-            // Добавляем ограничение на максимальное значение цены согласно DECIMAL(10,2)
-            // DECIMAL(10,2) означает: 10 цифр всего, 2 после запятой => максимум 8 цифр до запятой
-            // Максимальное значение: 99,999,999.99 (9 цифр до запятой + 2 после = 11 символов, но форматирование)
+            textBoxStatusName.MaxLength = 255;
+            textBoxCategoryName.MaxLength = 255;
+            textBoxPresentName.MaxLength = 255;
+            textBoxFromPrice.MaxLength = 20;
         }
 
-        // НАСТРОЙКА ТЕКСТОВОГО ПОЛЯ ДЛЯ ВВОДА ЦЕНЫ С ФОРМАТИРОВАНИЕМ ПРИ ВВОДЕ
         private void SetupPriceTextBox(TextBox textBox)
         {
             textBox.KeyPress += TextBoxPrice_KeyPress;
             textBox.TextChanged += TextBoxPrice_TextChanged;
             textBox.Enter += TextBoxPrice_Enter;
             textBox.Leave += TextBoxPrice_Leave;
-            textBox.GotFocus += TextBoxPrice_GotFocus;
-
-            // Устанавливаем выравнивание по правому краю
             textBox.TextAlign = HorizontalAlignment.Right;
         }
 
@@ -102,19 +162,16 @@ namespace dump
         {
             TextBox textBox = sender as TextBox;
 
-            // Разрешаем: цифры, Backspace, запятая
             if (char.IsDigit(e.KeyChar) ||
                 e.KeyChar == (char)Keys.Back ||
                 e.KeyChar == ',')
             {
-                // Проверяем, что запятая только одна
                 if (e.KeyChar == ',' && textBox.Text.Replace(" ", "").Replace("₽", "").Contains(","))
                 {
                     e.Handled = true;
                     System.Media.SystemSounds.Beep.Play();
                     return;
                 }
-
                 e.Handled = false;
             }
             else
@@ -133,18 +190,15 @@ namespace dump
 
             try
             {
-                // Сохраняем позицию курсора
                 int cursorPos = textBox.SelectionStart;
                 string originalText = textBox.Text;
 
-                // Если текст пустой, выходим
                 if (string.IsNullOrEmpty(originalText))
                 {
                     isFormatting = false;
                     return;
                 }
 
-                // Получаем только цифры и запятую из текста
                 string cleanText = "";
                 foreach (char c in originalText)
                 {
@@ -152,7 +206,6 @@ namespace dump
                         cleanText += c;
                 }
 
-                // Если запятых больше одной, оставляем только первую
                 int commaIndex = cleanText.IndexOf(',');
                 if (commaIndex != -1)
                 {
@@ -161,7 +214,6 @@ namespace dump
                     cleanText = beforeComma + afterComma;
                 }
 
-                // Ограничиваем 2 знаками после запятой (согласно DECIMAL(10,2))
                 if (cleanText.Contains(","))
                 {
                     string[] parts = cleanText.Split(',');
@@ -171,14 +223,12 @@ namespace dump
                     }
                 }
 
-                // Проверяем ограничение DECIMAL(10,2) - максимум 8 цифр до запятой
                 if (cleanText.Contains(","))
                 {
                     string[] parts = cleanText.Split(',');
                     string beforeCommaPart = parts[0];
-                    // Убираем ведущие нули для правильного подсчета
                     beforeCommaPart = beforeCommaPart.TrimStart('0');
-                    if (beforeCommaPart.Length > 8) // Максимум 8 цифр до запятой
+                    if (beforeCommaPart.Length > 8)
                     {
                         beforeCommaPart = beforeCommaPart.Substring(0, 8);
                         cleanText = beforeCommaPart + "," + (parts.Length > 1 ? parts[1] : "00");
@@ -186,33 +236,21 @@ namespace dump
                 }
                 else
                 {
-                    // Если нет запятой, проверяем общую длину
                     string temp = cleanText.TrimStart('0');
-                    if (temp.Length > 8) // Максимум 8 цифр до запятой
+                    if (temp.Length > 8)
                     {
                         cleanText = temp.Substring(0, 8);
                     }
                 }
 
-                // Форматируем только если у нас есть цифры
                 if (!string.IsNullOrEmpty(cleanText))
                 {
-                    // Упрощенная логика форматирования
-                    // Вместо немедленного форматирования при вводе, 
-                    // будем форматировать только при потере фокуса
-
-                    // Но сохраняем правильную позицию курсора
-                    int newCursorPos = 0;
                     int nonFormatChars = 0;
-
-                    // Считаем, сколько неформатируемых символов (цифр и запятых) было до курсора
                     for (int i = 0; i < cursorPos && i < originalText.Length; i++)
                     {
                         if (char.IsDigit(originalText[i]) || originalText[i] == ',')
                             nonFormatChars++;
                     }
-
-                    // Устанавливаем курсор после того же количества цифр/запятых
                     textBox.Text = cleanText;
                     textBox.SelectionStart = Math.Min(nonFormatChars, textBox.Text.Length);
                 }
@@ -226,11 +264,8 @@ namespace dump
         private void TextBoxPrice_Enter(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
-
-            // При фокусе убираем форматирование для удобного редактирования
             if (!string.IsNullOrEmpty(textBox.Text))
             {
-                // Убираем пробелы разделителей тысяч и символ рубля
                 string plainText = textBox.Text.Replace(" ", "").Replace("₽", "").Trim();
                 if (decimal.TryParse(plainText, NumberStyles.Any, russianCulture, out decimal value))
                 {
@@ -246,13 +281,6 @@ namespace dump
             FormatPriceTextBoxOnLeave(textBox);
         }
 
-        private void TextBoxPrice_GotFocus(object sender, EventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            // Не выделяем весь текст автоматически, чтобы не мешать редактированию
-            // textBox.SelectAll();
-        }
-
         private void FormatPriceTextBoxOnLeave(TextBox textBox)
         {
             if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -262,11 +290,7 @@ namespace dump
             }
 
             string text = textBox.Text.Trim();
-
-            // Заменяем точку на запятую (если пользователь ввел точку)
             text = text.Replace(".", ",");
-
-            // Убираем все символы, кроме цифр и запятой
             string cleanText = new string(text.Where(c => char.IsDigit(c) || c == ',').ToArray());
 
             if (string.IsNullOrEmpty(cleanText))
@@ -275,7 +299,6 @@ namespace dump
                 return;
             }
 
-            // Если запятых больше одной, оставляем только первую
             int commaIndex = cleanText.IndexOf(',');
             if (commaIndex != -1)
             {
@@ -284,41 +307,30 @@ namespace dump
                 cleanText = beforeComma + afterComma;
             }
 
-            // Проверяем ограничение DECIMAL(10,2) перед парсингом
             if (cleanText.Contains(","))
             {
                 string[] parts = cleanText.Split(',');
                 string beforeCommaPart = parts[0];
-                // Убираем ведущие нули для правильного подсчета
                 beforeCommaPart = beforeCommaPart.TrimStart('0');
-                if (beforeCommaPart.Length > 8) // Максимум 8 цифр до запятой
+                if (beforeCommaPart.Length > 8)
                 {
                     beforeCommaPart = beforeCommaPart.Substring(0, 8);
                     cleanText = beforeCommaPart + "," + (parts.Length > 1 ? parts[1] : "00");
                 }
-
-                // Ограничиваем 2 знаками после запятой
                 if (parts.Length > 1 && parts[1].Length > 2)
                 {
                     cleanText = beforeCommaPart + "," + parts[1].Substring(0, 2);
                 }
             }
 
-            // Парсим значение
             if (decimal.TryParse(cleanText, NumberStyles.Any, russianCulture, out decimal value))
             {
-                // Ограничиваем 2 знаками после запятой
                 value = Math.Round(value, 2);
-
-                // Проверяем максимальное значение согласно DECIMAL(10,2)
-                // Максимум: 99,999,999.99
                 decimal maxValue = 99999999.99m;
                 if (value > maxValue)
                 {
                     value = maxValue;
                 }
-
-                // Форматируем с разделителями тысяч и добавляем символ рубля
                 textBox.Text = value.ToString("N2", russianCulture) + " ₽";
             }
             else
@@ -327,20 +339,13 @@ namespace dump
             }
         }
 
-        // Метод для получения числового значения из отформатированной цены
         private decimal GetPriceFromFormattedText(string formattedText)
         {
             if (string.IsNullOrWhiteSpace(formattedText))
                 return 0;
 
             string cleanText = formattedText.Replace(" ", "").Replace("₽", "").Trim();
-
-            if (decimal.TryParse(cleanText, NumberStyles.Any, russianCulture, out decimal value))
-            {
-                return Math.Round(value, 2);
-            }
-
-            return 0;
+            return decimal.TryParse(cleanText, NumberStyles.Any, russianCulture, out decimal value) ? Math.Round(value, 2) : 0;
         }
 
         private void pictureBox2_Click(object sender, EventArgs e)
@@ -355,21 +360,21 @@ namespace dump
             LoadDataForSelectedTab();
         }
 
-        // Обработчик изменения выбранной вкладки
         private void tabConrol1_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadDataForSelectedTab();
-            // Сбрасываем режим редактирования при смене вкладки
             ResetEditMode();
         }
 
-        // Сброс режима редактирования
         private void ResetEditMode()
         {
             isEditMode = false;
             ClearInputFields(tabConrol1.SelectedTab?.Name);
             ClearTags(tabConrol1.SelectedTab?.Name);
-            // Меняем текст кнопки обратно на "Добавить"
+
+            // Показываем кнопку "Добавить", скрываем "Сохранить"
+            AddButton.Visible = true;
+            buttonSave.Visible = false;
             AddButton.Text = "Добавить";
         }
 
@@ -388,7 +393,6 @@ namespace dump
                     string query = "";
                     DataTable dataTable = new DataTable();
 
-                    // Выбираем запрос в зависимости от вкладки
                     switch (selectedTab)
                     {
                         case "tabRole":
@@ -412,8 +416,6 @@ namespace dump
                         adapter.Fill(dataTable);
                     }
 
-                    // Привязываем данные к соответствующему DataGridView
-                    // и скрываем ID колонку
                     switch (selectedTab)
                     {
                         case "tabStatus":
@@ -430,7 +432,6 @@ namespace dump
                             dataGridViewPresents.DataSource = dataTable;
                             if (dataGridViewPresents.Columns.Contains("id_present"))
                                 dataGridViewPresents.Columns["id_present"].Visible = false;
-                            // Форматируем столбец цены
                             if (dataGridViewPresents.Columns.Contains("От какой суммы"))
                             {
                                 dataGridViewPresents.Columns["От какой суммы"].DefaultCellStyle.Format = "N2";
@@ -447,7 +448,6 @@ namespace dump
             }
         }
 
-        // Проверка на дубликат статуса
         private bool IsStatusDuplicate(string statusName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM order_statuses WHERE LOWER(status_name) = LOWER(@statusName)";
@@ -463,12 +463,10 @@ namespace dump
                 {
                     cmd.Parameters.AddWithValue("@excludeId", excludeId.Value);
                 }
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                return count > 0;
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        // Проверка на дубликат категории
         private bool IsCategoryDuplicate(string categoryName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM categories WHERE LOWER(category_name) = LOWER(@categoryName)";
@@ -484,12 +482,10 @@ namespace dump
                 {
                     cmd.Parameters.AddWithValue("@excludeId", excludeId.Value);
                 }
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                return count > 0;
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        // Проверка на дубликат подарка
         private bool IsPresentDuplicate(string presentName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM present WHERE LOWER(name) = LOWER(@presentName)";
@@ -505,12 +501,10 @@ namespace dump
                 {
                     cmd.Parameters.AddWithValue("@excludeId", excludeId.Value);
                 }
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                return count > 0;
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        // Метод для добавления новой записи
         private void AddNewRecord()
         {
             string selectedTab = tabConrol1.SelectedTab?.Name;
@@ -526,18 +520,15 @@ namespace dump
                     switch (selectedTab)
                     {
                         case "tabStatus":
-                            // Проверяем заполнение поля - ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxStatusName.Text))
                             {
-                                MessageBox.Show("Введите название статуса! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название статуса!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxStatusName.Focus();
                                 return;
                             }
 
                             string statusName = textBoxStatusName.Text.Trim();
-
-                            // Проверка на длину согласно VARCHAR(255)
                             if (statusName.Length > 255)
                             {
                                 MessageBox.Show("Название статуса не должно превышать 255 символов!", "Ошибка",
@@ -546,7 +537,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат
                             if (IsStatusDuplicate(statusName, connection))
                             {
                                 MessageBox.Show("Статус с таким названием уже существует!", "Ошибка",
@@ -561,18 +551,15 @@ namespace dump
                             break;
 
                         case "tabCategories":
-                            // Проверяем заполнение поля - ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxCategoryName.Text))
                             {
-                                MessageBox.Show("Введите название категории! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название категории!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxCategoryName.Focus();
                                 return;
                             }
 
                             string categoryName = textBoxCategoryName.Text.Trim();
-
-                            // Проверка на длину согласно VARCHAR(255)
                             if (categoryName.Length > 255)
                             {
                                 MessageBox.Show("Название категории не должно превышать 255 символов!", "Ошибка",
@@ -581,7 +568,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат
                             if (IsCategoryDuplicate(categoryName, connection))
                             {
                                 MessageBox.Show("Категория с таким названием уже существует!", "Ошибка",
@@ -596,16 +582,14 @@ namespace dump
                             break;
 
                         case "tabPresent":
-                            // Проверяем заполнение полей - name ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxPresentName.Text))
                             {
-                                MessageBox.Show("Введите название подарка! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название подарка!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxPresentName.Focus();
                                 return;
                             }
 
-                            // Получаем цену из отформатированного текста
                             decimal price = GetPriceFromFormattedText(textBoxFromPrice.Text);
                             if (price <= 0)
                             {
@@ -616,8 +600,6 @@ namespace dump
                             }
 
                             string presentName = textBoxPresentName.Text.Trim();
-
-                            // Проверка на длину названия согласно VARCHAR(255)
                             if (presentName.Length > 255)
                             {
                                 MessageBox.Show("Название подарка не должно превышать 255 символов!", "Ошибка",
@@ -626,7 +608,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат
                             if (IsPresentDuplicate(presentName, connection))
                             {
                                 MessageBox.Show("Подарок с таким названием уже существует!", "Ошибка",
@@ -635,8 +616,7 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем максимальное значение цены согласно DECIMAL(10,2)
-                            decimal maxPrice = 99999999.99m; // Максимум для DECIMAL(10,2)
+                            decimal maxPrice = 99999999.99m;
                             if (price > maxPrice)
                             {
                                 MessageBox.Show($"Сумма не должна превышать {maxPrice.ToString("N2", russianCulture)}!", "Ошибка",
@@ -661,11 +641,7 @@ namespace dump
                     {
                         MessageBox.Show("Запись успешно добавлена!", "Успех",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        // Очищаем поля ввода
                         ClearInputFields(selectedTab);
-
-                        // Обновляем данные
                         LoadDataForSelectedTab();
                     }
                 }
@@ -677,9 +653,9 @@ namespace dump
                     MessageBox.Show("Такая запись уже существует!", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                else if (mysqlEx.Number == 1048) // Column cannot be null
+                else if (mysqlEx.Number == 1048)
                 {
-                    MessageBox.Show("Обязательные поля не заполнены! Пожалуйста, заполните все необходимые поля.", "Ошибка",
+                    MessageBox.Show("Обязательные поля не заполнены!", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
@@ -695,7 +671,6 @@ namespace dump
             }
         }
 
-        // Метод для сохранения изменений при редактировании
         private void SaveChanges()
         {
             string selectedTab = tabConrol1.SelectedTab?.Name;
@@ -720,18 +695,15 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем заполнение поля - ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxStatusName.Text))
                             {
-                                MessageBox.Show("Введите название статуса! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название статуса!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxStatusName.Focus();
                                 return;
                             }
 
                             string statusName = textBoxStatusName.Text.Trim();
-
-                            // Проверка на длину согласно VARCHAR(255)
                             if (statusName.Length > 255)
                             {
                                 MessageBox.Show("Название статуса не должно превышать 255 символов!", "Ошибка",
@@ -740,7 +712,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат (исключая текущую запись)
                             if (IsStatusDuplicate(statusName, connection, id))
                             {
                                 MessageBox.Show("Статус с таким названием уже существует!", "Ошибка",
@@ -764,18 +735,15 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем заполнение поля - ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxCategoryName.Text))
                             {
-                                MessageBox.Show("Введите название категории! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название категории!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxCategoryName.Focus();
                                 return;
                             }
 
                             string categoryName = textBoxCategoryName.Text.Trim();
-
-                            // Проверка на длину согласно VARCHAR(255)
                             if (categoryName.Length > 255)
                             {
                                 MessageBox.Show("Название категории не должно превышать 255 символов!", "Ошибка",
@@ -784,7 +752,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат (исключая текущую запись)
                             if (IsCategoryDuplicate(categoryName, connection, id))
                             {
                                 MessageBox.Show("Категория с таким названием уже существует!", "Ошибка",
@@ -808,28 +775,24 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем заполнение поля - ОБЯЗАТЕЛЬНОЕ ПОЛЕ (NOT NULL)
                             if (string.IsNullOrWhiteSpace(textBoxPresentName.Text))
                             {
-                                MessageBox.Show("Введите название подарка! Это поле обязательно для заполнения.", "Ошибка",
+                                MessageBox.Show("Введите название подарка!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxPresentName.Focus();
                                 return;
                             }
 
-                            // Получаем цену из отформатированного текста
                             decimal price = GetPriceFromFormattedText(textBoxFromPrice.Text);
                             if (price <= 0)
                             {
-                                MessageBox.Show("Введите корректную сумму! Значение должно быть больше 0.", "Ошибка",
+                                MessageBox.Show("Введите корректную сумму!", "Ошибка",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 textBoxFromPrice.Focus();
                                 return;
                             }
 
                             string presentName = textBoxPresentName.Text.Trim();
-
-                            // Проверка на длину названия согласно VARCHAR(255)
                             if (presentName.Length > 255)
                             {
                                 MessageBox.Show("Название подарка не должно превышать 255 символов!", "Ошибка",
@@ -838,7 +801,6 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем на дубликат (исключая текущую запись)
                             if (IsPresentDuplicate(presentName, connection, id))
                             {
                                 MessageBox.Show("Подарок с таким названием уже существует!", "Ошибка",
@@ -847,8 +809,7 @@ namespace dump
                                 return;
                             }
 
-                            // Проверяем максимальное значение цены согласно DECIMAL(10,2)
-                            decimal maxPrice = 99999999.99m; // Максимум для DECIMAL(10,2)
+                            decimal maxPrice = 99999999.99m;
                             if (price > maxPrice)
                             {
                                 MessageBox.Show($"Сумма не должна превышать {maxPrice.ToString("N2", russianCulture)}!", "Ошибка",
@@ -874,11 +835,7 @@ namespace dump
                     {
                         MessageBox.Show("Запись успешно обновлена!", "Успех",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        // Сбрасываем режим редактирования
                         ResetEditMode();
-
-                        // Обновляем данные
                         LoadDataForSelectedTab();
                     }
                     else
@@ -890,9 +847,9 @@ namespace dump
             }
             catch (MySqlException mysqlEx)
             {
-                if (mysqlEx.Number == 1048) // Column cannot be null
+                if (mysqlEx.Number == 1048)
                 {
-                    MessageBox.Show("Обязательные поля не заполнены! Пожалуйста, заполните все необходимые поля.", "Ошибка",
+                    MessageBox.Show("Обязательные поля не заполнены!", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
@@ -908,7 +865,6 @@ namespace dump
             }
         }
 
-        // Метод для очистки полей ввода
         private void ClearInputFields(string selectedTab)
         {
             switch (selectedTab)
@@ -926,7 +882,6 @@ namespace dump
             }
         }
 
-        // Метод для удаления записи с проверкой на связанные записи
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -941,7 +896,6 @@ namespace dump
             string selectedTab = tabConrol1.SelectedTab?.Name;
             DataGridViewRow selectedRow = activeDGV.SelectedRows[0];
 
-            // Получаем ID из скрытой колонки
             int id = 0;
             string idColumnName = "";
             string tableName = "";
@@ -979,20 +933,17 @@ namespace dump
                     return;
             }
 
-            // Получаем название для отображения в сообщении
             string recordName = selectedRow.Cells[nameColumnName].Value?.ToString() ?? id.ToString();
 
-            // Проверяем, есть ли связанные записи перед удалением
             if (HasRelatedRecords(id, tableName, selectedTab))
             {
-                MessageBox.Show($"Невозможно удалить '{recordName}', так как существуют связанные записи в других таблицах!\n\nСначала удалите все связанные записи.",
+                MessageBox.Show($"Невозможно удалить '{recordName}', так как существуют связанные записи!\n\nСначала удалите все связанные записи.",
                     "Ошибка удаления",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 return;
             }
 
-            // Подтверждение удаления
             DialogResult result = MessageBox.Show(
                 $"Вы уверены, что хотите удалить запись: \"{recordName}\"?\n\nЭто действие нельзя отменить!",
                 "Подтверждение удаления",
@@ -1018,7 +969,6 @@ namespace dump
                                 MessageBox.Show($"Запись \"{recordName}\" успешно удалена!", "Успех",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                                // Сбрасываем режим редактирования если удаляем редактируемую запись
                                 if (isEditMode)
                                 {
                                     switch (selectedTab)
@@ -1038,7 +988,6 @@ namespace dump
                                     }
                                 }
 
-                                // Обновляем данные
                                 LoadDataForSelectedTab();
                             }
                             else
@@ -1053,9 +1002,7 @@ namespace dump
                 {
                     if (mysqlEx.Number == 1451)
                     {
-                        // Получаем детальную информацию о связанных записях
                         string detailedInfo = GetRelatedRecordsDetails(id, tableName, selectedTab);
-
                         MessageBox.Show($"Невозможно удалить '{recordName}', так как существуют связанные записи!\n\n{detailedInfo}",
                             "Ошибка удаления",
                             MessageBoxButtons.OK,
@@ -1075,7 +1022,6 @@ namespace dump
             }
         }
 
-        // Проверка наличия связанных записей
         private bool HasRelatedRecords(int id, string tableName, string tabName)
         {
             try
@@ -1091,7 +1037,7 @@ namespace dump
                             query = "SELECT COUNT(*) FROM orders WHERE id_status = @id";
                             break;
                         case "categories":
-                            query = "SELECT COUNT(*) FROM menu WHERE id_category = @id";
+                            query = "SELECT COUNT(*) FROM dishes WHERE id_category = @id";
                             break;
                         case "present":
                             query = "SELECT COUNT(*) FROM orders WHERE id_present = @id";
@@ -1106,26 +1052,17 @@ namespace dump
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id", id);
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value)
-                        {
-                            int count = Convert.ToInt32(result);
-                            return count > 0;
-                        }
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
-                // В случае ошибки лучше разрешить попытку удаления
-                // Пусть база данных сама выдаст ошибку при нарушении foreign key
                 return false;
             }
-
-            return false;
         }
 
-        // Получение детальной информации о связанных записях
         private string GetRelatedRecordsDetails(int id, string tableName, string tabName)
         {
             try
@@ -1147,7 +1084,6 @@ namespace dump
                                 resultMessage = $"Статус используется в {count} заказах";
                             }
                             break;
-
                         case "categories":
                             query = "SELECT COUNT(*) as count FROM dishes WHERE id_category = @id";
                             using (MySqlCommand cmd = new MySqlCommand(query, connection))
@@ -1157,7 +1093,6 @@ namespace dump
                                 resultMessage = $"Категория используется в {count} блюдах";
                             }
                             break;
-
                         case "present":
                             query = "SELECT COUNT(*) as count FROM orders WHERE id_present = @id";
                             using (MySqlCommand cmd = new MySqlCommand(query, connection))
@@ -1167,7 +1102,6 @@ namespace dump
                                 resultMessage = $"Подарок используется в {count} заказах";
                             }
                             break;
-
                         case "roles":
                             query = "SELECT COUNT(*) as count FROM staff WHERE id_role = @id";
                             using (MySqlCommand cmd = new MySqlCommand(query, connection))
@@ -1177,22 +1111,19 @@ namespace dump
                                 resultMessage = $"Роль используется {count} сотрудниками";
                             }
                             break;
-
                         default:
                             resultMessage = "Запись используется в других таблицах";
                             break;
                     }
-
                     return resultMessage;
                 }
             }
-            catch (Exception)
+            catch
             {
                 return "Запись имеет связанные данные в системе";
             }
         }
 
-        // Получаем активный DataGridView
         private DataGridView GetActiveDataGridView()
         {
             string selectedTab = tabConrol1.SelectedTab?.Name;
@@ -1207,13 +1138,11 @@ namespace dump
                 return null;
         }
 
-        // Кнопка обновления данных
         private void RefreshButton_Click(object sender, EventArgs e)
         {
             LoadDataForSelectedTab();
         }
 
-        // Общий обработчик двойного клика по всем DataGridView
         private void DataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -1221,16 +1150,13 @@ namespace dump
                 DataGridView dgv = sender as DataGridView;
                 if (dgv != null)
                 {
-                    // Убедимся, что строка выбрана
                     dgv.ClearSelection();
                     dgv.Rows[e.RowIndex].Selected = true;
-
                     PrepareForEdit();
                 }
             }
         }
 
-        // Подготовка к редактированию записи
         private void PrepareForEdit()
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -1245,7 +1171,6 @@ namespace dump
             string selectedTab = tabConrol1.SelectedTab?.Name;
             DataGridViewRow selectedRow = activeDGV.SelectedRows[0];
 
-            // Получаем ID из скрытой колонки и отображаем данные в textbox'ах
             switch (selectedTab)
             {
                 case "tabStatus":
@@ -1264,50 +1189,36 @@ namespace dump
                     int presentId = Convert.ToInt32(selectedRow.Cells["id_present"].Value);
                     textBoxPresentName.Text = selectedRow.Cells["Название подарка"].Value?.ToString() ?? "";
 
-                    // Получаем цену
                     object priceValue = selectedRow.Cells["От какой суммы"].Value;
-
-                    if (priceValue != null)
+                    if (priceValue != null && decimal.TryParse(priceValue.ToString(), out decimal price))
                     {
-                        if (decimal.TryParse(priceValue.ToString(), out decimal price))
-                        {
-                            // Форматируем для отображения с символом рубля
-                            textBoxFromPrice.Text = price.ToString("N2", russianCulture) + " ₽";
-                        }
-                        else
-                        {
-                            textBoxFromPrice.Text = "";
-                        }
+                        textBoxFromPrice.Text = price.ToString("N2", russianCulture) + " ₽";
                     }
                     else
                     {
                         textBoxFromPrice.Text = "";
                     }
-
                     textBoxPresentName.Tag = presentId;
                     break;
             }
 
-            // Включаем режим редактирования
             isEditMode = true;
 
-            // Меняем текст кнопки на "Сохранить"
-            AddButton.Text = "Сохранить";
+            // Скрываем кнопку "Добавить", показываем "Сохранить"
+            AddButton.Visible = false;
+            buttonSave.Visible = true;
 
-            // Показываем сообщение о выборе записи
             MessageBox.Show("Запись выбрана для редактирования. Измените данные и нажмите 'Сохранить'",
                 "Редактирование",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
 
-        // Кнопка "Очистить" для очистки полей ввода
         private void ClearButton_Click(object sender, EventArgs e)
         {
             ResetEditMode();
         }
 
-        // Очистка Tag'ов
         private void ClearTags(string selectedTab)
         {
             switch (selectedTab)
@@ -1324,7 +1235,6 @@ namespace dump
             }
         }
 
-        // Настройка TextBox для ввода только русских букв
         private void SetupRussianOnlyTextBox(TextBox textBox)
         {
             textBox.KeyPress += TextBoxRussianOnly_KeyPress;
@@ -1332,12 +1242,8 @@ namespace dump
             textBox.Leave += TextBoxRussianOnly_Leave;
         }
 
-        // Обработчики для русских букв
         private void TextBoxRussianOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
-
-            // Разрешаем: русские буквы, дефис, пробел, Backspace
             if (char.IsLetter(e.KeyChar) && IsRussianLetter(e.KeyChar) ||
                 e.KeyChar == '-' || e.KeyChar == ' ' ||
                 e.KeyChar == (char)Keys.Back)
@@ -1374,23 +1280,18 @@ namespace dump
             if (!string.IsNullOrWhiteSpace(textBox.Text))
             {
                 textBox.Text = textBox.Text.Trim();
-
                 if (textBox.Text.Length > 0)
                 {
-                    // Делаем первую букву заглавной, остальные строчные
-                    textBox.Text = char.ToUpper(textBox.Text[0]) +
-                                   textBox.Text.Substring(1).ToLower();
+                    textBox.Text = char.ToUpper(textBox.Text[0]) + textBox.Text.Substring(1).ToLower();
                 }
             }
         }
 
-        // Проверка, является ли символ русской буквой
         private bool IsRussianLetter(char c)
         {
             return (c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё';
         }
 
-        // Фильтрация текста - оставляем только русские буквы, дефис и пробел
         private string FilterRussianOnly(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -1404,40 +1305,14 @@ namespace dump
                     result += c;
                 }
             }
-
             return result;
-        }
-
-        private void tabStatus_Click(object sender, EventArgs e)
-        {
-            // Обработчик клика по вкладке статусов
-        }
-
-        private void EditButton_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void AddButton_Click(object sender, EventArgs e)
         {
-            if (isEditMode)
-            {
-                // Если в режиме редактирования - сохраняем изменения
-                SaveChanges();
-            }
-            else
-            {
-                // Если в режиме добавления - добавляем новую запись
-                AddNewRecord();
-            }
+            AddNewRecord();
         }
 
-        private void buttonDelete_Click(object sender, EventArgs e)
-        {
-            // Обработчик уже добавлен в конструкторе
-        }
-
-        // Дополнительный метод для удаления по нажатию Delete на клавиатуре
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Delete)

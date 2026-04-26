@@ -20,6 +20,27 @@ namespace dump
             panel1.Visible = false;
             buttonUse.Visible = false;
             buttonIssue.Visible = false;
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += ManagerForm_FormClosing;
+        }
+
+        // ОБРАБОТЧИК - при нажатии на крестик
+        private void ManagerForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем LoginForm
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
         }
 
         private void SetupButtonStyles()
@@ -75,25 +96,7 @@ namespace dump
             buttonUse.MouseLeave += (s, e) => buttonUse.FlatAppearance.BorderColor = Color.Black;
         }
 
-        private void pictureBox2_Click(object sender, EventArgs e)
-        {
-            this.Visible = false;
-            LoginForm login = new LoginForm();
-            login.Show();
-        }
-
-        private void ManagerForm_Load(object sender, EventArgs e)
-        {
-            panel1.Visible = false;
-        }
-
-        private void pictureBox3_Click(object sender, EventArgs e)
-        {
-            this.Visible = false;
-            ManagerForm manager = new ManagerForm();
-            manager.Show();
-        }
-
+        // ОБРАБОТЧИК - при открытии панели отключаем ControlBox
         private void buttonCerts_Click(object sender, EventArgs e)
         {
             panel1.Visible = true;
@@ -111,11 +114,37 @@ namespace dump
                 buttonUse.Visible = true;
                 buttonUse.BringToFront();
             }
+
+            // ОТКЛЮЧАЕМ КРЕСТИК ПРИ ОТКРЫТОЙ ПАНЕЛИ
+            this.ControlBox = false;
         }
 
+        // ОБРАБОТЧИК - при закрытии панели включаем ControlBox обратно
         private void btnBackFromPanel_Click(object sender, EventArgs e)
         {
             panel1.Visible = false;
+
+            // ВКЛЮЧАЕМ КРЕСТИК ОБРАТНО
+            this.ControlBox = true;
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            this.Visible = false;
+            LoginForm login = new LoginForm();
+            login.Show();
+        }
+
+        private void ManagerForm_Load(object sender, EventArgs e)
+        {
+            panel1.Visible = false;
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            this.Visible = false;
+            ManagerForm manager = new ManagerForm();
+            manager.Show();
         }
 
         private void buttonOrder_Click(object sender, EventArgs e)

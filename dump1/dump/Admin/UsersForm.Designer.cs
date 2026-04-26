@@ -36,7 +36,6 @@
             this.buttonAdd = new System.Windows.Forms.Button();
             this.buttonEdit = new System.Windows.Forms.Button();
             this.buttonDelete = new System.Windows.Forms.Button();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.labelRecordCount = new System.Windows.Forms.Label();
             this.comboBoxRoleSort = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -55,7 +54,6 @@
             this.textBoxFIO = new System.Windows.Forms.TextBox();
             this.btnResetFilter = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewUsers)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.panelEdit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.buttonCancel)).BeginInit();
             this.SuspendLayout();
@@ -83,9 +81,9 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(60, 62);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(65, 21);
+            this.label2.Size = new System.Drawing.Size(55, 21);
             this.label2.TabIndex = 13;
-            this.label2.Text = "Логин:";
+            this.label2.Text = "ФИО:";
             // 
             // dataGridViewUsers
             // 
@@ -133,18 +131,6 @@
             this.buttonDelete.Text = "Удалить";
             this.buttonDelete.UseVisualStyleBackColor = false;
             this.buttonDelete.Click += new System.EventHandler(this.buttonDelete_Click);
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::dump.Properties.Resources.remove;
-            this.pictureBox2.Location = new System.Drawing.Point(976, 9);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(5);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(41, 33);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 9;
-            this.pictureBox2.TabStop = false;
-            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // labelRecordCount
             // 
@@ -320,7 +306,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1029, 763);
-            this.ControlBox = false;
             this.Controls.Add(this.btnResetFilter);
             this.Controls.Add(this.panelEdit);
             this.Controls.Add(this.label3);
@@ -333,8 +318,8 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.pictureBox2);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5);
             this.MaximizeBox = false;
@@ -343,7 +328,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.UsersForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewUsers)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.panelEdit.ResumeLayout(false);
             this.panelEdit.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.buttonCancel)).EndInit();
@@ -353,8 +337,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBoxSearch;
         private System.Windows.Forms.Label label2;

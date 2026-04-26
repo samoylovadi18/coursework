@@ -15,30 +15,29 @@ namespace dump
         public AdminForm()
         {
             InitializeComponent();
-            button1.FlatStyle = FlatStyle.Flat;
 
+            // Настройка кнопок (ваш существующий код)
+            button1.FlatStyle = FlatStyle.Flat;
             button1.FlatAppearance.BorderSize = 1;
             button1.FlatAppearance.BorderColor = Color.Black;
             button1.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             button1.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
 
-            // Добавляем обработчики для возврата border при отпускании мыши
             button1.MouseDown += (s, e) =>
             {
-                button1.FlatAppearance.BorderColor = Color.DarkBlue; // Темнее при нажатии
+                button1.FlatAppearance.BorderColor = Color.DarkBlue;
             };
 
             button1.MouseUp += (s, e) =>
             {
-                button1.FlatAppearance.BorderColor = Color.Black; // Возвращаем черный
+                button1.FlatAppearance.BorderColor = Color.Black;
             };
             button1.MouseLeave += (s, e) =>
             {
-                button1.FlatAppearance.BorderColor = Color.Black; // Возвращаем черный при уходе мыши
+                button1.FlatAppearance.BorderColor = Color.Black;
             };
 
             button2.FlatStyle = FlatStyle.Flat;
-
             button2.FlatAppearance.BorderSize = 1;
             button2.FlatAppearance.BorderColor = Color.Black;
             button2.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
@@ -58,9 +57,7 @@ namespace dump
                 button2.FlatAppearance.BorderColor = Color.Black;
             };
 
-
             button3.FlatStyle = FlatStyle.Flat;
-
             button3.FlatAppearance.BorderSize = 1;
             button3.FlatAppearance.BorderColor = Color.Black;
             button3.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
@@ -81,7 +78,6 @@ namespace dump
             };
 
             button4.FlatStyle = FlatStyle.Flat;
-
             button4.FlatAppearance.BorderSize = 1;
             button4.FlatAppearance.BorderColor = Color.Black;
             button4.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
@@ -100,27 +96,44 @@ namespace dump
             {
                 button4.FlatAppearance.BorderColor = Color.Black;
             };
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += AdminForm_FormClosing;
+        }
+
+        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
+        private void AdminForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем LoginForm
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
         }
 
         private void AdminForm_Load(object sender, EventArgs e)
         {
-    
+
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
             UsersForm users = new UsersForm();
             users.Show();
         }
 
-
-
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
             LoginForm login = new LoginForm();
             login.Show();
         }
@@ -128,24 +141,20 @@ namespace dump
         private void button3_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
             OrdersForm Orders = new OrdersForm();
             Orders.Show();
         }
 
-
         private void button4_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
-            AdminMenu adminMenu = new AdminMenu("admin");
+            AdminMenu adminMenu = new AdminMenu();
             adminMenu.Show();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
             Spravochnici Spravochnic = new Spravochnici();
             Spravochnic.Show();
         }
@@ -153,7 +162,6 @@ namespace dump
         private void button5_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-
             ImportRestoreForm import = new ImportRestoreForm();
             import.Show();
         }

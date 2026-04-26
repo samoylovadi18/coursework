@@ -43,6 +43,27 @@ namespace dump
         {
             InitializeComponent();
             InitializeComponents();
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += OrdersForm_FormClosing;
+        }
+
+        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
+        private void OrdersForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем AdminForm
+                AdminForm admin = new AdminForm();
+                admin.Show();
+            }
         }
 
         private void InitializeComponents()

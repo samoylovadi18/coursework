@@ -25,16 +25,7 @@ namespace dump
             this.Load += DirectorForm_Load;
 
             // Настройка стилей для кнопок
-            SetupButtonStyles();
-            buttonMenu.FlatStyle = FlatStyle.Flat;
-            buttonMenu.FlatAppearance.BorderSize = 1;
-            buttonMenu.FlatAppearance.BorderColor = Color.Black;
-            buttonMenu.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonMenu.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonMenu.MouseDown += (s, e) => buttonMenu.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonMenu.MouseUp += (s, e) => buttonMenu.FlatAppearance.BorderColor = Color.Black;
-            buttonMenu.MouseLeave += (s, e) => buttonMenu.FlatAppearance.BorderColor = Color.Black;
+            SetupButtonStyles();  
         }
 
         private void SetupButtonStyles()
@@ -171,9 +162,12 @@ namespace dump
 
         private void buttonMenu_Click(object sender, EventArgs e)
         {
-            this.Visible = false;
-            AdminMenu directorMenu = new AdminMenu("director");
-            directorMenu.Show();
+           
+        }
+
+        private void panelStatistics_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

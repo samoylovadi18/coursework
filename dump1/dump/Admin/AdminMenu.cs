@@ -21,7 +21,6 @@ namespace dump
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
         private bool isFormatting = false;
         private Image defaultImage;
-        private string userRole;
 
         private byte[] currentDishPhotoBytes = null;
         private string currentPhotoHash = "";
@@ -38,10 +37,9 @@ namespace dump
         private bool isFormattingSearch = false;
         private Dictionary<string, int> categoryDictionary = new Dictionary<string, int>();
 
-        public AdminMenu(string role)
+        public AdminMenu()
         {
             InitializeComponent();
-            userRole = role;
 
             CreateDefaultImage();
             InitializeButtonStyles();
@@ -51,8 +49,6 @@ namespace dump
             HideEditPanel();
             InitializeEditPanelAppearance();
             SetupValidationTextBoxes();
-
-            ApplyRoleBasedVisibility();
 
             btnAdd.Click += AddButton_Click;
             btnEdit.Click += EditButton_Click;
@@ -67,27 +63,26 @@ namespace dump
 
             btnCancel.Text = "Отмена";
             btnCancel.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += AdminMenu_FormClosing;
         }
 
-        private void ApplyRoleBasedVisibility()
+        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
+        private void AdminMenu_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (userRole == "director")
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
             {
-                btnAdd.Visible = false;
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                btnUploadPhoto.Visible = false;
-                btnDeletePhoto.Visible = false;
-                this.Text = "Просмотр меню (Режим директора)";
-            }
-            else
-            {
-                btnAdd.Visible = true;
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                btnUploadPhoto.Visible = true;
-                btnDeletePhoto.Visible = true;
-                this.Text = "Управление меню (Режим администратора)";
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем AdminForm
+                AdminForm admin = new AdminForm();
+                admin.Show();
             }
         }
 
@@ -650,7 +645,6 @@ namespace dump
             SetupButtonStyle(buttonReset);
             SetupButtonStyle(btnUploadPhoto);
             SetupButtonStyle(btnDeletePhoto);
- 
         }
 
         private void SetupButtonStyle(Button button)
@@ -1060,10 +1054,8 @@ namespace dump
             }
         }
 
-        // ИСПРАВЛЕННЫЙ МЕТОД CancelButton_Click
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            // Проверяем, есть ли несохраненные изменения
             if (HasChanges())
             {
                 DialogResult result = MessageBox.Show(
@@ -1074,19 +1066,15 @@ namespace dump
 
                 if (result == DialogResult.Yes)
                 {
-                    // Сохраняем и закрываем
                     SaveDish();
                 }
                 else if (result == DialogResult.No)
                 {
-                    // Не сохраняем, просто закрываем панель
                     HideEditPanel();
                 }
-                // Если Cancel - ничего не делаем, остаемся в режиме редактирования
             }
             else
             {
-                // Изменений нет - просто закрываем панель
                 HideEditPanel();
             }
         }
@@ -1140,16 +1128,8 @@ namespace dump
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
-            if (userRole == "admin")
-            {
-                AdminForm admin = new AdminForm();
-                admin.Show();
-            }
-            else
-            {
-                DirectorForm director = new DirectorForm();
-                director.Show();
-            }
+            AdminForm admin = new AdminForm();
+            admin.Show();
         }
 
         private void AdminMenu_Load(object sender, EventArgs e)

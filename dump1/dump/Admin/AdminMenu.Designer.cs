@@ -25,7 +25,6 @@
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.comboCategoryFilter = new System.Windows.Forms.ComboBox();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnEdit = new System.Windows.Forms.Button();
@@ -51,7 +50,6 @@
             this.buttonReset = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDishes)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.panelEditDish.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbDishPhoto)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnCancel)).BeginInit();
@@ -97,18 +95,6 @@
             this.label2.Size = new System.Drawing.Size(130, 21);
             this.label2.TabIndex = 26;
             this.label2.Text = "Наименование:";
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::dump.Properties.Resources.remove;
-            this.pictureBox2.Location = new System.Drawing.Point(1142, 9);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(5);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(41, 33);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 25;
-            this.pictureBox2.TabStop = false;
-            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click_1);
             // 
             // comboCategoryFilter
             // 
@@ -348,7 +334,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1227, 842);
-            this.ControlBox = false;
             this.Controls.Add(this.label3);
             this.Controls.Add(this.buttonReset);
             this.Controls.Add(this.panelEditDish);
@@ -357,11 +342,11 @@
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.comboCategoryFilter);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.dgvDishes);
             this.Controls.Add(this.txtSearch);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5);
             this.MaximizeBox = false;
@@ -372,7 +357,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.AdminMenu_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDishes)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.panelEditDish.ResumeLayout(false);
             this.panelEditDish.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbDishPhoto)).EndInit();
@@ -383,8 +367,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.DataGridView dgvDishes;
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.Label label1;

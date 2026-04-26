@@ -27,7 +27,7 @@ namespace dump
 
         private string allowedSpecialChars = "!@#$%^&*()_-+=[]{}|;:'\",.<>?/`~";
         private bool isFormattingFIO = false;
-        private bool isFormattingSearch = false; // Флаг для форматирования поиска
+        private bool isFormattingSearch = false;
         private System.Windows.Forms.ToolTip toolTip1;
 
         private void InitializeEditPanelAppearance()
@@ -73,6 +73,27 @@ namespace dump
             LoadRolesForFilter();
 
             dataGridViewUsers.SelectionChanged += DataGridViewUsers_SelectionChanged;
+
+            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
+            this.FormClosing += UsersForm_FormClosing;
+        }
+
+        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
+        private void UsersForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие не было вызвано из кода
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем AdminForm
+                AdminForm admin = new AdminForm();
+                admin.Show();
+            }
         }
 
         private void InitializeInputValidation()

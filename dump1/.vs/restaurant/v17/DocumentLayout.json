@@ -3,24 +3,48 @@
   "WorkspaceRootPath": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\manager\\managerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\manager\\managerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\manager\\managerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\manager\\managerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\director\\certificatestatisticsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\director\\certificatestatisticsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\spravochnici.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\spravochnici.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\spravochnici.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\spravochnici.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\spravochnici.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\spravochnici.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\adminmenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\adminmenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\adminmenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\adminmenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\adminmenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\ordersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\adminmenu.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\adminmenu.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\adminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -31,11 +55,11 @@
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\adminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\usersform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -43,28 +67,8 @@
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\currentuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\currentuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\loginform\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\sisadminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\sisadminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|c:\\users\\karta\\onedrive\\\u0440\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0434\u0438\u043F\u043B\u043E\u043C\\coursework\\dump1\\dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\director\\directorform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -73,6 +77,30 @@
     {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\director\\directorform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\director\\directorform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\adminmenu.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\adminmenu.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\currentuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\currentuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\admin\\importrestoreform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\sisadminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\sisadminform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|solutionrelative:dump\\loginform\\settingsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8B72259E-2340-4743-87C3-45DE978A2595}|dump\\restaurant.csproj|C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\loginform\\captchaform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -106,7 +134,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -122,13 +150,100 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ManagerForm.cs",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\ManagerForm.cs",
+              "RelativeDocumentMoniker": "dump\\Manager\\ManagerForm.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\ManagerForm.cs",
+              "RelativeToolTip": "dump\\Manager\\ManagerForm.cs",
+              "ViewState": "AgIAAJUAAAAAAAAAAAAwwKIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T20:14:35.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ManagerForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\ManagerForm.cs",
+              "RelativeDocumentMoniker": "dump\\Manager\\ManagerForm.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\ManagerForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "dump\\Manager\\ManagerForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T20:14:32.079Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "CertificateStatisticsForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\CertificateStatisticsForm.cs",
+              "RelativeDocumentMoniker": "dump\\Director\\CertificateStatisticsForm.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\CertificateStatisticsForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "dump\\Director\\CertificateStatisticsForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T20:13:52.006Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Spravochnici.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.Designer.cs",
+              "RelativeDocumentMoniker": "dump\\Admin\\Spravochnici.Designer.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.Designer.cs",
+              "RelativeToolTip": "dump\\Admin\\Spravochnici.Designer.cs",
+              "ViewState": "AgIAAB8BAAAAAAAAAAAAACoBAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T20:11:31.723Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Spravochnici.cs",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.cs",
+              "RelativeDocumentMoniker": "dump\\Admin\\Spravochnici.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.cs",
+              "RelativeToolTip": "dump\\Admin\\Spravochnici.cs",
+              "ViewState": "AgIAAB4FAAAAAAAAAADwvy0FAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T19:45:51.551Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ImportRestoreForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\ImportRestoreForm.cs",
+              "RelativeDocumentMoniker": "dump\\Admin\\ImportRestoreForm.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\ImportRestoreForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "dump\\Admin\\ImportRestoreForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T19:37:31.408Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Spravochnici.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.cs",
+              "RelativeDocumentMoniker": "dump\\Admin\\Spravochnici.cs",
+              "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\Spravochnici.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "dump\\Admin\\Spravochnici.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-26T19:37:27.016Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "OrdersForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\OrdersForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\OrdersForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\OrdersForm.cs",
               "RelativeToolTip": "dump\\Admin\\OrdersForm.cs",
-              "ViewState": "AgIAAP8EAAAAAAAAAIA2wA0FAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAACoFAAAAAAAAAAAiwD4FAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-23T18:47:21.099Z",
               "EditorCaption": ""
@@ -147,7 +262,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 19,
               "Title": "AdminMenu.Designer.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminMenu.Designer.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\AdminMenu.Designer.cs",
@@ -160,20 +275,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 9,
               "Title": "AdminMenu.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminMenu.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\AdminMenu.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminMenu.cs",
               "RelativeToolTip": "dump\\Admin\\AdminMenu.cs",
-              "ViewState": "AgIAAHsEAAAAAAAAAAAjwIwEAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAHgCAAAAAAAAAAAUwH4CAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-23T18:23:52.777Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 10,
               "Title": "AdminMenu.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminMenu.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\AdminMenu.cs",
@@ -185,20 +300,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 14,
               "Title": "UsersForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\UsersForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\UsersForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\UsersForm.cs",
               "RelativeToolTip": "dump\\Admin\\UsersForm.cs",
-              "ViewState": "AgIAAIEEAAAAAAAAAAAowI8EAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANMEAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-23T18:05:22.232Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 21,
               "Title": "ImportRestoreForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\ImportRestoreForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\ImportRestoreForm.cs",
@@ -211,7 +326,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 20,
               "Title": "CurrentUser.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\CurrentUser.cs",
               "RelativeDocumentMoniker": "dump\\CurrentUser.cs",
@@ -219,37 +334,35 @@
               "RelativeToolTip": "dump\\CurrentUser.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABIAAABqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T17:59:01.078Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T17:59:01.078Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 22,
               "Title": "SisAdminForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\SisAdminForm.cs",
               "RelativeDocumentMoniker": "dump\\SisAdminForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\SisAdminForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "RelativeToolTip": "dump\\SisAdminForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T17:57:41.208Z",
-              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+              "WhenOpened": "2026-04-23T17:57:41.208Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 11,
               "Title": "AdminForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\AdminForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminForm.cs",
               "RelativeToolTip": "dump\\Admin\\AdminForm.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAQwGoAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAAD4v3sAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-21T20:58:03.103Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 12,
               "Title": "AdminForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\AdminForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\AdminForm.cs",
@@ -261,30 +374,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "DirectorForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\DirectorForm.cs",
               "RelativeDocumentMoniker": "dump\\Director\\DirectorForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\DirectorForm.cs",
               "RelativeToolTip": "dump\\Director\\DirectorForm.cs",
-              "ViewState": "AgIAAGQAAAAAAAAAAAAAwGkAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAJoAAAAAAAAAAAA6wKQAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T20:57:51.343Z"
+              "WhenOpened": "2026-04-21T20:57:51.343Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "DirectorForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\DirectorForm.cs",
               "RelativeDocumentMoniker": "dump\\Director\\DirectorForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Director\\DirectorForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "RelativeToolTip": "dump\\Director\\DirectorForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T20:57:48.766Z"
+              "WhenOpened": "2026-04-21T20:57:48.766Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 27,
               "Title": "SettingsForm.Designer.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\SettingsForm.Designer.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\SettingsForm.Designer.cs",
@@ -296,7 +411,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
               "Title": "UsersForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Admin\\UsersForm.cs",
               "RelativeDocumentMoniker": "dump\\Admin\\UsersForm.cs",
@@ -308,7 +423,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 23,
               "Title": "SettingsForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\SettingsForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\SettingsForm.cs",
@@ -316,12 +431,11 @@
               "RelativeToolTip": "dump\\LoginForm\\SettingsForm.cs",
               "ViewState": "AgIAADgAAAAAAAAAAAAIwDsAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T20:24:56.982Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T20:24:56.982Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 28,
               "Title": "SettingsBD.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\SettingsBD.cs",
               "RelativeDocumentMoniker": "dump\\SettingsBD.cs",
@@ -333,7 +447,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 24,
               "Title": "SettingsForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\SettingsForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\SettingsForm.cs",
@@ -344,7 +458,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 25,
               "Title": "CaptchaForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\CaptchaForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\CaptchaForm.cs",
@@ -356,20 +470,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 16,
               "Title": "LoginForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\LoginForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\LoginForm.cs",
               "ToolTip": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\LoginForm.cs",
               "RelativeToolTip": "dump\\LoginForm\\LoginForm.cs",
-              "ViewState": "AgIAAI0BAAAAAAAAAAAwwL8BAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAGgCAAAAAAAAAADgv3cCAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-20T21:56:19.311Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 15,
               "Title": "LoginForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\LoginForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\LoginForm.cs",
@@ -381,7 +495,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 26,
               "Title": "CaptchaForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\LoginForm\\CaptchaForm.cs",
               "RelativeDocumentMoniker": "dump\\LoginForm\\CaptchaForm.cs",
@@ -392,7 +506,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 29,
               "Title": "AddSertificateForm.cs",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\AddSertificateForm.cs",
               "RelativeDocumentMoniker": "dump\\Manager\\AddSertificateForm.cs",
@@ -404,7 +518,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 30,
               "Title": "AddSertificateForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
               "DocumentMoniker": "C:\\Users\\karta\\OneDrive\\\u0420\u0430\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u043E\u043B\\\u0414\u0418\u041F\u041B\u041E\u041C\\coursework\\dump1\\dump\\Manager\\AddSertificateForm.cs",
               "RelativeDocumentMoniker": "dump\\Manager\\AddSertificateForm.cs",
