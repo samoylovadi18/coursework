@@ -20,12 +20,10 @@ namespace dump
         private Image defaultImage;
         private List<CartItem> cartItems = new List<CartItem>();
 
-        // Поля для подарков
         private List<Gift> giftsList = new List<Gift>();
         private List<CartGift> cartGifts = new List<CartGift>();
         private bool isGiftAdded = false;
 
-        // Цвета для единого стиля
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
         private Color selectionColor = Color.FromArgb(233, 242, 236);
         private Color buttonColor = Color.DarkSeaGreen;
@@ -48,6 +46,7 @@ namespace dump
             SetupButtonStyles();
             this.FormClosing += Menu_FormClosing;
         }
+
         private void Menu_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -58,7 +57,7 @@ namespace dump
                 manager.Show();
             }
         }
-        // Класс подарка из базы
+
         public class Gift
         {
             public int Id_present { get; set; }
@@ -66,7 +65,6 @@ namespace dump
             public decimal FromPrice { get; set; }
         }
 
-        // Класс подарка в корзине
         public class CartGift
         {
             public int Id_present { get; set; }
@@ -134,7 +132,6 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
-        // Загрузка подарков
         private void LoadGiftsFromDatabase()
         {
             try
@@ -165,7 +162,6 @@ namespace dump
             }
         }
 
-        // Обновление подарка
         private void UpdateGift()
         {
             decimal total = cartItems.Sum(item => item.Price * item.Quantity);
@@ -580,7 +576,6 @@ namespace dump
 
             dataGridView1.Columns.Clear();
 
-            // Колонка для фото
             DataGridViewImageColumn colPhoto = new DataGridViewImageColumn();
             colPhoto.Name = "Photo";
             colPhoto.HeaderText = "Фото";
@@ -591,7 +586,6 @@ namespace dump
             colPhoto.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridView1.Columns.Add(colPhoto);
 
-            // Колонка для названия
             DataGridViewTextBoxColumn colName = new DataGridViewTextBoxColumn();
             colName.Name = "Name";
             colName.HeaderText = "Название";
@@ -602,7 +596,6 @@ namespace dump
             colName.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.Columns.Add(colName);
 
-            // Колонка для состава
             DataGridViewTextBoxColumn colCompound = new DataGridViewTextBoxColumn();
             colCompound.Name = "Compound";
             colCompound.HeaderText = "Состав";
@@ -613,7 +606,6 @@ namespace dump
             colCompound.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.Columns.Add(colCompound);
 
-            // Колонка для цены
             DataGridViewTextBoxColumn colPrice = new DataGridViewTextBoxColumn();
             colPrice.Name = "Price";
             colPrice.HeaderText = "Цена";
@@ -625,7 +617,6 @@ namespace dump
             colPrice.DefaultCellStyle.ForeColor = Color.DarkGreen;
             dataGridView1.Columns.Add(colPrice);
 
-            // Колонка для веса
             DataGridViewTextBoxColumn colWeight = new DataGridViewTextBoxColumn();
             colWeight.Name = "WeightVolume";
             colWeight.HeaderText = "Вес/Объем";
@@ -701,7 +692,7 @@ namespace dump
         private void InitializeComponent()
         {
             this.Text = "";
-            this.Size = new Size(900, 650);
+            this.Size = new Size(950, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.Font = new Font("Times New Roman", 12, FontStyle.Regular);
@@ -715,7 +706,7 @@ namespace dump
             lblTitle.Text = "СОСТАВ ЗАКАЗА";
             lblTitle.Font = new Font("Times New Roman", 18, FontStyle.Bold);
             lblTitle.Size = new Size(250, 35);
-            lblTitle.Location = new Point(325, 20);
+            lblTitle.Location = new Point(350, 20);
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
@@ -729,7 +720,7 @@ namespace dump
             txtOrderNum = new TextBox();
             txtOrderNum.Font = new Font("Times New Roman", 12);
             txtOrderNum.Location = new Point(160, 67);
-            txtOrderNum.Size = new Size(200, 30);
+            txtOrderNum.Size = new Size(250, 30);
             txtOrderNum.ReadOnly = true;
             txtOrderNum.BackColor = Color.LightGray;
             this.Controls.Add(txtOrderNum);
@@ -737,13 +728,13 @@ namespace dump
             lblDate = new Label();
             lblDate.Text = "Дата:";
             lblDate.Font = new Font("Times New Roman", 12);
-            lblDate.Location = new Point(400, 70);
+            lblDate.Location = new Point(450, 70);
             lblDate.Size = new Size(50, 25);
             this.Controls.Add(lblDate);
 
             dtpDate = new DateTimePicker();
             dtpDate.Font = new Font("Times New Roman", 12);
-            dtpDate.Location = new Point(460, 67);
+            dtpDate.Location = new Point(510, 67);
             dtpDate.Size = new Size(150, 30);
             dtpDate.Value = DateTime.Now;
             dtpDate.Enabled = false;
@@ -751,7 +742,7 @@ namespace dump
 
             panelButtons = new Panel();
             panelButtons.Location = new Point(50, 110);
-            panelButtons.Size = new Size(800, 80);
+            panelButtons.Size = new Size(850, 80);
             panelButtons.BackColor = Color.FromArgb(240, 240, 240);
             this.Controls.Add(panelButtons);
 
@@ -790,12 +781,12 @@ namespace dump
             lblSelectHint.Font = new Font("Times New Roman", 10);
             lblSelectHint.ForeColor = Color.Gray;
             lblSelectHint.Location = new Point(10, 45);
-            lblSelectHint.Size = new Size(600, 25);
+            lblSelectHint.Size = new Size(400, 25);
             panelButtons.Controls.Add(lblSelectHint);
 
             dgvCart = new DataGridView();
             dgvCart.Location = new Point(50, 200);
-            dgvCart.Size = new Size(800, 300);
+            dgvCart.Size = new Size(850, 350);
             dgvCart.BackgroundColor = Color.White;
             dgvCart.AllowUserToAddRows = false;
             dgvCart.AllowUserToDeleteRows = false;
@@ -809,13 +800,13 @@ namespace dump
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
             lblTotal.Font = new Font("Times New Roman", 16, FontStyle.Bold);
-            lblTotal.Location = new Point(600, 520);
+            lblTotal.Location = new Point(650, 570);
             lblTotal.Size = new Size(100, 35);
             this.Controls.Add(lblTotal);
 
             lblTotalValue = new Label();
             lblTotalValue.Font = new Font("Times New Roman", 16, FontStyle.Bold);
-            lblTotalValue.Location = new Point(700, 520);
+            lblTotalValue.Location = new Point(750, 570);
             lblTotalValue.Size = new Size(150, 35);
             lblTotalValue.ForeColor = Color.Red;
             this.Controls.Add(lblTotalValue);
@@ -823,15 +814,15 @@ namespace dump
             btnContinue = new Button();
             btnContinue.Text = "Далее";
             btnContinue.Font = new Font("Times New Roman", 12);
-            btnContinue.Size = new Size(120, 45);
-            btnContinue.Location = new Point(600, 570);
+            btnContinue.Size = new Size(140, 45);
+            btnContinue.Location = new Point(650, 620);
             this.Controls.Add(btnContinue);
 
             btnBack = new Button();
             btnBack.Text = "Назад";
             btnBack.Font = new Font("Times New Roman", 12);
-            btnBack.Size = new Size(120, 45);
-            btnBack.Location = new Point(200, 570);
+            btnBack.Size = new Size(140, 45);
+            btnBack.Location = new Point(160, 620);
             btnBack.Click += (s, e) => {
                 this.Close();
                 new Menu().Show();
@@ -1214,8 +1205,6 @@ namespace dump
         private DateTimePicker dtpDate;
         private Label lblTime;
         private DateTimePicker dtpTime;
-        private Label lblClientName;
-        private TextBox txtClientName;
         private Label lblPhone;
         private MaskedTextBox mtxtPhone;
         private Label lblPersons;
@@ -1235,6 +1224,20 @@ namespace dump
         private Button btnSave;
         private Button btnBack;
 
+        private GroupBox grbCertificate;
+        private RadioButton rbCertificate;
+        private TextBox txtCertificateNumber;
+        private Button btnCheckCertificate;
+        private Button btnCancelCertificate;
+        private Label lblCertificateAmount;
+
+        private decimal orderTotal = 0;
+        private decimal certificateRemainingAmount = 0;
+        private decimal remainingToPay = 0;
+        private int certificateId = -1;
+        private bool isCertificateValid = false;
+        private bool isPartialPayment = false;
+
         private string orderNumber;
         private List<Menu.CartItem> cartItems;
         private List<Menu.CartGift> cartGifts;
@@ -1242,7 +1245,6 @@ namespace dump
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
         private Color selectionColor = Color.FromArgb(233, 242, 236);
         private Color buttonColor = Color.DarkSeaGreen;
-        private bool isFormatting = false;
         private System.Windows.Forms.Timer updateTimer;
 
         public OrderDetailsForm(string orderNum, List<Menu.CartItem> items, List<Menu.CartGift> gifts)
@@ -1250,16 +1252,13 @@ namespace dump
             orderNumber = orderNum;
             cartItems = items;
             cartGifts = gifts;
+            orderTotal = cartItems.Sum(i => i.Price * i.Quantity);
             InitializeComponent();
             LoadOrderItems();
             CalculateTotal();
             StyleButtons();
 
-            txtClientName.KeyPress += TxtClientName_KeyPress;
-            txtClientName.TextChanged += TxtClientName_TextChanged;
-            txtClientName.Leave += TxtClientName_Leave;
             btnSave.Click += BtnSave_Click;
-
             SetupTimeRestrictions();
             this.ControlBox = false;
             this.Text = "";
@@ -1349,7 +1348,7 @@ namespace dump
         private void InitializeComponent()
         {
             this.Text = "";
-            this.Size = new Size(950, 750);
+            this.Size = new Size(1000, 830);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.Font = new Font("Times New Roman", 12, FontStyle.Regular);
@@ -1363,10 +1362,11 @@ namespace dump
             lblTitle.Text = "ДЕТАЛИ ЗАКАЗА";
             lblTitle.Font = new Font("Times New Roman", 20, FontStyle.Bold);
             lblTitle.Size = new Size(300, 40);
-            lblTitle.Location = new Point(325, 20);
+            lblTitle.Location = new Point(350, 20);
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
+            // Первая строка
             lblOrderNum = new Label();
             lblOrderNum.Text = "Заказ №:";
             lblOrderNum.Font = new Font("Times New Roman", 12, FontStyle.Bold);
@@ -1378,7 +1378,7 @@ namespace dump
             txtOrderNum.Text = orderNumber;
             txtOrderNum.Font = new Font("Times New Roman", 12);
             txtOrderNum.Location = new Point(140, 77);
-            txtOrderNum.Size = new Size(220, 30);
+            txtOrderNum.Size = new Size(250, 30);
             txtOrderNum.ReadOnly = true;
             txtOrderNum.BackColor = Color.LightGray;
             this.Controls.Add(txtOrderNum);
@@ -1386,13 +1386,13 @@ namespace dump
             lblDate = new Label();
             lblDate.Text = "Дата:";
             lblDate.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblDate.Location = new Point(400, 80);
+            lblDate.Location = new Point(420, 80);
             lblDate.Size = new Size(50, 25);
             this.Controls.Add(lblDate);
 
             dtpDate = new DateTimePicker();
             dtpDate.Font = new Font("Times New Roman", 12);
-            dtpDate.Location = new Point(460, 77);
+            dtpDate.Location = new Point(480, 77);
             dtpDate.Size = new Size(120, 30);
             dtpDate.Value = DateTime.Now;
             dtpDate.MinDate = DateTime.Now.Date;
@@ -1402,75 +1402,122 @@ namespace dump
             lblTime = new Label();
             lblTime.Text = "Время:";
             lblTime.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblTime.Location = new Point(600, 80);
+            lblTime.Location = new Point(630, 80);
             lblTime.Size = new Size(60, 25);
             this.Controls.Add(lblTime);
 
             dtpTime = new DateTimePicker();
             dtpTime.Font = new Font("Times New Roman", 12);
-            dtpTime.Location = new Point(670, 77);
+            dtpTime.Location = new Point(700, 77);
             dtpTime.Size = new Size(100, 30);
             dtpTime.Format = DateTimePickerFormat.Custom;
             dtpTime.CustomFormat = "HH:mm";
             dtpTime.ShowUpDown = true;
             this.Controls.Add(dtpTime);
 
-            lblClientName = new Label();
-            lblClientName.Text = "ФИО клиента:";
-            lblClientName.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblClientName.Location = new Point(50, 130);
-            lblClientName.Size = new Size(110, 25);
-            this.Controls.Add(lblClientName);
-
-            txtClientName = new TextBox();
-            txtClientName.Font = new Font("Times New Roman", 12);
-            txtClientName.Location = new Point(170, 127);
-            txtClientName.Size = new Size(350, 30);
-            txtClientName.MaxLength = 100;
-            this.Controls.Add(txtClientName);
-
+            // Вторая строка - Телефон и персоны
             lblPhone = new Label();
             lblPhone.Text = "Телефон:";
             lblPhone.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblPhone.Location = new Point(50, 180);
+            lblPhone.Location = new Point(50, 130);
             lblPhone.Size = new Size(80, 25);
             this.Controls.Add(lblPhone);
 
             mtxtPhone = new MaskedTextBox();
             mtxtPhone.Mask = "+7 (999) 000-00-00";
             mtxtPhone.Font = new Font("Times New Roman", 12);
-            mtxtPhone.Location = new Point(140, 177);
+            mtxtPhone.Location = new Point(140, 127);
             mtxtPhone.Size = new Size(220, 30);
             this.Controls.Add(mtxtPhone);
 
             lblPersons = new Label();
             lblPersons.Text = "Кол-во персон:";
             lblPersons.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblPersons.Location = new Point(450, 180);
-            lblPersons.Size = new Size(130, 25);
+            lblPersons.Location = new Point(420, 130);
+            lblPersons.Size = new Size(120, 25);
             this.Controls.Add(lblPersons);
 
             cmbPersons = new ComboBox();
             cmbPersons.Font = new Font("Times New Roman", 12);
-            cmbPersons.Location = new Point(590, 177);
+            cmbPersons.Location = new Point(550, 127);
             cmbPersons.Size = new Size(80, 30);
             cmbPersons.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPersons.Items.AddRange(new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
             cmbPersons.SelectedIndex = 0;
             this.Controls.Add(cmbPersons);
 
+            // ГРУППА ОПЛАТЫ СЕРТИФИКАТОМ
+            grbCertificate = new GroupBox();
+            grbCertificate.Text = "Оплата сертификатом";
+            grbCertificate.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            grbCertificate.Size = new Size(900, 120);
+            grbCertificate.Location = new Point(50, 180);
+            grbCertificate.BackColor = Color.FromArgb(255, 255, 220);
+            this.Controls.Add(grbCertificate);
+
+            rbCertificate = new RadioButton();
+            rbCertificate.Text = "Оплатить сертификатом";
+            rbCertificate.Font = new Font("Times New Roman", 11);
+            rbCertificate.Location = new Point(15, 25);
+            rbCertificate.Size = new Size(180, 25);
+            rbCertificate.CheckedChanged += RbCertificate_CheckedChanged;
+            grbCertificate.Controls.Add(rbCertificate);
+
+            Label lblCertNum = new Label();
+            lblCertNum.Text = "Номер сертификата:";
+            lblCertNum.Font = new Font("Times New Roman", 10);
+            lblCertNum.Location = new Point(15, 55);
+            lblCertNum.Size = new Size(130, 25);
+            grbCertificate.Controls.Add(lblCertNum);
+
+            txtCertificateNumber = new TextBox();
+            txtCertificateNumber.Font = new Font("Times New Roman", 10);
+            txtCertificateNumber.Location = new Point(150, 55);
+            txtCertificateNumber.Size = new Size(120, 25);
+            txtCertificateNumber.Enabled = false;
+            txtCertificateNumber.KeyPress += TxtCertificateNumber_KeyPress;
+            grbCertificate.Controls.Add(txtCertificateNumber);
+
+            btnCheckCertificate = new Button();
+            btnCheckCertificate.Text = "Проверить";
+            btnCheckCertificate.Font = new Font("Times New Roman", 9);
+            btnCheckCertificate.Size = new Size(80, 25);
+            btnCheckCertificate.Location = new Point(280, 55);
+            btnCheckCertificate.Enabled = false;
+            btnCheckCertificate.Click += BtnCheckCertificate_Click;
+            grbCertificate.Controls.Add(btnCheckCertificate);
+
+            btnCancelCertificate = new Button();
+            btnCancelCertificate.Text = "Отменить оплату сертификатом";
+            btnCancelCertificate.Font = new Font("Times New Roman", 9);
+            btnCancelCertificate.Size = new Size(200, 25);
+            btnCancelCertificate.Location = new Point(380, 55);
+            btnCancelCertificate.Enabled = false;
+            btnCancelCertificate.BackColor = Color.LightCoral;
+            btnCancelCertificate.Click += BtnCancelCertificate_Click;
+            grbCertificate.Controls.Add(btnCancelCertificate);
+
+            lblCertificateAmount = new Label();
+            lblCertificateAmount.Text = "";
+            lblCertificateAmount.Font = new Font("Times New Roman", 9);
+            lblCertificateAmount.ForeColor = Color.Blue;
+            lblCertificateAmount.Location = new Point(15, 88);
+            lblCertificateAmount.Size = new Size(860, 25);
+            grbCertificate.Controls.Add(lblCertificateAmount);
+
+            // СПОСОБ ПОЛУЧЕНИЯ
             grbDelivery = new GroupBox();
             grbDelivery.Text = "Способ получения";
             grbDelivery.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            grbDelivery.Size = new Size(830, 110);
-            grbDelivery.Location = new Point(50, 230);
+            grbDelivery.Size = new Size(900, 100);
+            grbDelivery.Location = new Point(50, 320);
             grbDelivery.BackColor = Color.FromArgb(240, 240, 240);
             this.Controls.Add(grbDelivery);
 
             rbDelivery = new RadioButton();
             rbDelivery.Text = "Доставка";
             rbDelivery.Font = new Font("Times New Roman", 12);
-            rbDelivery.Location = new Point(30, 35);
+            rbDelivery.Location = new Point(30, 30);
             rbDelivery.Size = new Size(100, 30);
             rbDelivery.Checked = true;
             rbDelivery.CheckedChanged += RbDelivery_CheckedChanged;
@@ -1479,86 +1526,89 @@ namespace dump
             rbPickup = new RadioButton();
             rbPickup.Text = "Самовывоз";
             rbPickup.Font = new Font("Times New Roman", 12);
-            rbPickup.Location = new Point(160, 35);
+            rbPickup.Location = new Point(160, 30);
             rbPickup.Size = new Size(110, 30);
             grbDelivery.Controls.Add(rbPickup);
 
             lblAddress = new Label();
             lblAddress.Text = "Адрес:";
             lblAddress.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblAddress.Location = new Point(30, 70);
+            lblAddress.Location = new Point(30, 65);
             lblAddress.Size = new Size(70, 25);
             grbDelivery.Controls.Add(lblAddress);
 
             txtAddress = new TextBox();
             txtAddress.Font = new Font("Times New Roman", 12);
-            txtAddress.Location = new Point(110, 67);
-            txtAddress.Size = new Size(600, 30);
+            txtAddress.Location = new Point(110, 62);
+            txtAddress.Size = new Size(700, 30);
             grbDelivery.Controls.Add(txtAddress);
 
+            // ОПЛАТА
             lblPayment = new Label();
-            lblPayment.Text = "Вид оплаты:";
-            lblPayment.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblPayment.Location = new Point(50, 360);
-            lblPayment.Size = new Size(110, 25);
+            lblPayment.Text = "Выберите способ оплаты для доплаты (если требуется):";
+            lblPayment.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            lblPayment.Location = new Point(50, 440);
+            lblPayment.Size = new Size(400, 25);
             this.Controls.Add(lblPayment);
 
             cmbPayment = new ComboBox();
-            cmbPayment.Font = new Font("Times New Roman", 12);
-            cmbPayment.Location = new Point(170, 357);
+            cmbPayment.Font = new Font("Times New Roman", 11);
+            cmbPayment.Location = new Point(470, 437);
             cmbPayment.Size = new Size(220, 30);
             cmbPayment.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPayment.Items.AddRange(new string[] { "Наличные", "Карта", "Перевод" });
             cmbPayment.SelectedIndex = 0;
+            cmbPayment.Enabled = false;
             this.Controls.Add(cmbPayment);
 
             lblComment = new Label();
             lblComment.Text = "Комментарий:";
             lblComment.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblComment.Location = new Point(50, 410);
+            lblComment.Location = new Point(50, 490);
             lblComment.Size = new Size(110, 25);
             this.Controls.Add(lblComment);
 
             txtComment = new TextBox();
             txtComment.Font = new Font("Times New Roman", 12);
-            txtComment.Location = new Point(170, 407);
-            txtComment.Size = new Size(600, 30);
+            txtComment.Location = new Point(170, 487);
+            txtComment.Size = new Size(700, 30);
             this.Controls.Add(txtComment);
 
             lstOrderItems = new ListBox();
             lstOrderItems.Font = new Font("Times New Roman", 12);
-            lstOrderItems.Location = new Point(50, 460);
-            lstOrderItems.Size = new Size(720, 120);
+            lstOrderItems.Location = new Point(50, 540);
+            lstOrderItems.Size = new Size(900, 120);
             lstOrderItems.BackColor = Color.FromArgb(240, 240, 240);
             lstOrderItems.BorderStyle = BorderStyle.FixedSingle;
             this.Controls.Add(lstOrderItems);
 
+            // ИТОГО
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
             lblTotal.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            lblTotal.Location = new Point(550, 600);
-            lblTotal.Size = new Size(100, 35);
+            lblTotal.Location = new Point(580, 690);
+            lblTotal.Size = new Size(200, 35);
             this.Controls.Add(lblTotal);
 
             lblTotalValue = new Label();
             lblTotalValue.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            lblTotalValue.Location = new Point(660, 600);
-            lblTotalValue.Size = new Size(180, 35);
+            lblTotalValue.Location = new Point(790, 690);
+            lblTotalValue.Size = new Size(150, 35);
             lblTotalValue.ForeColor = Color.Red;
             this.Controls.Add(lblTotalValue);
 
             btnBack = new Button();
             btnBack.Text = "Назад";
             btnBack.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            btnBack.Size = new Size(120, 50);
-            btnBack.Location = new Point(200, 660);
+            btnBack.Size = new Size(140, 50);
+            btnBack.Location = new Point(200, 740);
             this.Controls.Add(btnBack);
 
             btnSave = new Button();
             btnSave.Text = "Оформить заказ";
             btnSave.Font = new Font("Times New Roman", 12, FontStyle.Bold);
             btnSave.Size = new Size(180, 50);
-            btnSave.Location = new Point(500, 660);
+            btnSave.Location = new Point(550, 740);
             this.Controls.Add(btnSave);
 
             btnBack.Click += (s, e) => {
@@ -1567,140 +1617,225 @@ namespace dump
             };
         }
 
-        private void TxtClientName_KeyPress(object sender, KeyPressEventArgs e)
+        private void RbCertificate_CheckedChanged(object sender, EventArgs e)
         {
-            if (char.IsControl(e.KeyChar)) return;
+            txtCertificateNumber.Enabled = rbCertificate.Checked;
+            btnCheckCertificate.Enabled = rbCertificate.Checked;
+            btnCancelCertificate.Enabled = rbCertificate.Checked;
+            cmbPayment.Enabled = false;
 
-            if (e.KeyChar == ' ')
+            if (!rbCertificate.Checked)
             {
-                TextBox textBox = sender as TextBox;
-                if (textBox != null)
-                {
-                    int currentSpaces = textBox.Text.Count(c => c == ' ');
-                    if (currentSpaces >= 2)
-                    {
-                        e.Handled = true;
-                        System.Media.SystemSounds.Beep.Play();
-                        MessageBox.Show("ФИО должно содержать не более 2 пробелов!\n" +
-                                      "Формат: Фамилия Имя Отчество",
-                                      "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-                }
+                isCertificateValid = false;
+                certificateId = -1;
+                certificateRemainingAmount = 0;
+                remainingToPay = 0;
+                isPartialPayment = false;
+                txtCertificateNumber.Text = "";
+                CalculateTotal(); 
+            }
+        }
+
+        private void BtnCancelCertificate_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Отменить оплату сертификатом?\n" +
+                "Будет выбран обычный способ оплаты.",
+                "Подтверждение отмены",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                rbCertificate.Checked = false;
+                isCertificateValid = false;
+                certificateId = -1;
+                certificateRemainingAmount = 0;
+                remainingToPay = 0;
+                isPartialPayment = false;
+                lblCertificateAmount.Text = "";
+                txtCertificateNumber.Text = "";
+                txtCertificateNumber.Enabled = false;
+                btnCheckCertificate.Enabled = false;
+                btnCancelCertificate.Enabled = false;
+                cmbPayment.Enabled = false;
+                CalculateTotal();
+
+                MessageBox.Show("Оплата сертификатом отменена.\n" +
+                               "Будет использован обычный способ оплаты.",
+                               "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void TxtCertificateNumber_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void BtnCheckCertificate_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtCertificateNumber.Text))
+            {
+                MessageBox.Show("Введите номер сертификата!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            bool isRussian = (e.KeyChar >= 'А' && e.KeyChar <= 'Я') ||
-                             (e.KeyChar >= 'а' && e.KeyChar <= 'я') ||
-                             e.KeyChar == 'Ё' || e.KeyChar == 'ё';
-
-            if (!isRussian)
+            if (!int.TryParse(txtCertificateNumber.Text, out int certNumber))
             {
-                e.Handled = true;
-                System.Media.SystemSounds.Beep.Play();
+                MessageBox.Show("Номер сертификата должен состоять только из цифр!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-        }
 
-        private void TxtClientName_TextChanged(object sender, EventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox == null || isFormatting) return;
-
-            isFormatting = true;
-
-            string text = textBox.Text;
-            int cursorPos = textBox.SelectionStart;
-
-            string[] words = text.Split(' ');
-
-            for (int i = 0; i < words.Length; i++)
+            try
             {
-                if (!string.IsNullOrEmpty(words[i]))
+                string query = @"
+            SELECT c.id_certificate, c.last_name, c.first_name, c.middle_name, 
+                   c.price, c.id_status_certificate, sc.name as status_name
+            FROM certificates c
+            LEFT JOIN status_certificates sc ON c.id_status_certificate = sc.id_status_certificate
+            WHERE c.id_certificate = @id";
+
+                using (MySqlConnection conn = SettingsBD.GetConnection())
                 {
-                    bool isValid = true;
-                    foreach (char c in words[i])
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        if (!((c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё'))
+                        cmd.Parameters.AddWithValue("@id", certNumber);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            isValid = false;
-                            break;
-                        }
-                    }
+                            if (reader.Read())
+                            {
+                                int statusId = reader.GetInt32("id_status_certificate");
+                                string statusName = reader["status_name"].ToString();
+                                decimal certificatePrice = reader.GetDecimal("price");
 
-                    if (isValid && words[i].Length > 0)
-                    {
-                        char firstChar = words[i][0];
-                        string rest = words[i].Length > 1 ? words[i].Substring(1).ToLower() : "";
+                                if (statusName != "Активен")
+                                {
+                                    MessageBox.Show($"Сертификат №{certNumber} имеет статус '{statusName}'!\nОплата невозможна.",
+                                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    isCertificateValid = false;
+                                    CalculateTotal();
+                                    return;
+                                }
 
-                        if ((firstChar >= 'а' && firstChar <= 'я') || (firstChar >= 'А' && firstChar <= 'Я') ||
-                            firstChar == 'ё' || firstChar == 'Ё')
-                        {
-                            words[i] = char.ToUpper(firstChar) + rest;
+                                string owner = $"{reader["last_name"]} {reader["first_name"]} {reader["middle_name"]}";
+
+                                if (certificatePrice >= orderTotal)
+                                {
+                                    // ПОЛНОСТЬЮ
+                                    isCertificateValid = true;
+                                    certificateId = certNumber;
+                                    certificateRemainingAmount = certificatePrice - orderTotal;
+                                    isPartialPayment = false;
+                                    remainingToPay = 0;
+                                    cmbPayment.Enabled = false;
+
+                                    MessageBox.Show($"✅ Сертификат №{certNumber} будет использован ПОЛНОСТЬЮ!\n" +
+                                                  $"Владелец: {owner}\n" +
+                                                  $"Сумма сертификата: {certificatePrice:N2} ₽\n" +
+                                                  $"Сумма заказа: {orderTotal:N2} ₽",
+                                                  "Сертификат найден", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    // ВАЖНО: пересчитываем итог
+                                    CalculateTotal();
+                                }
+                                else
+                                {
+                                    // ЧАСТИЧНО
+                                    DialogResult result = MessageBox.Show(
+                                        $"На сертификате недостаточно средств!\n\n" +
+                                        $"Сертификат №{certNumber} будет использован ЧАСТИЧНО.\n" +
+                                        $"Владелец: {owner}\n" +
+                                        $"Сумма сертификата: {certificatePrice:N2} ₽\n" +
+                                        $"Сумма заказа: {orderTotal:N2} ₽\n" +
+                                        $"Необходимо доплатить: {(orderTotal - certificatePrice):N2} ₽\n\n" +
+                                        $"Продолжить?",
+                                        "Частичная оплата",
+                                        MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question);
+
+                                    if (result == DialogResult.Yes)
+                                    {
+                                        isCertificateValid = true;
+                                        certificateId = certNumber;
+                                        certificateRemainingAmount = 0;
+                                        remainingToPay = orderTotal - certificatePrice;
+                                        isPartialPayment = true;
+                                        cmbPayment.Enabled = true;
+                                        cmbPayment.SelectedIndex = 0;
+
+                                        MessageBox.Show($"✅ Сертификат №{certNumber} будет использован ЧАСТИЧНО!\n" +
+                                                      $"Списано с сертификата: {certificatePrice:N2} ₽\n" +
+                                                      $"Осталось доплатить: {remainingToPay:N2} ₽",
+                                                      "Сертификат найден", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                        // ВАЖНО: пересчитываем итог
+                                        CalculateTotalWithPartialPayment();
+                                    }
+                                    else
+                                    {
+                                        isCertificateValid = false;
+                                        CalculateTotal();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Сертификат №{certNumber} не найден!", "Ошибка",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                isCertificateValid = false;
+                                CalculateTotal();
+                            }
                         }
                     }
                 }
             }
-
-            string newText = string.Join(" ", words);
-            string[] parts = newText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 3)
-                newText = string.Join(" ", parts.Take(3));
-
-            if (text != newText)
+            catch (Exception ex)
             {
-                textBox.Text = newText;
-                textBox.SelectionStart = Math.Min(cursorPos, newText.Length);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isCertificateValid = false;
+                CalculateTotal();
             }
-
-            isFormatting = false;
         }
 
-        private void TxtClientName_Leave(object sender, EventArgs e)
+        private void CalculateTotal()
         {
-            TextBox textBox = sender as TextBox;
-            if (textBox == null) return;
-
-            string text = textBox.Text.Trim();
-            while (text.Contains("  "))
-                text = text.Replace("  ", " ");
-
-            string[] words = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (words.Length > 3)
-                words = words.Take(3).ToArray();
-
-            for (int i = 0; i < words.Length; i++)
+            if (isCertificateValid && rbCertificate.Checked && !isPartialPayment)
             {
-                if (!string.IsNullOrEmpty(words[i]))
-                {
-                    string cleanWord = "";
-                    foreach (char c in words[i])
-                    {
-                        if ((c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё')
-                            cleanWord += c;
-                    }
-
-                    if (cleanWord.Length > 0)
-                    {
-                        char firstChar = cleanWord[0];
-                        string rest = cleanWord.Length > 1 ? cleanWord.Substring(1).ToLower() : "";
-                        words[i] = char.ToUpper(firstChar) + rest;
-                    }
-                }
+                // Полная оплата сертификатом - сумма 0
+                lblTotalValue.Text = "0.00 ₽";
+                lblTotalValue.ForeColor = Color.Green;
             }
-
-            textBox.Text = string.Join(" ", words.Where(w => !string.IsNullOrEmpty(w)));
-
-            if (words.Length < 3)
+            else if (isPartialPayment)
             {
-                MessageBox.Show("Рекомендуется вводить ФИО полностью:\nФамилия Имя Отчество",
-                              "Подсказка", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Частичная оплата - сумма к доплате
+                lblTotalValue.Text = $"{remainingToPay:N2} ₽";
+                lblTotalValue.ForeColor = Color.Red;
             }
+            else
+            {
+                // Обычная оплата
+                decimal total = cartItems.Sum(item => item.Price * item.Quantity);
+                lblTotalValue.Text = total.ToString("N2") + " ₽";
+                lblTotalValue.ForeColor = Color.Red;
+            }
+        }
+
+        private void CalculateTotalWithPartialPayment()
+        {
+            lblTotalValue.Text = $"{remainingToPay:N2} ₽";
+            lblTotalValue.ForeColor = Color.Red;
         }
 
         private void StyleButtons()
         {
             StyleButton(btnSave);
             StyleButton(btnBack);
+            StyleButton(btnCheckCertificate);
+            StyleButton(btnCancelCertificate);
         }
 
         private void StyleButton(Button btn)
@@ -1708,7 +1843,7 @@ namespace dump
             if (btn == null) return;
 
             btn.FlatStyle = FlatStyle.Flat;
-            btn.FlatAppearance.BorderSize = 2;
+            btn.FlatAppearance.BorderSize = 1;
             btn.FlatAppearance.BorderColor = Color.Black;
             btn.BackColor = buttonColor;
             btn.ForeColor = Color.Black;
@@ -1732,16 +1867,10 @@ namespace dump
             lstOrderItems.Items.Clear();
 
             foreach (var item in cartItems)
-                lstOrderItems.Items.Add($"{item.Name} x{item.Quantity} = {item.Price * item.Quantity:N2} ₽");
+                lstOrderItems.Items.Add($"{item.Name} x{item.Quantity} = {(item.Price * item.Quantity):N2} ₽");
 
             foreach (var gift in cartGifts)
                 lstOrderItems.Items.Add($"🎁 {gift.Name} - ПОДАРОК (бесплатно)");
-        }
-
-        private void CalculateTotal()
-        {
-            decimal total = cartItems.Sum(item => item.Price * item.Quantity);
-            lblTotalValue.Text = total.ToString("N2") + " ₽";
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -1767,44 +1896,6 @@ namespace dump
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtClientName.Text))
-            {
-                MessageBox.Show("Введите ФИО клиента!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtClientName.Focus();
-                return;
-            }
-
-            int spaceCount = txtClientName.Text.Count(c => c == ' ');
-            if (spaceCount > 2)
-            {
-                MessageBox.Show("ФИО должно содержать не более 2 пробелов!\n" +
-                              "Формат: Фамилия Имя Отчество",
-                              "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtClientName.Focus();
-                return;
-            }
-
-            string[] words = txtClientName.Text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (words.Length < 3)
-            {
-                MessageBox.Show("Введите полное ФИО!\nФормат: Фамилия Имя Отчество",
-                              "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtClientName.Focus();
-                return;
-            }
-
-            foreach (char c in txtClientName.Text)
-            {
-                if (c != ' ' && !((c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё'))
-                {
-                    MessageBox.Show("ФИО может содержать только русские буквы и пробелы!",
-                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    txtClientName.Focus();
-                    return;
-                }
-            }
-
             if (!mtxtPhone.MaskCompleted)
             {
                 MessageBox.Show("Введите номер телефона!", "Ошибка",
@@ -1821,11 +1912,82 @@ namespace dump
                 return;
             }
 
+            if (rbCertificate.Checked)
+            {
+                if (!isCertificateValid)
+                {
+                    MessageBox.Show("Сертификат не проверен или недействителен!\n" +
+                                  "Пожалуйста, проверьте сертификат перед оформлением.",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (isPartialPayment && cmbPayment.SelectedItem == null)
+                {
+                    MessageBox.Show("Для частичной оплаты выберите способ оплаты доплаты!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                try
+                {
+                    string checkQuery = "SELECT price, id_status_certificate FROM certificates WHERE id_certificate = @id";
+                    using (MySqlConnection conn = SettingsBD.GetConnection())
+                    {
+                        conn.Open();
+                        using (MySqlCommand cmd = new MySqlCommand(checkQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", certificateId);
+                            using (MySqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    decimal currentPrice = reader.GetDecimal("price");
+                                    int statusId = reader.GetInt32("id_status_certificate");
+                                    if (statusId != 1)
+                                    {
+                                        MessageBox.Show("Статус сертификата изменился! Оплата невозможна.",
+                                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Сертификат не найден!", "Ошибка",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка проверки сертификата: {ex.Message}", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
             try
             {
                 SaveToDatabase();
                 CreateWordReceipt();
-                MessageBox.Show($"Заказ {orderNumber} оформлен!", "Успех",
+
+                string paymentMessage = "";
+                if (rbCertificate.Checked)
+                {
+                    if (isPartialPayment)
+                        paymentMessage = $"Оплачено сертификатом №{certificateId} ({(orderTotal - remainingToPay):N2} ₽) + доплата {remainingToPay:N2} ₽ {cmbPayment.SelectedItem}";
+                    else
+                        paymentMessage = $"Оплачено сертификатом №{certificateId} (полностью)";
+                }
+                else
+                {
+                    paymentMessage = $"Способ оплаты: {cmbPayment.SelectedItem}";
+                }
+
+                MessageBox.Show($"Заказ {orderNumber} оформлен!\n{paymentMessage}", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 this.Close();
@@ -1864,66 +2026,127 @@ namespace dump
             using (MySqlConnection conn = SettingsBD.GetConnection())
             {
                 conn.Open();
-
-                string orderQuery = @"INSERT INTO orders 
-                    (order_number, name_client, phone_number, address, number_persons, 
-                     delivery_date, delivery_time, comment, payment_method, id_status, total_amount) 
-                    VALUES 
-                    (@num, @name, @phone, @addr, @pers, @date, @time, @comm, @pay, 1, @total);
-                    SELECT LAST_INSERT_ID();";
-
-                long orderId;
-
-                using (MySqlCommand cmd = new MySqlCommand(orderQuery, conn))
+                using (MySqlTransaction transaction = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@num", orderNumber);
-                    cmd.Parameters.AddWithValue("@name", txtClientName.Text.Trim());
-                    cmd.Parameters.AddWithValue("@phone", mtxtPhone.Text);
-                    cmd.Parameters.AddWithValue("@addr", rbDelivery.Checked ? txtAddress.Text : "Самовывоз");
-                    cmd.Parameters.AddWithValue("@pers", Convert.ToInt32(cmbPersons.SelectedItem));
-                    cmd.Parameters.AddWithValue("@date", dtpDate.Value.Date);
-                    cmd.Parameters.AddWithValue("@time", dtpTime.Value.TimeOfDay);
-                    cmd.Parameters.AddWithValue("@comm", txtComment.Text);
-                    cmd.Parameters.AddWithValue("@pay", cmbPayment.SelectedItem.ToString());
-                    cmd.Parameters.AddWithValue("@total", cartItems.Sum(i => i.Price * i.Quantity));
-
-                    orderId = Convert.ToInt64(cmd.ExecuteScalar());
-                }
-
-                // Сохраняем блюда
-                foreach (var item in cartItems)
-                {
-                    string dishQuery = @"INSERT INTO order_dish 
-                        (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
-                        VALUES (@oid, @did, @qty, @price, FALSE, NULL)";
-
-                    using (MySqlCommand dishCmd = new MySqlCommand(dishQuery, conn))
+                    try
                     {
-                        dishCmd.Parameters.AddWithValue("@oid", orderId);
-                        dishCmd.Parameters.AddWithValue("@did", item.Id_dish);
-                        dishCmd.Parameters.AddWithValue("@qty", item.Quantity);
-                        dishCmd.Parameters.AddWithValue("@price", item.Price);
-                        dishCmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Сохраняем подарки
-                if (cartGifts != null && cartGifts.Count > 0)
-                {
-                    foreach (var gift in cartGifts)
-                    {
-                        // Для подарков используем id_dish = 1 (любое существующее блюдо)
-                        string giftQuery = @"INSERT INTO order_dish 
-                            (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
-                            VALUES (@oid, 1, @qty, 0, TRUE, @pid)";
-
-                        using (MySqlCommand giftCmd = new MySqlCommand(giftQuery, conn))
+                        if (rbCertificate.Checked && isCertificateValid)
                         {
-                            giftCmd.Parameters.AddWithValue("@oid", orderId);
-                            giftCmd.Parameters.AddWithValue("@qty", gift.Quantity);
-                            giftCmd.Parameters.AddWithValue("@pid", gift.Id_present);
-                            giftCmd.ExecuteNonQuery();
+                            decimal newPrice = 0;
+                            int newStatusId = 2;
+
+                            if (isPartialPayment)
+                            {
+                                string getCurrentPriceQuery = "SELECT price FROM certificates WHERE id_certificate = @id";
+                                using (MySqlCommand getPriceCmd = new MySqlCommand(getCurrentPriceQuery, conn, transaction))
+                                {
+                                    getPriceCmd.Parameters.AddWithValue("@id", certificateId);
+                                    decimal currentPrice = Convert.ToDecimal(getPriceCmd.ExecuteScalar());
+                                    newPrice = 0;
+                                    newStatusId = 2;
+                                }
+                            }
+                            else
+                            {
+                                newPrice = certificateRemainingAmount;
+                                newStatusId = newPrice > 0 ? 1 : 2;
+                            }
+
+                            string updateCertQuery = "UPDATE certificates SET price = @newPrice, id_status_certificate = @statusId WHERE id_certificate = @id";
+                            using (MySqlCommand updateCmd = new MySqlCommand(updateCertQuery, conn, transaction))
+                            {
+                                updateCmd.Parameters.AddWithValue("@newPrice", newPrice);
+                                updateCmd.Parameters.AddWithValue("@statusId", newStatusId);
+                                updateCmd.Parameters.AddWithValue("@id", certificateId);
+                                updateCmd.ExecuteNonQuery();
+                            }
                         }
+
+                        string orderQuery = @"INSERT INTO orders 
+                            (order_number, phone_number, address, number_persons, 
+                             delivery_date, delivery_time, comment, payment_method, id_status, total_amount) 
+                            VALUES 
+                            (@num, @phone, @addr, @pers, @date, @time, @comm, @pay, 1, @total);
+                            SELECT LAST_INSERT_ID();";
+
+                        long orderId;
+                        string paymentMethod;
+                        decimal totalAmount;
+
+                        if (rbCertificate.Checked)
+                        {
+                            if (isPartialPayment)
+                            {
+                                paymentMethod = $"Сертификат №{certificateId} + {cmbPayment.SelectedItem}";
+                                totalAmount = remainingToPay;
+                            }
+                            else
+                            {
+                                paymentMethod = $"Сертификат №{certificateId}";
+                                totalAmount = 0;
+                            }
+                        }
+                        else
+                        {
+                            paymentMethod = cmbPayment.SelectedItem.ToString();
+                            totalAmount = orderTotal;
+                        }
+
+                        using (MySqlCommand cmd = new MySqlCommand(orderQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@num", orderNumber);
+                            cmd.Parameters.AddWithValue("@phone", mtxtPhone.Text);
+                            cmd.Parameters.AddWithValue("@addr", rbDelivery.Checked ? txtAddress.Text : "Самовывоз");
+                            cmd.Parameters.AddWithValue("@pers", Convert.ToInt32(cmbPersons.SelectedItem));
+                            cmd.Parameters.AddWithValue("@date", dtpDate.Value.Date);
+                            cmd.Parameters.AddWithValue("@time", dtpTime.Value.TimeOfDay);
+                            cmd.Parameters.AddWithValue("@comm", txtComment.Text);
+                            cmd.Parameters.AddWithValue("@pay", paymentMethod);
+                            cmd.Parameters.AddWithValue("@total", totalAmount);
+
+                            orderId = Convert.ToInt64(cmd.ExecuteScalar());
+                        }
+
+                        foreach (var item in cartItems)
+                        {
+                            string dishQuery = @"INSERT INTO order_dish 
+                                (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
+                                VALUES (@oid, @did, @qty, @price, FALSE, NULL)";
+
+                            using (MySqlCommand dishCmd = new MySqlCommand(dishQuery, conn, transaction))
+                            {
+                                dishCmd.Parameters.AddWithValue("@oid", orderId);
+                                dishCmd.Parameters.AddWithValue("@did", item.Id_dish);
+                                dishCmd.Parameters.AddWithValue("@qty", item.Quantity);
+                                dishCmd.Parameters.AddWithValue("@price", item.Price);
+                                dishCmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        if (cartGifts != null && cartGifts.Count > 0)
+                        {
+                            foreach (var gift in cartGifts)
+                            {
+                                string giftQuery = @"INSERT INTO order_dish 
+                                    (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
+                                    VALUES (@oid, 1, @qty, 0, TRUE, @pid)";
+
+                                using (MySqlCommand giftCmd = new MySqlCommand(giftQuery, conn, transaction))
+                                {
+                                    giftCmd.Parameters.AddWithValue("@oid", orderId);
+                                    giftCmd.Parameters.AddWithValue("@qty", gift.Quantity);
+                                    giftCmd.Parameters.AddWithValue("@pid", gift.Id_present);
+                                    giftCmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
                     }
                 }
             }
@@ -2074,7 +2297,19 @@ namespace dump
                 range.Font.Bold = 1;
                 range.Font.Size = 14;
                 range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphRight;
-                range.Text = $"ИТОГО: {cartItems.Sum(i => i.Price * i.Quantity):N2} ₽\n";
+
+                if (rbCertificate.Checked && isCertificateValid)
+                {
+                    if (isPartialPayment)
+                        range.Text = $"ОПЛАЧЕНО: Сертификат №{certificateId} ({(orderTotal - remainingToPay):N2} ₽) + Доплата {remainingToPay:N2} ₽\n";
+                    else
+                        range.Text = $"ОПЛАЧЕНО СЕРТИФИКАТОМ №{certificateId}\n";
+                }
+                else
+                {
+                    range.Text = $"ИТОГО: {orderTotal:N2} ₽\n";
+                }
+
                 range.InsertParagraphAfter();
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
@@ -2085,10 +2320,6 @@ namespace dump
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
                 range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
-                range.Text = $"Клиент: {txtClientName.Text}\n";
-                range.InsertParagraphAfter();
-                range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
-
                 range.Text = $"Телефон: {mtxtPhone.Text}\n";
                 range.InsertParagraphAfter();
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
@@ -2098,7 +2329,18 @@ namespace dump
                 range.InsertParagraphAfter();
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
-                range.Text = $"Оплата: {cmbPayment.SelectedItem}\n";
+                if (rbCertificate.Checked && isCertificateValid)
+                {
+                    if (isPartialPayment)
+                        range.Text = $"Оплата: Сертификат №{certificateId} + {cmbPayment.SelectedItem}\n";
+                    else
+                        range.Text = $"Оплата: Сертификат №{certificateId}\n";
+                }
+                else
+                {
+                    range.Text = $"Оплата: {cmbPayment.SelectedItem}\n";
+                }
+
                 range.InsertParagraphAfter();
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
@@ -2152,12 +2394,35 @@ namespace dump
                 }
 
                 sw.WriteLine("------------------------------------------------------------");
-                sw.WriteLine($"ИТОГО: {cartItems.Sum(i => i.Price * i.Quantity):N2} ₽".PadLeft(60));
+
+                if (rbCertificate.Checked && isCertificateValid)
+                {
+                    if (isPartialPayment)
+                        sw.WriteLine($"ОПЛАЧЕНО: Сертификат №{certificateId} ({(orderTotal - remainingToPay):N2} ₽) + Доплата {remainingToPay:N2} ₽".PadLeft(60));
+                    else
+                        sw.WriteLine($"ОПЛАЧЕНО СЕРТИФИКАТОМ №{certificateId}".PadLeft(60));
+                }
+                else
+                {
+                    sw.WriteLine($"ИТОГО: {orderTotal:N2} ₽".PadLeft(60));
+                }
+
                 sw.WriteLine("---------------------------------");
-                sw.WriteLine($"Клиент: {txtClientName.Text}");
                 sw.WriteLine($"Телефон: {mtxtPhone.Text}");
                 sw.WriteLine($"Адрес: {(rbDelivery.Checked ? txtAddress.Text : "Самовывоз")}");
-                sw.WriteLine($"Оплата: {cmbPayment.SelectedItem}");
+
+                if (rbCertificate.Checked && isCertificateValid)
+                {
+                    if (isPartialPayment)
+                        sw.WriteLine($"Оплата: Сертификат №{certificateId} + {cmbPayment.SelectedItem}");
+                    else
+                        sw.WriteLine($"Оплата: Сертификат №{certificateId}");
+                }
+                else
+                {
+                    sw.WriteLine($"Оплата: {cmbPayment.SelectedItem}");
+                }
+
                 sw.WriteLine("=================================");
             }
         }
