@@ -37,6 +37,7 @@ namespace dump
             InitializeComponents();
             this.FormClosing += OrderDetailsForm_FormClosing;
         }
+
         private void OrderDetailsForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -50,21 +51,17 @@ namespace dump
 
         private void InitializeComponents()
         {
-            // Инициализация DataGridView
             InitializeDataGridView();
 
-            // Настройка textBoxSearch
             textBoxSearch.TextChanged += textBoxSearch_TextChanged;
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
             textBoxSearch.MaxLength = MAX_SEARCH_LENGTH;
             textBoxSearch.Text = "";
             textBoxSearch.ForeColor = Color.Black;
 
-            // Настройка comboBoxOrderStatus
             comboBoxOrderStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxOrderStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
 
-            // Настройка кнопки Reset
             buttonReset.Click += buttonReset_Click;
             buttonReset.FlatStyle = FlatStyle.Flat;
             buttonReset.FlatAppearance.BorderSize = 1;
@@ -78,7 +75,6 @@ namespace dump
             buttonReset.MouseUp += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
             buttonReset.MouseLeave += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
 
-            // Настройка кнопки деталей заказа
             buttonDetail.Click += ButtonDetail_Click;
             buttonDetail.FlatStyle = FlatStyle.Flat;
             buttonDetail.FlatAppearance.BorderSize = 1;
@@ -92,22 +88,18 @@ namespace dump
             buttonDetail.MouseUp += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
             buttonDetail.MouseLeave += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
 
-            // Добавляем обработчик двойного клика
             dataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
 
-            // Загрузка данных
             LoadStatusesToComboBox();
             LoadOrders();
         }
 
-        // Вспомогательный класс для хранения состояния статуса
         private class StatusState
         {
             public int SelectedStatusId { get; set; }
             public string SelectedStatusName { get; set; }
         }
 
-        // Класс для хранения информации о блюде/подарке в деталях заказа
         private class OrderDetailItem
         {
             public string Name { get; set; }
@@ -118,83 +110,25 @@ namespace dump
             public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
         }
 
-        // ===== МЕТОДЫ ДЛЯ ЧАСТИЧНОЙ МАСКИРОВКИ ПЕРСОНАЛЬНЫХ ДАННЫХ =====
-        private string MaskFullName(string fullName)
-        {
-            if (string.IsNullOrEmpty(fullName)) return "";
-
-            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (parts[i].Length > 2)
-                {
-                    // Показываем первую букву и последнюю, середину заменяем звездочками
-                    // Иванов -> И***в
-                    parts[i] = parts[i][0] + new string('*', parts[i].Length - 2) + parts[i][parts[i].Length - 1];
-                }
-                else if (parts[i].Length == 2)
-                {
-                    // Для коротких слов показываем первую букву, вторую звездочкой
-                    parts[i] = parts[i][0] + "*";
-                }
-            }
-            return string.Join(" ", parts);
-        }
-
+        // ===== МАСКИРОВКА ТЕЛЕФОНА ДЛЯ DATAGRIDVIEW (скрываем 4 цифры посередине) =====
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
 
-            // Показываем первые 2 цифры и последние 2 цифры, остальное звездочки
-            // +7 (910) 123-45-67 -> +7 (***) ***-**-67
-            char[] chars = phone.ToCharArray();
-            int digitCount = 0;
-            int lastDigitPos = -1;
-
-            // Находим последнюю цифру
-            for (int i = chars.Length - 1; i >= 0; i--)
+            try
             {
-                if (char.IsDigit(chars[i]))
+                string digits = new string(phone.Where(char.IsDigit).ToArray());
+                if (digits.Length >= 11)
                 {
-                    lastDigitPos = i;
-                    break;
+                    // +7 (999) ****-45-67
+                    return $"+7 ({digits.Substring(1, 3)}) ****-{digits.Substring(8, 2)}-{digits.Substring(10, 1)}";
                 }
+                return phone;
             }
-
-            for (int i = 0; i < chars.Length; i++)
+            catch
             {
-                if (char.IsDigit(chars[i]))
-                {
-                    digitCount++;
-                    // Оставляем первые 2 цифры и последние 2 цифры
-                    if (digitCount > 2 && i < lastDigitPos - 1)
-                    {
-                        chars[i] = '*';
-                    }
-                }
+                return phone;
             }
-            return new string(chars);
-        }
-
-        private string MaskAddress(string address)
-        {
-            if (string.IsNullOrEmpty(address)) return "";
-
-            // Показываем первую букву каждого слова и последнюю букву
-            string[] words = address.Split(new[] { ' ', ',', '.' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (words[i].Length > 2 && !char.IsDigit(words[i][0]))
-                {
-                    // Улица -> У***а
-                    words[i] = words[i][0] + new string('*', words[i].Length - 2) + words[i][words[i].Length - 1];
-                }
-                else if (words[i].Length == 2 && !char.IsDigit(words[i][0]))
-                {
-                    words[i] = words[i][0] + "*";
-                }
-            }
-            return string.Join(" ", words);
         }
 
         // ===== МЕТОД ДЛЯ ПРОСМОТРА ДЕТАЛЕЙ ЗАКАЗА =====
@@ -223,7 +157,6 @@ namespace dump
                 DataGridViewRow selectedRow = dataGridView1.SelectedRows[0];
 
                 int orderId = Convert.ToInt32(selectedRow.Cells["id_order"].Value);
-                string clientName = selectedRow.Cells["name_client"].Value?.ToString() ?? "";
                 string phoneNumber = selectedRow.Cells["phone_number"].Value?.ToString() ?? "";
                 string address = selectedRow.Cells["address"].Value?.ToString() ?? "";
                 int persons = Convert.ToInt32(selectedRow.Cells["number_persons"].Value ?? 0);
@@ -242,7 +175,7 @@ namespace dump
 
                 Form detailForm = new Form();
                 detailForm.Text = $"Детали заказа №{orderId}";
-                detailForm.Size = new Size(820, 750);
+                detailForm.Size = new Size(820, 720);
                 detailForm.StartPosition = FormStartPosition.CenterParent;
                 detailForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 detailForm.MaximizeBox = false;
@@ -251,18 +184,13 @@ namespace dump
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
-                // Панель информации с ПОЛНЫМИ персональными данными (без маскировки)
-                Panel infoPanel = CreateInfoPanel(orderId, clientName, phoneNumber, address,
-                    persons, orderDate, paymentMethod);
-
+                // В деталях передаем ПОЛНЫЙ номер телефона (без маскировки)
+                Panel infoPanel = CreateInfoPanel(orderId, phoneNumber, address, persons, orderDate, paymentMethod);
                 Panel statusPanel = CreateStatusPanel(currentStatusId, currentStatus, statusState);
                 Panel commentPanel = CreateCommentPanel(comment);
 
-                // ЗАГРУЖАЕМ ДЕТАЛИ ЗАКАЗА (блюда + подарки)
                 List<OrderDetailItem> orderDetails = LoadOrderDetails(orderId);
                 DataGridView dgvOrderDetails = CreateOrderDetailsDataGridView();
-
-                // Заполняем DataGridView
                 DataTable dt = CreateOrderDetailsDataTable(orderDetails);
                 dgvOrderDetails.DataSource = dt;
 
@@ -326,24 +254,23 @@ namespace dump
             }
         }
 
-        // ===== СОЗДАНИЕ ПАНЕЛИ С ИНФОРМАЦИЕЙ О ЗАКАЗЕ (ПОЛНЫЕ ДАННЫЕ) =====
-        private Panel CreateInfoPanel(int orderId, string clientName, string phoneNumber,
-            string address, int persons, DateTime orderDate, string paymentMethod)
+        // В ДЕТАЛЯХ ЗАКАЗА - ПОЛНЫЙ НОМЕР ТЕЛЕФОНА (БЕЗ МАСКИРОВКИ)
+        private Panel CreateInfoPanel(int orderId, string phoneNumber, string address,
+            int persons, DateTime orderDate, string paymentMethod)
         {
             Panel panel = new Panel();
-            panel.Size = new Size(765, 130);
+            panel.Size = new Size(765, 110);
             panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.BackColor = Color.FromArgb(255, 255, 220); // Желтый фон для персональных данных
+            panel.BackColor = Color.FromArgb(255, 255, 220);
 
             Label lblInfo = new Label();
-            lblInfo.Text = $"ЗАКАЗ №{orderId} (ПЕРСОНАЛЬНЫЕ ДАННЫЕ)\n" +
-                          $"Клиент: {clientName}\n" +
-                          $"Телефон: {phoneNumber}\n" +
+            lblInfo.Text = $"ЗАКАЗ №{orderId}\n" +
+                          $"Телефон: {phoneNumber}\n" +  // ПОЛНЫЙ НОМЕР, БЕЗ МАСКИРОВКИ
                           $"Адрес: {address}\n" +
                           $"Количество персон: {persons} | Дата доставки: {orderDate:dd.MM.yyyy}\n" +
                           $"Способ оплаты: {paymentMethod}";
             lblInfo.Location = new Point(10, 10);
-            lblInfo.Size = new Size(740, 110);
+            lblInfo.Size = new Size(740, 90);
             lblInfo.Font = new Font("Times New Roman", 11, FontStyle.Bold);
             lblInfo.ForeColor = Color.DarkRed;
             lblInfo.TextAlign = ContentAlignment.TopLeft;
@@ -353,7 +280,6 @@ namespace dump
             return panel;
         }
 
-        // ===== ИСПРАВЛЕННЫЙ МЕТОД: ЗАГРУЗКА ДЕТАЛЕЙ ЗАКАЗА (БЛЮДА + ПОДАРКИ) =====
         private List<OrderDetailItem> LoadOrderDetails(int orderId)
         {
             List<OrderDetailItem> items = new List<OrderDetailItem>();
@@ -364,7 +290,6 @@ namespace dump
                 {
                     connection.Open();
 
-                    // Загружаем все позиции из order_dish (блюда и подарки)
                     string query = @"
                         SELECT 
                             CASE 
@@ -414,7 +339,6 @@ namespace dump
             return items;
         }
 
-        // ===== НОВЫЙ МЕТОД: СОЗДАНИЕ DataTable ДЛЯ ОТОБРАЖЕНИЯ ДЕТАЛЕЙ =====
         private DataTable CreateOrderDetailsDataTable(List<OrderDetailItem> items)
         {
             DataTable dt = new DataTable();
@@ -438,7 +362,6 @@ namespace dump
             return dt;
         }
 
-        // ===== СОЗДАНИЕ ПАНЕЛИ ДЛЯ ИЗМЕНЕНИЯ СТАТУСА =====
         private Panel CreateStatusPanel(int currentStatusId, string currentStatus, StatusState statusState)
         {
             Panel panel = new Panel();
@@ -512,7 +435,6 @@ namespace dump
             return panel;
         }
 
-        // ===== СОЗДАНИЕ ПАНЕЛИ С КОММЕНТАРИЕМ =====
         private Panel CreateCommentPanel(string comment)
         {
             Panel panel = new Panel();
@@ -542,7 +464,6 @@ namespace dump
             return panel;
         }
 
-        // ===== ПАНЕЛЬ ДЛЯ ИТОГОВОЙ СУММЫ =====
         private Panel CreateTotalPanel(decimal totalSum)
         {
             Panel panel = new Panel();
@@ -574,7 +495,6 @@ namespace dump
             return panel;
         }
 
-        // ===== СОЗДАНИЕ DATA GRID VIEW ДЛЯ БЛЮД =====
         private DataGridView CreateOrderDetailsDataGridView()
         {
             DataGridView dgv = new DataGridView();
@@ -640,7 +560,6 @@ namespace dump
             colTotal.FillWeight = 20;
             dgv.Columns.Add(colTotal);
 
-            // Скрытая колонка для флага подарка
             DataGridViewCheckBoxColumn colIsGift = new DataGridViewCheckBoxColumn();
             colIsGift.Name = "is_gift";
             colIsGift.DataPropertyName = "is_gift";
@@ -651,7 +570,6 @@ namespace dump
 
             dgv.CellFormatting += (s, e) =>
             {
-                // Форматирование цены
                 if (e.ColumnIndex == dgv.Columns["price"].Index && e.RowIndex >= 0 && e.Value != null)
                 {
                     if (e.Value is decimal || e.Value is int || e.Value is double)
@@ -661,7 +579,6 @@ namespace dump
                         e.FormattingApplied = true;
                     }
                 }
-                // Форматирование суммы
                 else if (e.ColumnIndex == dgv.Columns["total_price"].Index && e.RowIndex >= 0 && e.Value != null)
                 {
                     if (e.Value is decimal || e.Value is int || e.Value is double)
@@ -673,7 +590,6 @@ namespace dump
                 }
             };
 
-            // Применяем стиль к строкам после загрузки данных
             dgv.DataBindingComplete += (s, e) =>
             {
                 foreach (DataGridViewRow row in dgv.Rows)
@@ -684,7 +600,6 @@ namespace dump
                         row.DefaultCellStyle.ForeColor = Color.DarkOrange;
                         row.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Bold);
 
-                        // Также меняем цвет для каждой ячейки отдельно
                         foreach (DataGridViewCell cell in row.Cells)
                         {
                             cell.Style.BackColor = Color.LightYellow;
@@ -698,7 +613,6 @@ namespace dump
             return dgv;
         }
 
-        // ===== МЕТОД ДЛЯ ОБНОВЛЕНИЯ СТАТУСА В БАЗЕ ДАННЫХ =====
         private bool UpdateOrderStatus(int orderId, int newStatusId, string newStatusName)
         {
             try
@@ -826,6 +740,7 @@ namespace dump
 
             dataGridView1.Columns.Clear();
 
+            // № заказа
             DataGridViewTextBoxColumn colId = new DataGridViewTextBoxColumn();
             colId.Name = "id_order";
             colId.HeaderText = "№";
@@ -838,19 +753,7 @@ namespace dump
             colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colId);
 
-            DataGridViewTextBoxColumn colClient = new DataGridViewTextBoxColumn();
-            colClient.Name = "name_client";
-            colClient.HeaderText = "Клиент";
-            colClient.DataPropertyName = "name_client";
-            colClient.Width = 180;
-            colClient.MinimumWidth = 150;
-            colClient.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            colClient.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colClient.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
-            colClient.Resizable = DataGridViewTriState.True;
-            colClient.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dataGridView1.Columns.Add(colClient);
-
+            // Телефон (маскированный)
             DataGridViewTextBoxColumn colPhone = new DataGridViewTextBoxColumn();
             colPhone.Name = "phone_number";
             colPhone.HeaderText = "Телефон";
@@ -864,6 +767,7 @@ namespace dump
             colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPhone);
 
+            // Адрес (полный)
             DataGridViewTextBoxColumn colAddress = new DataGridViewTextBoxColumn();
             colAddress.Name = "address";
             colAddress.HeaderText = "Адрес";
@@ -877,6 +781,7 @@ namespace dump
             colAddress.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colAddress);
 
+            // Количество персон
             DataGridViewTextBoxColumn colPersons = new DataGridViewTextBoxColumn();
             colPersons.Name = "number_persons";
             colPersons.HeaderText = "Персон";
@@ -890,6 +795,7 @@ namespace dump
             colPersons.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPersons);
 
+            // Дата доставки
             DataGridViewTextBoxColumn colDate = new DataGridViewTextBoxColumn();
             colDate.Name = "delivery_date";
             colDate.HeaderText = "Дата доставки";
@@ -904,6 +810,7 @@ namespace dump
             colDate.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colDate);
 
+            // Комментарий
             DataGridViewTextBoxColumn colComment = new DataGridViewTextBoxColumn();
             colComment.Name = "comment";
             colComment.HeaderText = "Комментарий";
@@ -917,6 +824,7 @@ namespace dump
             colComment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colComment);
 
+            // Способ оплаты
             DataGridViewTextBoxColumn colPayment = new DataGridViewTextBoxColumn();
             colPayment.Name = "payment_method";
             colPayment.HeaderText = "Оплата";
@@ -930,6 +838,7 @@ namespace dump
             colPayment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPayment);
 
+            // ID статуса (скрытый)
             DataGridViewTextBoxColumn colStatusId = new DataGridViewTextBoxColumn();
             colStatusId.Name = "id_status";
             colStatusId.HeaderText = "ID статуса";
@@ -939,6 +848,7 @@ namespace dump
             colStatusId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colStatusId);
 
+            // Статус
             DataGridViewTextBoxColumn colStatusName = new DataGridViewTextBoxColumn();
             colStatusName.Name = "status_name";
             colStatusName.HeaderText = "Статус";
@@ -957,7 +867,7 @@ namespace dump
             dataGridView1.CellFormatting += DataGridView1_CellFormatting;
         }
 
-        // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК ДЛЯ МАСКИРОВКИ =====
+        // ФОРМАТИРОВАНИЕ ЯЧЕЕК - МАСКИРУЕМ ТОЛЬКО ТЕЛЕФОН
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dataGridView1.Columns[e.ColumnIndex].Name == "delivery_date" && e.RowIndex >= 0)
@@ -972,24 +882,13 @@ namespace dump
                 }
             }
 
-            // ЧАСТИЧНАЯ МАСКИРОВКА персональных данных
             if (e.RowIndex >= 0 && e.Value != null)
             {
                 string columnName = dataGridView1.Columns[e.ColumnIndex].Name;
 
-                if (columnName == "name_client")
-                {
-                    e.Value = MaskFullName(e.Value.ToString());
-                    e.FormattingApplied = true;
-                }
-                else if (columnName == "phone_number")
+                if (columnName == "phone_number")
                 {
                     e.Value = MaskPhone(e.Value.ToString());
-                    e.FormattingApplied = true;
-                }
-                else if (columnName == "address")
-                {
-                    e.Value = MaskAddress(e.Value.ToString());
                     e.FormattingApplied = true;
                 }
             }
@@ -1106,13 +1005,16 @@ namespace dump
             try
             {
                 string query = @"
-                    SELECT o.id_order, o.name_client, o.phone_number, o.address, 
+                    SELECT o.id_order, o.phone_number, o.address, 
                            o.number_persons, o.delivery_date, o.comment, 
                            o.payment_method, o.id_status,
                            s.status_name
                     FROM orders o
                     LEFT JOIN order_statuses s ON o.id_status = s.id_status
                     WHERE 1=1";
+
+                // Исключаем заказы со статусом "Доставлен" из основного списка
+                query += " AND o.id_status != 6";
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>();
 
