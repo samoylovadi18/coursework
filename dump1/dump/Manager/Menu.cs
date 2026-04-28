@@ -637,8 +637,6 @@ namespace dump
     public class OrderCompositionForm : Form
     {
         private Label lblTitle;
-        private Label lblOrderNum;
-        private TextBox txtOrderNum;
         private Label lblDate;
         private DateTimePicker dtpDate;
         private DataGridView dgvCart;
@@ -665,7 +663,6 @@ namespace dump
             cartItems = items;
             cartGifts = gifts;
             InitializeComponent();
-            GenerateOrderNumber();
 
             btnContinue.Click += BtnContinue_Click;
             btnIncrease.Click += BtnIncrease_Click;
@@ -692,7 +689,7 @@ namespace dump
         private void InitializeComponent()
         {
             this.Text = "";
-            this.Size = new Size(950, 700);
+            this.Size = new Size(950, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.Font = new Font("Times New Roman", 12, FontStyle.Regular);
@@ -710,32 +707,17 @@ namespace dump
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
-            lblOrderNum = new Label();
-            lblOrderNum.Text = "Номер заказа:";
-            lblOrderNum.Font = new Font("Times New Roman", 12);
-            lblOrderNum.Location = new Point(50, 70);
-            lblOrderNum.Size = new Size(100, 25);
-            this.Controls.Add(lblOrderNum);
-
-            txtOrderNum = new TextBox();
-            txtOrderNum.Font = new Font("Times New Roman", 12);
-            txtOrderNum.Location = new Point(160, 67);
-            txtOrderNum.Size = new Size(250, 30);
-            txtOrderNum.ReadOnly = true;
-            txtOrderNum.BackColor = Color.LightGray;
-            this.Controls.Add(txtOrderNum);
-
             lblDate = new Label();
             lblDate.Text = "Дата:";
             lblDate.Font = new Font("Times New Roman", 12);
-            lblDate.Location = new Point(450, 70);
+            lblDate.Location = new Point(50, 70);
             lblDate.Size = new Size(50, 25);
             this.Controls.Add(lblDate);
 
             dtpDate = new DateTimePicker();
             dtpDate.Font = new Font("Times New Roman", 12);
-            dtpDate.Location = new Point(510, 67);
-            dtpDate.Size = new Size(150, 30);
+            dtpDate.Location = new Point(110, 67);
+            dtpDate.Size = new Size(200, 30);
             dtpDate.Value = DateTime.Now;
             dtpDate.Enabled = false;
             this.Controls.Add(dtpDate);
@@ -786,7 +768,7 @@ namespace dump
 
             dgvCart = new DataGridView();
             dgvCart.Location = new Point(50, 200);
-            dgvCart.Size = new Size(850, 350);
+            dgvCart.Size = new Size(850, 300);
             dgvCart.BackgroundColor = Color.White;
             dgvCart.AllowUserToAddRows = false;
             dgvCart.AllowUserToDeleteRows = false;
@@ -800,13 +782,13 @@ namespace dump
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
             lblTotal.Font = new Font("Times New Roman", 16, FontStyle.Bold);
-            lblTotal.Location = new Point(650, 570);
+            lblTotal.Location = new Point(650, 520);
             lblTotal.Size = new Size(100, 35);
             this.Controls.Add(lblTotal);
 
             lblTotalValue = new Label();
             lblTotalValue.Font = new Font("Times New Roman", 16, FontStyle.Bold);
-            lblTotalValue.Location = new Point(750, 570);
+            lblTotalValue.Location = new Point(750, 520);
             lblTotalValue.Size = new Size(150, 35);
             lblTotalValue.ForeColor = Color.Red;
             this.Controls.Add(lblTotalValue);
@@ -815,26 +797,19 @@ namespace dump
             btnContinue.Text = "Далее";
             btnContinue.Font = new Font("Times New Roman", 12);
             btnContinue.Size = new Size(140, 45);
-            btnContinue.Location = new Point(650, 620);
+            btnContinue.Location = new Point(650, 570);
             this.Controls.Add(btnContinue);
 
             btnBack = new Button();
             btnBack.Text = "Назад";
             btnBack.Font = new Font("Times New Roman", 12);
             btnBack.Size = new Size(140, 45);
-            btnBack.Location = new Point(160, 620);
+            btnBack.Location = new Point(160, 570);
             btnBack.Click += (s, e) => {
                 this.Close();
                 new Menu().Show();
             };
             this.Controls.Add(btnBack);
-        }
-
-        private void GenerateOrderNumber()
-        {
-            string timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-            string random = new Random().Next(1000, 9999).ToString();
-            txtOrderNum.Text = $"ORD-{timestamp}-{random}";
         }
 
         private void StyleButtons()
@@ -902,7 +877,6 @@ namespace dump
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("№", typeof(int));
-            dt.Columns.Add("ID", typeof(int));
             dt.Columns.Add("Тип", typeof(string));
             dt.Columns.Add("Наименование", typeof(string));
             dt.Columns.Add("Цена", typeof(string));
@@ -915,7 +889,6 @@ namespace dump
             {
                 dt.Rows.Add(
                     index++,
-                    item.Id_dish,
                     "Блюдо",
                     item.Name,
                     item.Price.ToString("N2") + " ₽",
@@ -928,7 +901,6 @@ namespace dump
             {
                 dt.Rows.Add(
                     index++,
-                    gift.Id_present,
                     "Подарок",
                     gift.Name,
                     "0 ₽",
@@ -948,9 +920,6 @@ namespace dump
         {
             try
             {
-                if (dgvCart.Columns["ID"] != null)
-                    dgvCart.Columns["ID"].Visible = false;
-
                 if (dgvCart.Columns.Count > 0)
                 {
                     if (dgvCart.Columns["№"] != null)
@@ -1058,8 +1027,8 @@ namespace dump
                     return;
                 }
 
-                int dishId = Convert.ToInt32(dgvCart.SelectedRows[0].Cells["ID"].Value);
-                var item = cartItems.FirstOrDefault(i => i.Id_dish == dishId);
+                string dishName = dgvCart.SelectedRows[0].Cells["Наименование"].Value.ToString();
+                var item = cartItems.FirstOrDefault(i => i.Name == dishName);
 
                 if (item != null)
                 {
@@ -1093,8 +1062,8 @@ namespace dump
                     return;
                 }
 
-                int dishId = Convert.ToInt32(dgvCart.SelectedRows[0].Cells["ID"].Value);
-                var item = cartItems.FirstOrDefault(i => i.Id_dish == dishId);
+                string dishName = dgvCart.SelectedRows[0].Cells["Наименование"].Value.ToString();
+                var item = cartItems.FirstOrDefault(i => i.Name == dishName);
 
                 if (item != null)
                 {
@@ -1153,9 +1122,8 @@ namespace dump
                     return;
                 }
 
-                int dishId = Convert.ToInt32(dgvCart.SelectedRows[0].Cells["ID"].Value);
-                var item = cartItems.FirstOrDefault(i => i.Id_dish == dishId);
                 string dishName = dgvCart.SelectedRows[0].Cells["Наименование"].Value.ToString();
+                var item = cartItems.FirstOrDefault(i => i.Name == dishName);
 
                 if (item != null)
                 {
@@ -1189,7 +1157,7 @@ namespace dump
 
         private void BtnContinue_Click(object sender, EventArgs e)
         {
-            OrderDetailsForm form = new OrderDetailsForm(txtOrderNum.Text, cartItems, cartGifts);
+            OrderDetailsForm form = new OrderDetailsForm(cartItems, cartGifts);
             form.Show();
             this.Close();
         }
@@ -1199,11 +1167,8 @@ namespace dump
     public class OrderDetailsForm : Form
     {
         private Label lblTitle;
-        private Label lblOrderNum;
-        private TextBox txtOrderNum;
-        private Label lblDate;
+        private Label lblDateTime;
         private DateTimePicker dtpDate;
-        private Label lblTime;
         private DateTimePicker dtpTime;
         private Label lblPhone;
         private MaskedTextBox mtxtPhone;
@@ -1237,8 +1202,8 @@ namespace dump
         private int certificateId = -1;
         private bool isCertificateValid = false;
         private bool isPartialPayment = false;
+        private int actualOrderId = 0;
 
-        private string orderNumber;
         private List<Menu.CartItem> cartItems;
         private List<Menu.CartGift> cartGifts;
 
@@ -1247,9 +1212,8 @@ namespace dump
         private Color buttonColor = Color.DarkSeaGreen;
         private System.Windows.Forms.Timer updateTimer;
 
-        public OrderDetailsForm(string orderNum, List<Menu.CartItem> items, List<Menu.CartGift> gifts)
+        public OrderDetailsForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts)
         {
-            orderNumber = orderNum;
             cartItems = items;
             cartGifts = gifts;
             orderTotal = cartItems.Sum(i => i.Price * i.Quantity);
@@ -1366,56 +1330,32 @@ namespace dump
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
-            // Первая строка
-            lblOrderNum = new Label();
-            lblOrderNum.Text = "Заказ №:";
-            lblOrderNum.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblOrderNum.Location = new Point(50, 80);
-            lblOrderNum.Size = new Size(80, 25);
-            this.Controls.Add(lblOrderNum);
-
-            txtOrderNum = new TextBox();
-            txtOrderNum.Text = orderNumber;
-            txtOrderNum.Font = new Font("Times New Roman", 12);
-            txtOrderNum.Location = new Point(140, 77);
-            txtOrderNum.Size = new Size(250, 30);
-            txtOrderNum.ReadOnly = true;
-            txtOrderNum.BackColor = Color.LightGray;
-            this.Controls.Add(txtOrderNum);
-
-            lblDate = new Label();
-            lblDate.Text = "Дата:";
-            lblDate.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblDate.Location = new Point(420, 80);
-            lblDate.Size = new Size(50, 25);
-            this.Controls.Add(lblDate);
+            // ДАТА И ВРЕМЯ (вместо номера заказа)
+            lblDateTime = new Label();
+            lblDateTime.Text = "Дата и время:";
+            lblDateTime.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            lblDateTime.Location = new Point(50, 80);
+            lblDateTime.Size = new Size(120, 25);
+            this.Controls.Add(lblDateTime);
 
             dtpDate = new DateTimePicker();
             dtpDate.Font = new Font("Times New Roman", 12);
-            dtpDate.Location = new Point(480, 77);
+            dtpDate.Location = new Point(180, 77);
             dtpDate.Size = new Size(120, 30);
             dtpDate.Value = DateTime.Now;
             dtpDate.MinDate = DateTime.Now.Date;
             dtpDate.MaxDate = DateTime.Now.Date.AddDays(7);
             this.Controls.Add(dtpDate);
 
-            lblTime = new Label();
-            lblTime.Text = "Время:";
-            lblTime.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblTime.Location = new Point(630, 80);
-            lblTime.Size = new Size(60, 25);
-            this.Controls.Add(lblTime);
-
             dtpTime = new DateTimePicker();
             dtpTime.Font = new Font("Times New Roman", 12);
-            dtpTime.Location = new Point(700, 77);
+            dtpTime.Location = new Point(310, 77);
             dtpTime.Size = new Size(100, 30);
             dtpTime.Format = DateTimePickerFormat.Custom;
             dtpTime.CustomFormat = "HH:mm";
             dtpTime.ShowUpDown = true;
             this.Controls.Add(dtpTime);
 
-            // Вторая строка - Телефон и персоны
             lblPhone = new Label();
             lblPhone.Text = "Телефон:";
             lblPhone.Font = new Font("Times New Roman", 12, FontStyle.Bold);
@@ -1446,7 +1386,6 @@ namespace dump
             cmbPersons.SelectedIndex = 0;
             this.Controls.Add(cmbPersons);
 
-            // ГРУППА ОПЛАТЫ СЕРТИФИКАТОМ
             grbCertificate = new GroupBox();
             grbCertificate.Text = "Оплата сертификатом";
             grbCertificate.Font = new Font("Times New Roman", 12, FontStyle.Bold);
@@ -1505,7 +1444,6 @@ namespace dump
             lblCertificateAmount.Size = new Size(860, 25);
             grbCertificate.Controls.Add(lblCertificateAmount);
 
-            // СПОСОБ ПОЛУЧЕНИЯ
             grbDelivery = new GroupBox();
             grbDelivery.Text = "Способ получения";
             grbDelivery.Font = new Font("Times New Roman", 12, FontStyle.Bold);
@@ -1543,22 +1481,20 @@ namespace dump
             txtAddress.Size = new Size(700, 30);
             grbDelivery.Controls.Add(txtAddress);
 
-            // ОПЛАТА
             lblPayment = new Label();
-            lblPayment.Text = "Выберите способ оплаты для доплаты (если требуется):";
+            lblPayment.Text = "Выберите способ оплаты для доплаты:";
             lblPayment.Font = new Font("Times New Roman", 11, FontStyle.Bold);
             lblPayment.Location = new Point(50, 440);
-            lblPayment.Size = new Size(400, 25);
+            lblPayment.Size = new Size(350, 25);
             this.Controls.Add(lblPayment);
 
             cmbPayment = new ComboBox();
             cmbPayment.Font = new Font("Times New Roman", 11);
-            cmbPayment.Location = new Point(470, 437);
+            cmbPayment.Location = new Point(400, 437);
             cmbPayment.Size = new Size(220, 30);
             cmbPayment.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPayment.Items.AddRange(new string[] { "Наличные", "Карта", "Перевод" });
             cmbPayment.SelectedIndex = 0;
-            cmbPayment.Enabled = false;
             this.Controls.Add(cmbPayment);
 
             lblComment = new Label();
@@ -1582,7 +1518,6 @@ namespace dump
             lstOrderItems.BorderStyle = BorderStyle.FixedSingle;
             this.Controls.Add(lstOrderItems);
 
-            // ИТОГО
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
             lblTotal.Font = new Font("Times New Roman", 18, FontStyle.Bold);
@@ -1622,7 +1557,6 @@ namespace dump
             txtCertificateNumber.Enabled = rbCertificate.Checked;
             btnCheckCertificate.Enabled = rbCertificate.Checked;
             btnCancelCertificate.Enabled = rbCertificate.Checked;
-            cmbPayment.Enabled = false;
 
             if (!rbCertificate.Checked)
             {
@@ -1632,7 +1566,7 @@ namespace dump
                 remainingToPay = 0;
                 isPartialPayment = false;
                 txtCertificateNumber.Text = "";
-                CalculateTotal(); 
+                CalculateTotal();
             }
         }
 
@@ -1658,7 +1592,6 @@ namespace dump
                 txtCertificateNumber.Enabled = false;
                 btnCheckCertificate.Enabled = false;
                 btnCancelCertificate.Enabled = false;
-                cmbPayment.Enabled = false;
                 CalculateTotal();
 
                 MessageBox.Show("Оплата сертификатом отменена.\n" +
@@ -1725,13 +1658,11 @@ namespace dump
 
                                 if (certificatePrice >= orderTotal)
                                 {
-                                    // ПОЛНОСТЬЮ
                                     isCertificateValid = true;
                                     certificateId = certNumber;
                                     certificateRemainingAmount = certificatePrice - orderTotal;
                                     isPartialPayment = false;
                                     remainingToPay = 0;
-                                    cmbPayment.Enabled = false;
 
                                     MessageBox.Show($"✅ Сертификат №{certNumber} будет использован ПОЛНОСТЬЮ!\n" +
                                                   $"Владелец: {owner}\n" +
@@ -1739,12 +1670,10 @@ namespace dump
                                                   $"Сумма заказа: {orderTotal:N2} ₽",
                                                   "Сертификат найден", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                                    // ВАЖНО: пересчитываем итог
                                     CalculateTotal();
                                 }
                                 else
                                 {
-                                    // ЧАСТИЧНО
                                     DialogResult result = MessageBox.Show(
                                         $"На сертификате недостаточно средств!\n\n" +
                                         $"Сертификат №{certNumber} будет использован ЧАСТИЧНО.\n" +
@@ -1764,15 +1693,13 @@ namespace dump
                                         certificateRemainingAmount = 0;
                                         remainingToPay = orderTotal - certificatePrice;
                                         isPartialPayment = true;
-                                        cmbPayment.Enabled = true;
-                                        cmbPayment.SelectedIndex = 0;
 
                                         MessageBox.Show($"✅ Сертификат №{certNumber} будет использован ЧАСТИЧНО!\n" +
                                                       $"Списано с сертификата: {certificatePrice:N2} ₽\n" +
-                                                      $"Осталось доплатить: {remainingToPay:N2} ₽",
+                                                      $"Осталось доплатить: {remainingToPay:N2} ₽\n" +
+                                                      $"Выберите способ оплаты для доплаты.",
                                                       "Сертификат найден", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                                        // ВАЖНО: пересчитываем итог
                                         CalculateTotalWithPartialPayment();
                                     }
                                     else
@@ -1805,28 +1732,24 @@ namespace dump
         {
             if (isCertificateValid && rbCertificate.Checked && !isPartialPayment)
             {
-                // Полная оплата сертификатом - сумма 0
-                lblTotalValue.Text = "0.00 ₽";
+                lblTotalValue.Text = "0.00 ₽ (Оплачено сертификатом)";
                 lblTotalValue.ForeColor = Color.Green;
             }
             else if (isPartialPayment)
             {
-                // Частичная оплата - сумма к доплате
-                lblTotalValue.Text = $"{remainingToPay:N2} ₽";
+                lblTotalValue.Text = $"{remainingToPay:N2} ₽ (Доплата)";
                 lblTotalValue.ForeColor = Color.Red;
             }
             else
             {
-                // Обычная оплата
-                decimal total = cartItems.Sum(item => item.Price * item.Quantity);
-                lblTotalValue.Text = total.ToString("N2") + " ₽";
+                lblTotalValue.Text = orderTotal.ToString("N2") + " ₽";
                 lblTotalValue.ForeColor = Color.Red;
             }
         }
 
         private void CalculateTotalWithPartialPayment()
         {
-            lblTotalValue.Text = $"{remainingToPay:N2} ₽";
+            lblTotalValue.Text = $"{remainingToPay:N2} ₽ (Доплата)";
             lblTotalValue.ForeColor = Color.Red;
         }
 
@@ -1922,13 +1845,6 @@ namespace dump
                     return;
                 }
 
-                if (isPartialPayment && cmbPayment.SelectedItem == null)
-                {
-                    MessageBox.Show("Для частичной оплаты выберите способ оплаты доплаты!", "Ошибка",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
                 try
                 {
                     string checkQuery = "SELECT price, id_status_certificate FROM certificates WHERE id_certificate = @id";
@@ -1987,32 +1903,11 @@ namespace dump
                     paymentMessage = $"Способ оплаты: {cmbPayment.SelectedItem}";
                 }
 
-                MessageBox.Show($"Заказ {orderNumber} оформлен!\n{paymentMessage}", "Успех",
+                MessageBox.Show($"✅ Заказ №{actualOrderId} оформлен!\n{paymentMessage}", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 this.Close();
                 new Menu().Show();
-            }
-            catch (MySqlException ex) when (ex.Number == 1062)
-            {
-                string newNumber = $"ORD-{DateTime.Now:yyyyMMdd-HHmmss}-{new Random().Next(10000, 99999)}";
-                DialogResult result = MessageBox.Show(
-                    $"Заказ с номером {orderNumber} уже существует.\n\nСоздать заказ с новым номером {newNumber}?",
-                    "Ошибка уникальности",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    orderNumber = newNumber;
-                    txtOrderNum.Text = orderNumber;
-                    SaveToDatabase();
-                    CreateWordReceipt();
-                    MessageBox.Show($"Заказ {orderNumber} оформлен!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    this.Close();
-                    new Menu().Show();
-                }
             }
             catch (Exception ex)
             {
@@ -2063,10 +1958,10 @@ namespace dump
                         }
 
                         string orderQuery = @"INSERT INTO orders 
-                            (order_number, phone_number, address, number_persons, 
+                            (phone_number, address, number_persons, 
                              delivery_date, delivery_time, comment, payment_method, id_status, total_amount) 
                             VALUES 
-                            (@num, @phone, @addr, @pers, @date, @time, @comm, @pay, 1, @total);
+                            (@phone, @addr, @pers, @date, @time, @comm, @pay, 1, @total);
                             SELECT LAST_INSERT_ID();";
 
                         long orderId;
@@ -2094,7 +1989,6 @@ namespace dump
 
                         using (MySqlCommand cmd = new MySqlCommand(orderQuery, conn, transaction))
                         {
-                            cmd.Parameters.AddWithValue("@num", orderNumber);
                             cmd.Parameters.AddWithValue("@phone", mtxtPhone.Text);
                             cmd.Parameters.AddWithValue("@addr", rbDelivery.Checked ? txtAddress.Text : "Самовывоз");
                             cmd.Parameters.AddWithValue("@pers", Convert.ToInt32(cmbPersons.SelectedItem));
@@ -2105,6 +1999,7 @@ namespace dump
                             cmd.Parameters.AddWithValue("@total", totalAmount);
 
                             orderId = Convert.ToInt64(cmd.ExecuteScalar());
+                            actualOrderId = (int)orderId;
                         }
 
                         foreach (var item in cartItems)
@@ -2161,7 +2056,7 @@ namespace dump
                 saveFileDialog.Filter = "Документ Word (*.docx)|*.docx|Текстовый файл (*.txt)|*.txt";
                 saveFileDialog.FilterIndex = 1;
                 saveFileDialog.DefaultExt = "docx";
-                saveFileDialog.FileName = $"Чек_{orderNumber}";
+                saveFileDialog.FileName = $"Чек_{actualOrderId}";
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -2215,7 +2110,7 @@ namespace dump
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
                 range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
-                range.Text = $"Заказ: {orderNumber}\n";
+                range.Text = $"Заказ: {actualOrderId}\n";
                 range.InsertParagraphAfter();
                 range.Collapse(Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd);
 
@@ -2369,7 +2264,7 @@ namespace dump
                 sw.WriteLine("=================================");
                 sw.WriteLine("         РЕСТОРАН");
                 sw.WriteLine("=================================");
-                sw.WriteLine($"Заказ: {orderNumber}");
+                sw.WriteLine($"Заказ: {actualOrderId}");
                 sw.WriteLine($"Дата: {dtpDate.Value.ToShortDateString()}");
                 sw.WriteLine($"Время: {dtpTime.Value:HH:mm}");
                 sw.WriteLine("---------------------------------");

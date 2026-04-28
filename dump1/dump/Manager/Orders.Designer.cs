@@ -37,17 +37,18 @@
             this.comboBoxOrderStatus = new System.Windows.Forms.ComboBox();
             this.buttonReset = new System.Windows.Forms.Button();
             this.buttonDetail = new System.Windows.Forms.Button();
+            this.comboBoxSearchType = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(48, 79);
+            this.label2.Location = new System.Drawing.Point(48, 52);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(145, 21);
+            this.label2.Size = new System.Drawing.Size(65, 21);
             this.label2.TabIndex = 31;
-            this.label2.Text = "Номер телефона:";
+            this.label2.Text = "Поиск:";
             // 
             // dataGridView1
             // 
@@ -65,7 +66,7 @@
             // 
             // textBoxSearch
             // 
-            this.textBoxSearch.Location = new System.Drawing.Point(199, 71);
+            this.textBoxSearch.Location = new System.Drawing.Point(52, 76);
             this.textBoxSearch.Name = "textBoxSearch";
             this.textBoxSearch.Size = new System.Drawing.Size(347, 29);
             this.textBoxSearch.TabIndex = 28;
@@ -84,7 +85,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(573, 79);
+            this.label3.Location = new System.Drawing.Point(695, 52);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(110, 21);
             this.label3.TabIndex = 33;
@@ -93,7 +94,7 @@
             // comboBoxOrderStatus
             // 
             this.comboBoxOrderStatus.FormattingEnabled = true;
-            this.comboBoxOrderStatus.Location = new System.Drawing.Point(689, 71);
+            this.comboBoxOrderStatus.Location = new System.Drawing.Point(689, 76);
             this.comboBoxOrderStatus.Name = "comboBoxOrderStatus";
             this.comboBoxOrderStatus.Size = new System.Drawing.Size(242, 29);
             this.comboBoxOrderStatus.TabIndex = 34;
@@ -101,7 +102,7 @@
             // buttonReset
             // 
             this.buttonReset.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonReset.Location = new System.Drawing.Point(948, 70);
+            this.buttonReset.Location = new System.Drawing.Point(948, 76);
             this.buttonReset.Name = "buttonReset";
             this.buttonReset.Size = new System.Drawing.Size(97, 29);
             this.buttonReset.TabIndex = 43;
@@ -119,12 +120,21 @@
             this.buttonDetail.Text = "Детальная инф.";
             this.buttonDetail.UseVisualStyleBackColor = false;
             // 
+            // comboBoxSearchType
+            // 
+            this.comboBoxSearchType.FormattingEnabled = true;
+            this.comboBoxSearchType.Location = new System.Drawing.Point(424, 76);
+            this.comboBoxSearchType.Name = "comboBoxSearchType";
+            this.comboBoxSearchType.Size = new System.Drawing.Size(242, 29);
+            this.comboBoxSearchType.TabIndex = 47;
+            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1100, 856);
+            this.Controls.Add(this.comboBoxSearchType);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.buttonReset);
             this.Controls.Add(this.comboBoxOrderStatus);
@@ -158,5 +168,6 @@
         private System.Windows.Forms.ComboBox comboBoxOrderStatus;
         private System.Windows.Forms.Button buttonReset;
         private System.Windows.Forms.Button buttonDetail;
+        private System.Windows.Forms.ComboBox comboBoxSearchType;
     }
 }

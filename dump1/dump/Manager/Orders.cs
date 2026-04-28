@@ -28,8 +28,13 @@ namespace dump
         // Культура для форматирования
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
 
-        // Максимальное количество символов для поиска
-        private const int MAX_SEARCH_LENGTH = 11;
+        // Типы поиска
+        private enum SearchType
+        {
+            ByOrderNumber,
+            ByPhone
+        }
+        private SearchType currentSearchType = SearchType.ByOrderNumber;
 
         public Orders()
         {
@@ -53,11 +58,22 @@ namespace dump
         {
             InitializeDataGridView();
 
+            // НАСТРОЙКА КОМБОБОКСА ДЛЯ ВЫБОРА ТИПА ПОИСКА
+            if (comboBoxSearchType != null)
+            {
+                comboBoxSearchType.DropDownStyle = ComboBoxStyle.DropDownList;
+                comboBoxSearchType.Items.Clear();
+                comboBoxSearchType.Items.Add("Поиск по номеру заказа");
+                comboBoxSearchType.Items.Add("Поиск по номеру телефона");
+                comboBoxSearchType.SelectedIndex = 0;
+                comboBoxSearchType.SelectedIndexChanged += ComboBoxSearchType_SelectedIndexChanged;
+            }
+
+            // Настройка textBoxSearch
+            SetupSearchPlaceholder();
             textBoxSearch.TextChanged += textBoxSearch_TextChanged;
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
-            textBoxSearch.MaxLength = MAX_SEARCH_LENGTH;
-            textBoxSearch.Text = "";
-            textBoxSearch.ForeColor = Color.Black;
+            textBoxSearch.Click += TextBoxSearch_Click;
 
             comboBoxOrderStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxOrderStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
@@ -94,6 +110,200 @@ namespace dump
             LoadOrders();
         }
 
+        private void SetupSearchPlaceholder()
+        {
+            if (currentSearchType == SearchType.ByOrderNumber)
+            {
+                textBoxSearch.Text = "Введите номер заказа...";
+                textBoxSearch.ForeColor = Color.Gray;
+                textBoxSearch.MaxLength = 10;
+            }
+            else
+            {
+                textBoxSearch.Text = "";
+                textBoxSearch.ForeColor = Color.Gray;
+                textBoxSearch.MaxLength = 18;
+                textBoxSearch.Text = "Введите номер телефона...";
+            }
+        }
+
+        private void ComboBoxSearchType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBoxSearchType.SelectedIndex == 0)
+                currentSearchType = SearchType.ByOrderNumber;
+            else
+                currentSearchType = SearchType.ByPhone;
+
+            SetupSearchPlaceholder();
+            LoadOrders();
+        }
+
+        private void TextBoxSearch_Click(object sender, EventArgs e)
+        {
+            if (textBoxSearch.ForeColor == Color.Gray)
+            {
+                textBoxSearch.Text = "";
+                textBoxSearch.ForeColor = Color.Black;
+                textBoxSearch.Focus();
+            }
+        }
+
+        private void textBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (textBoxSearch.ForeColor == Color.Gray)
+            {
+                textBoxSearch.Text = "";
+                textBoxSearch.ForeColor = Color.Black;
+                if (!char.IsControl(e.KeyChar))
+                {
+                    e.Handled = false;
+                }
+                return;
+            }
+
+            // Разрешаем BackSpace, Delete и другие управляющие символы
+            if (char.IsControl(e.KeyChar))
+            {
+                e.Handled = false;
+                return;
+            }
+
+            if (!char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+                System.Media.SystemSounds.Beep.Play();
+            }
+        }
+
+        private void textBoxSearch_TextChanged(object sender, EventArgs e)
+        {
+            if (textBoxSearch.ForeColor == Color.Gray)
+                return;
+
+            if (isFormatting) return;
+            isFormatting = true;
+
+            string inputText = textBoxSearch.Text;
+
+            if (currentSearchType == SearchType.ByOrderNumber)
+            {
+                // ===== ПОИСК ПО НОМЕРУ ЗАКАЗА - ТОЛЬКО ЦИФРЫ, МАКСИМУМ 10 =====
+                string digits = new string(inputText.Where(char.IsDigit).ToArray());
+
+                if (digits.Length > 10)
+                {
+                    digits = digits.Substring(0, 10);
+                }
+
+                // Форматируем номер заказа (без маски, просто цифры)
+                string formatted = digits;
+
+                if (formatted != inputText)
+                {
+                    int cursorPos = textBoxSearch.SelectionStart;
+                    textBoxSearch.Text = formatted;
+                    textBoxSearch.SelectionStart = Math.Min(cursorPos, formatted.Length);
+                }
+
+                if (digits.Length > 0)
+                    LoadOrdersWithFilter(digits, false);
+                else
+                    LoadOrdersWithFilter("", false);
+            }
+            else
+            {
+                // ===== ПОИСК ПО ТЕЛЕФОНУ С МАСКОЙ =====
+                string digits = new string(inputText.Where(char.IsDigit).ToArray());
+
+                if (digits.Length > 11)
+                    digits = digits.Substring(0, 11);
+
+                // Сохраняем позицию курсора до форматирования
+                int cursorPos = textBoxSearch.SelectionStart;
+                int selectionLength = textBoxSearch.SelectionLength;
+
+                string formatted = FormatPhoneNumber(digits);
+
+                // Обновляем текст только если он изменился и не пустой
+                if (formatted != inputText)
+                {
+                    textBoxSearch.Text = formatted;
+
+                    // Восстанавливаем позицию курсора
+                    if (cursorPos <= textBoxSearch.Text.Length)
+                    {
+                        textBoxSearch.SelectionStart = cursorPos;
+                        textBoxSearch.SelectionLength = selectionLength;
+                    }
+                    else
+                    {
+                        textBoxSearch.SelectionStart = textBoxSearch.Text.Length;
+                    }
+                }
+
+                if (digits.Length >= 3)
+                    LoadOrdersWithFilter(digits, false);
+                else if (digits.Length == 0)
+                    LoadOrdersWithFilter("", false);
+            }
+
+            isFormatting = false;
+        }
+
+        private string FormatPhoneNumber(string digits)
+        {
+            if (string.IsNullOrEmpty(digits))
+                return "";
+
+            // Если это начало ввода или удаление до пустоты
+            if (digits.Length == 0)
+                return "";
+
+            // Если первая цифра не 7, добавляем 7 автоматически
+            string normalizedDigits = digits;
+            if (normalizedDigits.Length > 0 && normalizedDigits[0] != '7')
+            {
+                normalizedDigits = "7" + normalizedDigits;
+                if (normalizedDigits.Length > 11)
+                    normalizedDigits = normalizedDigits.Substring(0, 11);
+            }
+
+            // Если цифр меньше 2, возвращаем только то, что есть
+            if (normalizedDigits.Length < 2)
+                return normalizedDigits;
+
+            // Форматируем номер
+            string result = "+7";
+
+            if (normalizedDigits.Length >= 2)
+            {
+                // Код оператора (3 цифры)
+                int operatorLength = Math.Min(3, normalizedDigits.Length - 1);
+                result += " (" + normalizedDigits.Substring(1, operatorLength);
+
+                if (normalizedDigits.Length > 4)
+                {
+                    result += ") " + normalizedDigits.Substring(4, Math.Min(3, normalizedDigits.Length - 4));
+
+                    if (normalizedDigits.Length > 7)
+                    {
+                        result += "-" + normalizedDigits.Substring(7, Math.Min(2, normalizedDigits.Length - 7));
+
+                        if (normalizedDigits.Length > 9)
+                        {
+                            result += "-" + normalizedDigits.Substring(9, Math.Min(2, normalizedDigits.Length - 9));
+                        }
+                    }
+                }
+                else
+                {
+                    result += ")";
+                }
+            }
+
+            return result;
+        }
+
         private class StatusState
         {
             public int SelectedStatusId { get; set; }
@@ -110,17 +320,14 @@ namespace dump
             public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
         }
 
-        // ===== МАСКИРОВКА ТЕЛЕФОНА ДЛЯ DATAGRIDVIEW (скрываем 4 цифры посередине) =====
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
-
             try
             {
                 string digits = new string(phone.Where(char.IsDigit).ToArray());
                 if (digits.Length >= 11)
                 {
-                    // +7 (999) ****-45-67
                     return $"+7 ({digits.Substring(1, 3)}) ****-{digits.Substring(8, 2)}-{digits.Substring(10, 1)}";
                 }
                 return phone;
@@ -131,7 +338,6 @@ namespace dump
             }
         }
 
-        // ===== МЕТОД ДЛЯ ПРОСМОТРА ДЕТАЛЕЙ ЗАКАЗА =====
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
             ShowOrderDetails();
@@ -155,7 +361,6 @@ namespace dump
                 }
 
                 DataGridViewRow selectedRow = dataGridView1.SelectedRows[0];
-
                 int orderId = Convert.ToInt32(selectedRow.Cells["id_order"].Value);
                 string phoneNumber = selectedRow.Cells["phone_number"].Value?.ToString() ?? "";
                 string address = selectedRow.Cells["address"].Value?.ToString() ?? "";
@@ -184,7 +389,6 @@ namespace dump
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
-                // В деталях передаем ПОЛНЫЙ номер телефона (без маскировки)
                 Panel infoPanel = CreateInfoPanel(orderId, phoneNumber, address, persons, orderDate, paymentMethod);
                 Panel statusPanel = CreateStatusPanel(currentStatusId, currentStatus, statusState);
                 Panel commentPanel = CreateCommentPanel(comment);
@@ -195,26 +399,21 @@ namespace dump
                 dgvOrderDetails.DataSource = dt;
 
                 int currentY = 15;
-
                 infoPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(infoPanel);
                 currentY += infoPanel.Height + 15;
-
                 statusPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(statusPanel);
                 currentY += statusPanel.Height + 15;
-
                 commentPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(commentPanel);
                 currentY += commentPanel.Height + 15;
-
                 dgvOrderDetails.Location = new Point(15, currentY);
                 dgvOrderDetails.Size = new Size(765, 280);
                 detailForm.Controls.Add(dgvOrderDetails);
                 currentY += dgvOrderDetails.Height + 10;
 
                 decimal totalSum = orderDetails.Where(x => !x.IsGift).Sum(x => x.TotalPrice);
-
                 Panel totalPanel = CreateTotalPanel(totalSum);
                 totalPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(totalPanel);
@@ -243,7 +442,6 @@ namespace dump
                         }
                     }
                 };
-
                 detailForm.ShowDialog(this);
                 RefreshOrdersData();
             }
@@ -254,7 +452,6 @@ namespace dump
             }
         }
 
-        // В ДЕТАЛЯХ ЗАКАЗА - ПОЛНЫЙ НОМЕР ТЕЛЕФОНА (БЕЗ МАСКИРОВКИ)
         private Panel CreateInfoPanel(int orderId, string phoneNumber, string address,
             int persons, DateTime orderDate, string paymentMethod)
         {
@@ -265,7 +462,7 @@ namespace dump
 
             Label lblInfo = new Label();
             lblInfo.Text = $"ЗАКАЗ №{orderId}\n" +
-                          $"Телефон: {phoneNumber}\n" +  // ПОЛНЫЙ НОМЕР, БЕЗ МАСКИРОВКИ
+                          $"Телефон: {phoneNumber}\n" +
                           $"Адрес: {address}\n" +
                           $"Количество персон: {persons} | Дата доставки: {orderDate:dd.MM.yyyy}\n" +
                           $"Способ оплаты: {paymentMethod}";
@@ -662,25 +859,27 @@ namespace dump
         private void RefreshOrdersData()
         {
             string searchText = textBoxSearch.Text;
-            if (string.IsNullOrWhiteSpace(searchText))
+            if (string.IsNullOrWhiteSpace(searchText) || textBoxSearch.ForeColor == Color.Gray)
             {
                 LoadOrdersWithFilter("", false);
             }
             else
             {
-                string digits = new string(searchText.Where(char.IsDigit).ToArray());
-                if (digits.Length > MAX_SEARCH_LENGTH)
+                if (currentSearchType == SearchType.ByOrderNumber)
                 {
-                    digits = digits.Substring(0, MAX_SEARCH_LENGTH);
-                }
-
-                if (digits.Length > 0)
-                {
-                    LoadOrdersWithFilter(digits, false);
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length > 0)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
                 }
                 else
                 {
-                    LoadOrdersWithFilter("", false);
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length >= 3)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
                 }
             }
         }
@@ -740,7 +939,6 @@ namespace dump
 
             dataGridView1.Columns.Clear();
 
-            // № заказа
             DataGridViewTextBoxColumn colId = new DataGridViewTextBoxColumn();
             colId.Name = "id_order";
             colId.HeaderText = "№";
@@ -753,7 +951,6 @@ namespace dump
             colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colId);
 
-            // Телефон (маскированный)
             DataGridViewTextBoxColumn colPhone = new DataGridViewTextBoxColumn();
             colPhone.Name = "phone_number";
             colPhone.HeaderText = "Телефон";
@@ -767,7 +964,6 @@ namespace dump
             colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPhone);
 
-            // Адрес (полный)
             DataGridViewTextBoxColumn colAddress = new DataGridViewTextBoxColumn();
             colAddress.Name = "address";
             colAddress.HeaderText = "Адрес";
@@ -781,7 +977,6 @@ namespace dump
             colAddress.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colAddress);
 
-            // Количество персон
             DataGridViewTextBoxColumn colPersons = new DataGridViewTextBoxColumn();
             colPersons.Name = "number_persons";
             colPersons.HeaderText = "Персон";
@@ -795,7 +990,6 @@ namespace dump
             colPersons.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPersons);
 
-            // Дата доставки
             DataGridViewTextBoxColumn colDate = new DataGridViewTextBoxColumn();
             colDate.Name = "delivery_date";
             colDate.HeaderText = "Дата доставки";
@@ -810,7 +1004,6 @@ namespace dump
             colDate.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colDate);
 
-            // Комментарий
             DataGridViewTextBoxColumn colComment = new DataGridViewTextBoxColumn();
             colComment.Name = "comment";
             colComment.HeaderText = "Комментарий";
@@ -824,7 +1017,6 @@ namespace dump
             colComment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colComment);
 
-            // Способ оплаты
             DataGridViewTextBoxColumn colPayment = new DataGridViewTextBoxColumn();
             colPayment.Name = "payment_method";
             colPayment.HeaderText = "Оплата";
@@ -838,7 +1030,6 @@ namespace dump
             colPayment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPayment);
 
-            // ID статуса (скрытый)
             DataGridViewTextBoxColumn colStatusId = new DataGridViewTextBoxColumn();
             colStatusId.Name = "id_status";
             colStatusId.HeaderText = "ID статуса";
@@ -848,7 +1039,6 @@ namespace dump
             colStatusId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colStatusId);
 
-            // Статус
             DataGridViewTextBoxColumn colStatusName = new DataGridViewTextBoxColumn();
             colStatusName.Name = "status_name";
             colStatusName.HeaderText = "Статус";
@@ -867,7 +1057,6 @@ namespace dump
             dataGridView1.CellFormatting += DataGridView1_CellFormatting;
         }
 
-        // ФОРМАТИРОВАНИЕ ЯЧЕЕК - МАСКИРУЕМ ТОЛЬКО ТЕЛЕФОН
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dataGridView1.Columns[e.ColumnIndex].Name == "delivery_date" && e.RowIndex >= 0)
@@ -885,7 +1074,6 @@ namespace dump
             if (e.RowIndex >= 0 && e.Value != null)
             {
                 string columnName = dataGridView1.Columns[e.ColumnIndex].Name;
-
                 if (columnName == "phone_number")
                 {
                     e.Value = MaskPhone(e.Value.ToString());
@@ -899,7 +1087,6 @@ namespace dump
             if (dataGridView1.Columns.Count > 0)
             {
                 Color selectionColor = Color.FromArgb(233, 242, 236);
-
                 foreach (DataGridViewColumn col in dataGridView1.Columns)
                 {
                     if (col.Name != "id_status" && col.Visible)
@@ -909,42 +1096,6 @@ namespace dump
                     }
                 }
             }
-        }
-
-        private void textBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
-        }
-
-        private void textBoxSearch_TextChanged(object sender, EventArgs e)
-        {
-            if (isFormatting) return;
-
-            isFormatting = true;
-
-            string searchText = textBoxSearch.Text;
-            string digits = new string(searchText.Where(char.IsDigit).ToArray());
-
-            if (digits.Length > MAX_SEARCH_LENGTH)
-            {
-                digits = digits.Substring(0, MAX_SEARCH_LENGTH);
-                textBoxSearch.Text = digits;
-                textBoxSearch.SelectionStart = digits.Length;
-            }
-
-            if (digits.Length > 0)
-            {
-                LoadOrdersWithFilter(digits, false);
-            }
-            else
-            {
-                LoadOrdersWithFilter("", false);
-            }
-
-            isFormatting = false;
         }
 
         private void LoadStatusesToComboBox()
@@ -967,9 +1118,7 @@ namespace dump
                             {
                                 int id = reader.GetInt32("id_status");
                                 string name = reader.GetString("status_name");
-
                                 statusDictionary.Add(id, name);
-
                                 if (id != DELIVERED_STATUS_ID)
                                 {
                                     comboBoxOrderStatus.Items.Add(new StatusItem(id, name));
@@ -978,7 +1127,6 @@ namespace dump
                         }
                     }
                 }
-
                 comboBoxOrderStatus.DisplayMember = "Name";
                 comboBoxOrderStatus.SelectedIndex = 0;
             }
@@ -989,18 +1137,17 @@ namespace dump
             }
         }
 
-        private void LoadOrdersWithFilter(string orderNumber = "", bool exactMatch = false)
+        private void LoadOrdersWithFilter(string searchValue = "", bool exactMatch = false)
         {
             int statusId = -1;
             if (comboBoxOrderStatus.SelectedIndex > 0 && comboBoxOrderStatus.SelectedItem is StatusItem statusItem)
             {
                 statusId = statusItem.Id;
             }
-
-            LoadOrders(orderNumber, statusId, exactMatch);
+            LoadOrders(searchValue, statusId, exactMatch);
         }
 
-        private void LoadOrders(string orderNumber = "", int statusId = -1, bool exactMatch = false)
+        private void LoadOrders(string searchValue = "", int statusId = -1, bool exactMatch = false)
         {
             try
             {
@@ -1013,22 +1160,29 @@ namespace dump
                     LEFT JOIN order_statuses s ON o.id_status = s.id_status
                     WHERE 1=1";
 
-                // Исключаем заказы со статусом "Доставлен" из основного списка
                 query += " AND o.id_status != 6";
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>();
 
-                if (!string.IsNullOrEmpty(orderNumber) && orderNumber.All(char.IsDigit))
+                if (!string.IsNullOrEmpty(searchValue))
                 {
-                    if (exactMatch)
+                    if (currentSearchType == SearchType.ByOrderNumber)
                     {
-                        query += " AND o.id_order = @OrderNumber";
-                        parameters.Add(new MySqlParameter("@OrderNumber", orderNumber));
+                        if (exactMatch)
+                        {
+                            query += " AND o.id_order = @SearchValue";
+                            parameters.Add(new MySqlParameter("@SearchValue", searchValue));
+                        }
+                        else
+                        {
+                            query += " AND CAST(o.id_order AS CHAR) LIKE @SearchValue";
+                            parameters.Add(new MySqlParameter("@SearchValue", searchValue + "%"));
+                        }
                     }
                     else
                     {
-                        query += " AND CAST(o.id_order AS CHAR) LIKE @OrderNumber";
-                        parameters.Add(new MySqlParameter("@OrderNumber", orderNumber + "%"));
+                        query += " AND REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '(', ''), ')', '') LIKE @SearchValue";
+                        parameters.Add(new MySqlParameter("@SearchValue", "%" + searchValue + "%"));
                     }
                 }
 
@@ -1044,7 +1198,6 @@ namespace dump
                 {
                     connection.Open();
                     MySqlCommand cmd = new MySqlCommand(query, connection);
-
                     foreach (var param in parameters)
                     {
                         cmd.Parameters.Add(param);
@@ -1075,7 +1228,6 @@ namespace dump
         private void AdjustDataGridViewAfterLoad()
         {
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-
             foreach (DataGridViewColumn col in dataGridView1.Columns)
             {
                 if (col.Name != "id_order" && col.Name != "number_persons" &&
@@ -1084,33 +1236,33 @@ namespace dump
                     col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
                 }
             }
-
             dataGridView1.Refresh();
         }
 
         private void comboBoxStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
             string searchText = textBoxSearch.Text;
-
-            if (string.IsNullOrWhiteSpace(searchText))
+            if (string.IsNullOrWhiteSpace(searchText) || textBoxSearch.ForeColor == Color.Gray)
             {
                 LoadOrdersWithFilter("", false);
             }
             else
             {
-                string digits = new string(searchText.Where(char.IsDigit).ToArray());
-                if (digits.Length > MAX_SEARCH_LENGTH)
+                if (currentSearchType == SearchType.ByOrderNumber)
                 {
-                    digits = digits.Substring(0, MAX_SEARCH_LENGTH);
-                }
-
-                if (digits.Length > 0)
-                {
-                    LoadOrdersWithFilter(digits, false);
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length > 0)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
                 }
                 else
                 {
-                    LoadOrdersWithFilter("", false);
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length >= 3)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
                 }
             }
         }
@@ -1119,17 +1271,8 @@ namespace dump
         {
             public int Id { get; set; }
             public string Name { get; set; }
-
-            public StatusItem(int id, string name)
-            {
-                Id = id;
-                Name = name;
-            }
-
-            public override string ToString()
-            {
-                return Name;
-            }
+            public StatusItem(int id, string name) { Id = id; Name = name; }
+            public override string ToString() { return Name; }
         }
 
         private void pictureBox2_Click(object sender, EventArgs e)
@@ -1151,7 +1294,7 @@ namespace dump
             try
             {
                 textBoxSearch.Text = "";
-                textBoxSearch.ForeColor = Color.Black;
+                SetupSearchPlaceholder();
                 comboBoxOrderStatus.SelectedIndex = 0;
                 LoadOrders();
                 textBoxSearch.Focus();
