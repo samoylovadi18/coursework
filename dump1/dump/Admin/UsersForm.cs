@@ -218,7 +218,7 @@ namespace dump
             }
         }
 
-        // TextChanged для ПОИСКА - форматирование (первая буква заглавная)
+        // TextChanged для ПОИСКА - форматирование и ЖИВОЙ ПОИСК с начала строки
         private void TextBoxSearch_TextChanged(object sender, EventArgs e)
         {
             if (isFormattingSearch) return;
@@ -244,7 +244,7 @@ namespace dump
                     }
                 }
 
-                // Применяем фильтры после форматирования
+                // Применяем фильтры после форматирования (живой поиск)
                 ApplyFilters();
             }
             finally
@@ -704,7 +704,7 @@ namespace dump
             }
         }
 
-        // Загрузка пользователей с поиском по ФИО
+        // Загрузка пользователей с ЖИВЫМ поиском по НАЧАЛУ ФИО
         private void LoadUsers(string searchText = "", int roleId = 0)
         {
             try
@@ -718,6 +718,7 @@ namespace dump
 
                 if (!string.IsNullOrWhiteSpace(searchText))
                 {
+                    // ИЗМЕНЕНО: поиск по началу строки (убрали первый %)
                     query += " AND u.FIO LIKE @search";
                 }
 
@@ -735,7 +736,8 @@ namespace dump
 
                     if (!string.IsNullOrWhiteSpace(searchText))
                     {
-                        dataAdapter.SelectCommand.Parameters.AddWithValue("@search", $"%{searchText}%");
+                        // ИЗМЕНЕНО: параметр теперь ищет только с начала строки
+                        dataAdapter.SelectCommand.Parameters.AddWithValue("@search", $"{searchText}%");
                     }
 
                     if (roleId > 0)

@@ -37,6 +37,7 @@
             this.buttonReset = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.buttonDetail = new System.Windows.Forms.Button();
+            this.comboBoxSearchType = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOrders)).BeginInit();
             this.SuspendLayout();
             // 
@@ -56,17 +57,17 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(43, 83);
+            this.label2.Location = new System.Drawing.Point(31, 82);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(156, 21);
+            this.label2.Size = new System.Drawing.Size(65, 21);
             this.label2.TabIndex = 18;
-            this.label2.Text = "Введите № заказа:";
+            this.label2.Text = "Поиск:";
             // 
             // textBoxSearch
             // 
-            this.textBoxSearch.Location = new System.Drawing.Point(205, 74);
+            this.textBoxSearch.Location = new System.Drawing.Point(147, 74);
             this.textBoxSearch.Name = "textBoxSearch";
-            this.textBoxSearch.Size = new System.Drawing.Size(602, 29);
+            this.textBoxSearch.Size = new System.Drawing.Size(522, 29);
             this.textBoxSearch.TabIndex = 16;
             // 
             // label1
@@ -83,9 +84,9 @@
             // comboBoxStatus
             // 
             this.comboBoxStatus.FormattingEnabled = true;
-            this.comboBoxStatus.Location = new System.Drawing.Point(205, 118);
+            this.comboBoxStatus.Location = new System.Drawing.Point(147, 118);
             this.comboBoxStatus.Name = "comboBoxStatus";
-            this.comboBoxStatus.Size = new System.Drawing.Size(602, 29);
+            this.comboBoxStatus.Size = new System.Drawing.Size(660, 29);
             this.comboBoxStatus.TabIndex = 24;
             // 
             // buttonReset
@@ -102,7 +103,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(84, 126);
+            this.label3.Location = new System.Drawing.Point(31, 126);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(110, 21);
             this.label3.TabIndex = 44;
@@ -118,12 +119,21 @@
             this.buttonDetail.Text = "Детальная инф.";
             this.buttonDetail.UseVisualStyleBackColor = false;
             // 
+            // comboBoxSearchType
+            // 
+            this.comboBoxSearchType.FormattingEnabled = true;
+            this.comboBoxSearchType.Location = new System.Drawing.Point(675, 74);
+            this.comboBoxSearchType.Name = "comboBoxSearchType";
+            this.comboBoxSearchType.Size = new System.Drawing.Size(242, 29);
+            this.comboBoxSearchType.TabIndex = 48;
+            // 
             // OrdersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(953, 856);
+            this.Controls.Add(this.comboBoxSearchType);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.buttonReset);
@@ -157,5 +167,6 @@
         private System.Windows.Forms.Button buttonReset;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonDetail;
+        private System.Windows.Forms.ComboBox comboBoxSearchType;
     }
 }
