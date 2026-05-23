@@ -629,9 +629,7 @@ namespace dump
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-            this.Visible = false;
-            SettingsForm s = new SettingsForm();
-            s.ShowDialog();
+           
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
