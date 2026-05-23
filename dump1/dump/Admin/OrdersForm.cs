@@ -15,6 +15,7 @@ namespace dump
         private BindingSource bindingSource;
         private MySqlDataAdapter dataAdapter;
         private bool isFormatting = false;
+        private bool isUpdatingText = false;
 
         // Словарь для хранения статусов (id, name)
         private Dictionary<int, string> statusDictionary = new Dictionary<int, string>();
@@ -208,18 +209,21 @@ namespace dump
             }
         }
 
+        // ===== ИСПРАВЛЕННЫЙ ОБРАБОТЧИК С ПРАВИЛЬНОЙ РАБОТОЙ КУРСОРА =====
         private void textBoxSearch_TextChanged(object sender, EventArgs e)
         {
             if (textBoxSearch.ForeColor == Color.Gray)
                 return;
 
-            if (isFormatting) return;
+            if (isFormatting || isUpdatingText) return;
             isFormatting = true;
 
             string inputText = textBoxSearch.Text;
+            int cursorPos = textBoxSearch.SelectionStart;
 
             if (currentSearchType == SearchType.ByOrderNumber)
             {
+                // Поиск по номеру заказа - только цифры
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > MAX_ORDER_SEARCH_LENGTH)
@@ -227,13 +231,12 @@ namespace dump
                     digits = digits.Substring(0, MAX_ORDER_SEARCH_LENGTH);
                 }
 
-                string formatted = digits;
-
-                if (formatted != inputText)
+                if (digits != inputText)
                 {
-                    int cursorPos = textBoxSearch.SelectionStart;
-                    textBoxSearch.Text = formatted;
-                    textBoxSearch.SelectionStart = Math.Min(cursorPos, formatted.Length);
+                    isUpdatingText = true;
+                    textBoxSearch.Text = digits;
+                    textBoxSearch.SelectionStart = Math.Min(cursorPos, digits.Length);
+                    isUpdatingText = false;
                 }
 
                 if (digits.Length > 0)
@@ -243,31 +246,30 @@ namespace dump
             }
             else
             {
+                // Получаем только цифры из введенного текста
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > 11)
                     digits = digits.Substring(0, 11);
 
-                int cursorPos = textBoxSearch.SelectionStart;
-                int selectionLength = textBoxSearch.SelectionLength;
+                // Сохраняем текущую позицию курсора относительно цифр
+                int digitPosBeforeCursor = GetDigitPositionBeforeCursor(inputText, cursorPos);
 
+                // Форматируем номер
                 string formatted = FormatPhoneNumber(digits);
 
                 if (formatted != inputText)
                 {
+                    isUpdatingText = true;
                     textBoxSearch.Text = formatted;
 
-                    if (cursorPos <= textBoxSearch.Text.Length)
-                    {
-                        textBoxSearch.SelectionStart = cursorPos;
-                        textBoxSearch.SelectionLength = selectionLength;
-                    }
-                    else
-                    {
-                        textBoxSearch.SelectionStart = textBoxSearch.Text.Length;
-                    }
+                    // Восстанавливаем позицию курсора
+                    int newCursorPos = GetCursorPositionFromDigitPosition(formatted, digitPosBeforeCursor);
+                    textBoxSearch.SelectionStart = Math.Min(newCursorPos, formatted.Length);
+                    isUpdatingText = false;
                 }
 
+                // Выполняем поиск если введено 3 и более цифр
                 if (digits.Length >= 3)
                     LoadOrdersWithFilter(digits, false);
                 else if (digits.Length == 0)
@@ -275,6 +277,39 @@ namespace dump
             }
 
             isFormatting = false;
+        }
+
+        // ===== ПОЛУЧАЕМ КОЛИЧЕСТВО ЦИФР ДО ПОЗИЦИИ КУРСОРА =====
+        private int GetDigitPositionBeforeCursor(string text, int cursorPos)
+        {
+            int digitCount = 0;
+            for (int i = 0; i < cursorPos && i < text.Length; i++)
+            {
+                if (char.IsDigit(text[i]))
+                    digitCount++;
+            }
+            return digitCount;
+        }
+
+        // ===== ПОЛУЧАЕМ ПОЗИЦИЮ КУРСОРА ПО КОЛИЧЕСТВУ ЦИФР =====
+        private int GetCursorPositionFromDigitPosition(string formattedText, int digitPos)
+        {
+            if (digitPos <= 0) return 0;
+
+            int digitCount = 0;
+            for (int i = 0; i < formattedText.Length; i++)
+            {
+                if (char.IsDigit(formattedText[i]))
+                {
+                    digitCount++;
+                    if (digitCount >= digitPos)
+                    {
+                        // Возвращаем позицию после цифры
+                        return i + 1;
+                    }
+                }
+            }
+            return formattedText.Length;
         }
 
         private string FormatPhoneNumber(string digits)
@@ -285,35 +320,27 @@ namespace dump
             if (digits.Length == 0)
                 return "";
 
-            string normalizedDigits = digits;
-            if (normalizedDigits.Length > 0 && normalizedDigits[0] != '7')
-            {
-                normalizedDigits = "7" + normalizedDigits;
-                if (normalizedDigits.Length > 11)
-                    normalizedDigits = normalizedDigits.Substring(0, 11);
-            }
-
-            if (normalizedDigits.Length < 2)
-                return normalizedDigits;
+            if (digits.Length < 2)
+                return digits;
 
             string result = "+7";
 
-            if (normalizedDigits.Length >= 2)
+            if (digits.Length >= 2)
             {
-                int operatorLength = Math.Min(3, normalizedDigits.Length - 1);
-                result += " (" + normalizedDigits.Substring(1, operatorLength);
+                int operatorLength = Math.Min(3, digits.Length - 1);
+                result += " (" + digits.Substring(1, operatorLength);
 
-                if (normalizedDigits.Length > 4)
+                if (digits.Length > 4)
                 {
-                    result += ") " + normalizedDigits.Substring(4, Math.Min(3, normalizedDigits.Length - 4));
+                    result += ") " + digits.Substring(4, Math.Min(3, digits.Length - 4));
 
-                    if (normalizedDigits.Length > 7)
+                    if (digits.Length > 7)
                     {
-                        result += "-" + normalizedDigits.Substring(7, Math.Min(2, normalizedDigits.Length - 7));
+                        result += "-" + digits.Substring(7, Math.Min(2, digits.Length - 7));
 
-                        if (normalizedDigits.Length > 9)
+                        if (digits.Length > 9)
                         {
-                            result += "-" + normalizedDigits.Substring(9, Math.Min(2, normalizedDigits.Length - 9));
+                            result += "-" + digits.Substring(9, Math.Min(2, digits.Length - 9));
                         }
                     }
                 }

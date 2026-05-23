@@ -672,13 +672,19 @@ namespace dump
             };
         }
 
+        // ===== НАСТРОЙКА ВСЕХ ОГРАНИЧЕНИЙ ДЛЯ ПОЛЕЙ ВВОДА =====
         private void SetupValidationTextBoxes()
         {
+            // ===== 1. НАСТРОЙКА ДЛЯ НАЗВАНИЯ БЛЮДА =====
+            txtEditDishName.MaxLength = 100;
             txtEditDishName.KeyPress += (s, e) =>
             {
                 if (!char.IsControl(e.KeyChar) && !IsRussianLetter(e.KeyChar) && e.KeyChar != '-' && e.KeyChar != ' ')
                     e.Handled = true;
             };
+
+            // ===== 2. НАСТРОЙКА ДЛЯ ПОЛЯ ПОИСКА (С ОГРАНИЧЕНИЕМ 100 СИМВОЛОВ) =====
+            txtSearch.MaxLength = 100; // ОГРАНИЧЕНИЕ МАКСИМУМ 100 СИМВОЛОВ
 
             txtSearch.KeyPress += (s, e) =>
             {
@@ -696,6 +702,16 @@ namespace dump
                     string text = txtSearch.Text;
                     int cursorPos = txtSearch.SelectionStart;
 
+                    // Ограничение длины
+                    if (text.Length > 100)
+                    {
+                        text = text.Substring(0, 100);
+                        txtSearch.Text = text;
+                        txtSearch.SelectionStart = Math.Min(cursorPos, text.Length);
+                        return;
+                    }
+
+                    // Удаление двойных пробелов
                     string newText = "";
                     bool lastWasSpace = false;
                     foreach (char c in text)
@@ -715,6 +731,7 @@ namespace dump
                         }
                     }
 
+                    // Первая буква заглавная
                     if (newText.Length > 0 && char.IsLower(newText[0]) && IsRussianLetter(newText[0]))
                     {
                         newText = char.ToUpper(newText[0]) + newText.Substring(1);
@@ -732,6 +749,7 @@ namespace dump
                 }
             };
 
+            // ===== 3. НАСТРОЙКА ДЛЯ ПОЛЕЙ ЦЕНЫ И СЕБЕСТОИМОСТИ =====
             txtCost.KeyPress += TextBoxPrice_KeyPress;
             numEditPrice.KeyPress += TextBoxPrice_KeyPress;
             txtCost.Leave += (s, e) => FormatPriceTextBoxOnLeave(txtCost);

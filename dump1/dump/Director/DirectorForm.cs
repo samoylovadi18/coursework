@@ -30,13 +30,9 @@ namespace dump
 
         private void SetupButtonStyles()
         {
-            SetupPanelButtonStyle(buttonCertificates);
-            SetupPanelButtonStyle(buttonClientTop);
-            SetupPanelButtonStyle(buttonTopDish);
             SetupPanelButtonStyle(buttonStatistics);
             SetupPanelButtonStyle(buttonProfit);
             SetupPanelButtonStyle(ButtonReport);
-            
         }
 
         private void SetupPanelButtonStyle(Button btn)
@@ -78,9 +74,6 @@ namespace dump
             statisticsPanel.BringToFront();
 
             // Показываем кнопки на панели
-            buttonCertificates.Visible = true;
-            buttonClientTop.Visible = true;
-            buttonTopDish.Visible = true;
 
             // ButtonRev НЕ ТРОГАЕМ - она на форме и всегда видна
         }
@@ -106,9 +99,6 @@ namespace dump
             }
 
             // Скрываем кнопки на панели
-            buttonCertificates.Visible = false;
-            buttonClientTop.Visible = false;
-            buttonTopDish.Visible = false;
 
             // ButtonRev НЕ ТРОГАЕМ
         }

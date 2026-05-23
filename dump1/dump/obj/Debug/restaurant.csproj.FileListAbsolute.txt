@@ -154,3 +154,4 @@ C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\du
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\bin\Debug\System.Text.Json.xml
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.Up2Date
+C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.SisAdminForm.resources

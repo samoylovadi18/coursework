@@ -314,6 +314,9 @@
     <EmbeddedResource Include="Director\TopClientsForm.resx">
       <DependentUpon>TopClientsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SisAdminForm.resx">
+      <DependentUpon>SisAdminForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
