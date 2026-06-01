@@ -114,6 +114,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InactivityManager.cs" />
     <Compile Include="LoginForm\CaptchaForm.cs">
       <SubType>Form</SubType>
     </Compile>

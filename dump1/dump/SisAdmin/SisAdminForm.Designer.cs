@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SisAdminForm));
-            this.tabControlBD = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabControl = new System.Windows.Forms.TabControl();
+            this.tabPageBD = new System.Windows.Forms.TabPage();
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnTestConnection = new System.Windows.Forms.Button();
@@ -43,48 +43,54 @@
             this.labelDatabase = new System.Windows.Forms.Label();
             this.txtServer = new System.Windows.Forms.TextBox();
             this.labelServer = new System.Windows.Forms.Label();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.tabPageImport = new System.Windows.Forms.TabPage();
+            this.tabPageCopy = new System.Windows.Forms.TabPage();
+            this.tabPageSecure = new System.Windows.Forms.TabPage();
+            this.btnSaveSecurity = new System.Windows.Forms.Button();
+            this.btnCancelSecurity = new System.Windows.Forms.Button();
+            this.chkAutoLock = new System.Windows.Forms.CheckBox();
+            this.numInactivityTime = new System.Windows.Forms.NumericUpDown();
+            this.lblInactivity = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.tabControlBD.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.tabControl.SuspendLayout();
+            this.tabPageBD.SuspendLayout();
+            this.tabPageSecure.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).BeginInit();
             this.SuspendLayout();
             // 
-            // tabControlBD
+            // tabControl
             // 
-            this.tabControlBD.Controls.Add(this.tabPage1);
-            this.tabControlBD.Controls.Add(this.tabPage2);
-            this.tabControlBD.Controls.Add(this.tabPage3);
-            this.tabControlBD.Controls.Add(this.tabPage4);
-            this.tabControlBD.Location = new System.Drawing.Point(49, 75);
-            this.tabControlBD.Name = "tabControlBD";
-            this.tabControlBD.SelectedIndex = 0;
-            this.tabControlBD.Size = new System.Drawing.Size(760, 557);
-            this.tabControlBD.TabIndex = 0;
+            this.tabControl.Controls.Add(this.tabPageBD);
+            this.tabControl.Controls.Add(this.tabPageImport);
+            this.tabControl.Controls.Add(this.tabPageCopy);
+            this.tabControl.Controls.Add(this.tabPageSecure);
+            this.tabControl.Location = new System.Drawing.Point(49, 75);
+            this.tabControl.Name = "tabControl";
+            this.tabControl.SelectedIndex = 0;
+            this.tabControl.Size = new System.Drawing.Size(760, 557);
+            this.tabControl.TabIndex = 0;
             // 
-            // tabPage1
+            // tabPageBD
             // 
-            this.tabPage1.Controls.Add(this.lblStatus);
-            this.tabPage1.Controls.Add(this.btnSave);
-            this.tabPage1.Controls.Add(this.btnTestConnection);
-            this.tabPage1.Controls.Add(this.visible_password);
-            this.tabPage1.Controls.Add(this.txtPassword);
-            this.tabPage1.Controls.Add(this.labelPassword);
-            this.tabPage1.Controls.Add(this.txtUsername);
-            this.tabPage1.Controls.Add(this.labelUsername);
-            this.tabPage1.Controls.Add(this.txtDatabase);
-            this.tabPage1.Controls.Add(this.labelDatabase);
-            this.tabPage1.Controls.Add(this.txtServer);
-            this.tabPage1.Controls.Add(this.labelServer);
-            this.tabPage1.Location = new System.Drawing.Point(4, 30);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(752, 523);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "База данных";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            this.tabPage1.Click += new System.EventHandler(this.tabPage1_Click);
+            this.tabPageBD.Controls.Add(this.lblStatus);
+            this.tabPageBD.Controls.Add(this.btnSave);
+            this.tabPageBD.Controls.Add(this.btnTestConnection);
+            this.tabPageBD.Controls.Add(this.visible_password);
+            this.tabPageBD.Controls.Add(this.txtPassword);
+            this.tabPageBD.Controls.Add(this.labelPassword);
+            this.tabPageBD.Controls.Add(this.txtUsername);
+            this.tabPageBD.Controls.Add(this.labelUsername);
+            this.tabPageBD.Controls.Add(this.txtDatabase);
+            this.tabPageBD.Controls.Add(this.labelDatabase);
+            this.tabPageBD.Controls.Add(this.txtServer);
+            this.tabPageBD.Controls.Add(this.labelServer);
+            this.tabPageBD.Location = new System.Drawing.Point(4, 30);
+            this.tabPageBD.Name = "tabPageBD";
+            this.tabPageBD.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageBD.Size = new System.Drawing.Size(752, 523);
+            this.tabPageBD.TabIndex = 0;
+            this.tabPageBD.Text = "База данных";
+            this.tabPageBD.UseVisualStyleBackColor = true;
             // 
             // lblStatus
             // 
@@ -206,36 +212,89 @@
             this.labelServer.TabIndex = 23;
             this.labelServer.Text = "Сервер:";
             // 
-            // tabPage2
+            // tabPageImport
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 30);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(752, 523);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Импорт/Экспорт";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            this.tabPage2.Click += new System.EventHandler(this.tabPage2_Click);
+            this.tabPageImport.Location = new System.Drawing.Point(4, 30);
+            this.tabPageImport.Name = "tabPageImport";
+            this.tabPageImport.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageImport.Size = new System.Drawing.Size(752, 523);
+            this.tabPageImport.TabIndex = 1;
+            this.tabPageImport.Text = "Импорт/Экспорт";
+            this.tabPageImport.UseVisualStyleBackColor = true;
             // 
-            // tabPage3
+            // tabPageCopy
             // 
-            this.tabPage3.Location = new System.Drawing.Point(4, 30);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(752, 523);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Резервное копирование";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.tabPageCopy.Location = new System.Drawing.Point(4, 30);
+            this.tabPageCopy.Name = "tabPageCopy";
+            this.tabPageCopy.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageCopy.Size = new System.Drawing.Size(752, 523);
+            this.tabPageCopy.TabIndex = 2;
+            this.tabPageCopy.Text = "Резервное копирование/восстановление";
+            this.tabPageCopy.UseVisualStyleBackColor = true;
             // 
-            // tabPage4
+            // tabPageSecure
             // 
-            this.tabPage4.Location = new System.Drawing.Point(4, 30);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(752, 523);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Безопасность";
-            this.tabPage4.UseVisualStyleBackColor = true;
+            this.tabPageSecure.Controls.Add(this.btnSaveSecurity);
+            this.tabPageSecure.Controls.Add(this.btnCancelSecurity);
+            this.tabPageSecure.Controls.Add(this.chkAutoLock);
+            this.tabPageSecure.Controls.Add(this.numInactivityTime);
+            this.tabPageSecure.Controls.Add(this.lblInactivity);
+            this.tabPageSecure.Location = new System.Drawing.Point(4, 30);
+            this.tabPageSecure.Name = "tabPageSecure";
+            this.tabPageSecure.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageSecure.Size = new System.Drawing.Size(752, 523);
+            this.tabPageSecure.TabIndex = 3;
+            this.tabPageSecure.Text = "Безопасность";
+            this.tabPageSecure.UseVisualStyleBackColor = true;
+            this.tabPageSecure.Click += new System.EventHandler(this.tabPageSecure_Click);
+            // 
+            // btnSaveSecurity
+            // 
+            this.btnSaveSecurity.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnSaveSecurity.Location = new System.Drawing.Point(453, 273);
+            this.btnSaveSecurity.Name = "btnSaveSecurity";
+            this.btnSaveSecurity.Size = new System.Drawing.Size(170, 44);
+            this.btnSaveSecurity.TabIndex = 44;
+            this.btnSaveSecurity.Text = "Сохранить";
+            this.btnSaveSecurity.UseVisualStyleBackColor = false;
+            // 
+            // btnCancelSecurity
+            // 
+            this.btnCancelSecurity.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnCancelSecurity.Location = new System.Drawing.Point(453, 345);
+            this.btnCancelSecurity.Name = "btnCancelSecurity";
+            this.btnCancelSecurity.Size = new System.Drawing.Size(170, 44);
+            this.btnCancelSecurity.TabIndex = 43;
+            this.btnCancelSecurity.Text = "Отмена";
+            this.btnCancelSecurity.UseVisualStyleBackColor = false;
+            // 
+            // chkAutoLock
+            // 
+            this.chkAutoLock.AutoSize = true;
+            this.chkAutoLock.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.chkAutoLock.Location = new System.Drawing.Point(141, 217);
+            this.chkAutoLock.Name = "chkAutoLock";
+            this.chkAutoLock.Size = new System.Drawing.Size(482, 35);
+            this.chkAutoLock.TabIndex = 28;
+            this.chkAutoLock.Text = "Включить автоматическую блокировку";
+            this.chkAutoLock.UseVisualStyleBackColor = true;
+            // 
+            // numInactivityTime
+            // 
+            this.numInactivityTime.Location = new System.Drawing.Point(503, 152);
+            this.numInactivityTime.Name = "numInactivityTime";
+            this.numInactivityTime.Size = new System.Drawing.Size(120, 29);
+            this.numInactivityTime.TabIndex = 27;
+            // 
+            // lblInactivity
+            // 
+            this.lblInactivity.AutoSize = true;
+            this.lblInactivity.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblInactivity.Location = new System.Drawing.Point(135, 152);
+            this.lblInactivity.Name = "lblInactivity";
+            this.lblInactivity.Size = new System.Drawing.Size(360, 31);
+            this.lblInactivity.TabIndex = 26;
+            this.lblInactivity.Text = "Время бездействия (секунды):";
             // 
             // label1
             // 
@@ -254,7 +313,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(854, 659);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.tabControlBD);
+            this.Controls.Add(this.tabControl);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -264,9 +323,12 @@
             this.Name = "SisAdminForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.SisAdminForm_Load);
-            this.tabControlBD.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
+            this.tabControl.ResumeLayout(false);
+            this.tabPageBD.ResumeLayout(false);
+            this.tabPageBD.PerformLayout();
+            this.tabPageSecure.ResumeLayout(false);
+            this.tabPageSecure.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -274,11 +336,11 @@
 
         #endregion
 
-        private System.Windows.Forms.TabControl tabControlBD;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TabControl tabControl;
+        private System.Windows.Forms.TabPage tabPageBD;
+        private System.Windows.Forms.TabPage tabPageImport;
+        private System.Windows.Forms.TabPage tabPageCopy;
+        private System.Windows.Forms.TabPage tabPageSecure;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnTestConnection;
@@ -292,5 +354,10 @@
         private System.Windows.Forms.TextBox txtServer;
         private System.Windows.Forms.Label labelServer;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox chkAutoLock;
+        private System.Windows.Forms.NumericUpDown numInactivityTime;
+        private System.Windows.Forms.Label lblInactivity;
+        private System.Windows.Forms.Button btnSaveSecurity;
+        private System.Windows.Forms.Button btnCancelSecurity;
     }
 }

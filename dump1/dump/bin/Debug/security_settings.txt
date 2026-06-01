@@ -1,0 +1,2 @@
+InactivityTime=10
+AutoLockEnabled=True

@@ -14,6 +14,7 @@ namespace dump
 {
     public partial class LoginForm : Form
     {
+        public static string UserLogin = "";
         private bool isPasswordVisible = false;
         private string allowedSpecialChars = "!@#$%^&*()_-+=[]{}|;:'\",.<>?/`~";
 

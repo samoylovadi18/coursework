@@ -9,12 +9,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace dump
 {
     public partial class UsersForm : Form
     {
+        private bool isLockDialogOpen = false;
+        private bool isLoggingOut = false;
+
         private DataTable usersTable;
         private DataTable rolesTable;
         private MySqlDataAdapter dataAdapter;
@@ -29,22 +31,6 @@ namespace dump
         private bool isFormattingFIO = false;
         private bool isFormattingSearch = false;
         private System.Windows.Forms.ToolTip toolTip1;
-
-        private void InitializeEditPanelAppearance()
-        {
-            panelEdit.BorderStyle = BorderStyle.None;
-            panelEdit.BackColor = Color.WhiteSmoke;
-            panelEdit.Paint += PanelEdit_Paint;
-        }
-
-        private void PanelEdit_Paint(object sender, PaintEventArgs e)
-        {
-            ControlPaint.DrawBorder(e.Graphics, panelEdit.ClientRectangle,
-                Color.DarkGray, 4, ButtonBorderStyle.Solid,
-                Color.DarkGray, 4, ButtonBorderStyle.Solid,
-                Color.DarkGray, 4, ButtonBorderStyle.Solid,
-                Color.DarkGray, 4, ButtonBorderStyle.Solid);
-        }
 
         public UsersForm()
         {
@@ -74,439 +60,197 @@ namespace dump
 
             dataGridViewUsers.SelectionChanged += DataGridViewUsers_SelectionChanged;
 
-            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
             this.FormClosing += UsersForm_FormClosing;
+
+            // Регистрация в менеджере бездействия
+            InactivityManager.RegisterForm(this);
+            InactivityManager.OnLockRequest += LockSystem;
         }
 
-        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
+        #region Блокировка системы
+
+        private void LockSystem()
+        {
+            if (isLockDialogOpen || isLoggingOut) return;
+            isLockDialogOpen = true;
+
+            this.Invoke(new Action(() =>
+            {
+                Form lockDialog = new Form();
+                lockDialog.Text = "Блокировка системы";
+                lockDialog.Size = new Size(380, 230);
+                lockDialog.StartPosition = FormStartPosition.CenterScreen;
+                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                lockDialog.MaximizeBox = false;
+                lockDialog.MinimizeBox = false;
+                lockDialog.TopMost = true;
+
+                Label lblMessage = new Label();
+                lblMessage.Text = $"Система заблокирована из-за бездействия ({InactivityManager.GetInactivityTime()} сек.)\nВведите пароль для разблокировки:";
+                lblMessage.Location = new Point(20, 20);
+                lblMessage.Size = new Size(330, 50);
+                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
+
+                Label lblUser = new Label();
+                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
+                lblUser.Location = new Point(20, 75);
+                lblUser.Size = new Size(330, 25);
+                lblUser.TextAlign = ContentAlignment.MiddleCenter;
+                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
+
+                TextBox txtPassword = new TextBox();
+                txtPassword.Location = new Point(90, 110);
+                txtPassword.Size = new Size(180, 20);
+                txtPassword.UseSystemPasswordChar = true;
+
+                Button btnUnlock = new Button();
+                btnUnlock.Text = "Разблокировать";
+                btnUnlock.Location = new Point(130, 145);
+                btnUnlock.Size = new Size(100, 30);
+
+                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
+                txtPassword.KeyPress += (s, e) =>
+                {
+                    if (e.KeyChar == (char)Keys.Enter)
+                        CheckPasswordAndUnlock(txtPassword, lockDialog);
+                };
+
+                lockDialog.Controls.Add(lblMessage);
+                lockDialog.Controls.Add(lblUser);
+                lockDialog.Controls.Add(txtPassword);
+                lockDialog.Controls.Add(btnUnlock);
+                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; };
+                lockDialog.ShowDialog();
+            }));
+        }
+
+        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
+        {
+            bool isCorrect = false;
+
+            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
+            {
+                if (txtPassword.Text == "admin")
+                    isCorrect = true;
+            }
+            else
+            {
+                string dbPassword = GetPasswordFromDB();
+                string inputHash = HashPassword(txtPassword.Text);
+                if (inputHash == dbPassword)
+                    isCorrect = true;
+            }
+
+            if (isCorrect)
+            {
+                lockDialog.Close();
+                InactivityManager.ResetActivity();
+            }
+            else
+            {
+                MessageBox.Show("Неверный пароль! Вы будете перенаправлены на окно входа.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                isLoggingOut = true;
+                lockDialog.Close();
+                InactivityManager.UnregisterForm();
+                this.Close();
+
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
+        }
+
+        private string GetPasswordFromDB()
+        {
+            try
+            {
+                using (var conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
+                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
+                    return cmd.ExecuteScalar()?.ToString();
+                }
+            }
+            catch { return null; }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in hash)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (!isLoggingOut)
+                InactivityManager.UnregisterForm();
+            base.OnFormClosed(e);
+        }
+
+        #endregion
+
         private void UsersForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие не было вызвано из кода
-            if (e.CloseReason == CloseReason.UserClosing)
+            if (e.CloseReason == CloseReason.UserClosing && !isLoggingOut)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // Открываем AdminForm
                 AdminForm admin = new AdminForm();
                 admin.Show();
             }
         }
 
+        #region Инициализация
+
+        private void InitializeEditPanelAppearance()
+        {
+            panelEdit.BorderStyle = BorderStyle.None;
+            panelEdit.BackColor = Color.WhiteSmoke;
+            panelEdit.Paint += PanelEdit_Paint;
+        }
+
+        private void PanelEdit_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(e.Graphics, panelEdit.ClientRectangle,
+                Color.DarkGray, 4, ButtonBorderStyle.Solid,
+                Color.DarkGray, 4, ButtonBorderStyle.Solid,
+                Color.DarkGray, 4, ButtonBorderStyle.Solid,
+                Color.DarkGray, 4, ButtonBorderStyle.Solid);
+        }
+
         private void InitializeInputValidation()
         {
-            // Для поля ФИО - только русские буквы, дефис, пробелы (макс 2)
             textBoxFIO.MaxLength = 100;
             textBoxFIO.KeyPress += TextBoxFIO_KeyPress;
             textBoxFIO.Validating += TextBoxFIO_Validating;
             textBoxFIO.TextChanged += TextBoxFIO_TextChanged;
             textBoxFIO.Leave += TextBoxFIO_Leave;
 
-            // Для поля Логин
             textBoxLogin.MaxLength = 50;
             textBoxLogin.KeyPress += TextBoxLogin_KeyPress;
             textBoxLogin.Validating += TextBoxLogin_Validating;
 
-            // Для поля Пароль
             textBoxPassword.MaxLength = 50;
             textBoxPassword.KeyPress += TextBoxPassword_KeyPress;
             textBoxPassword.Validating += TextBoxPassword_Validating;
 
-            // ДЛЯ ПОЛЯ ПОИСКА - русские буквы, пробелы, макс 2 пробела
             textBoxSearch.MaxLength = 100;
             textBoxSearch.KeyPress += TextBoxSearch_KeyPress;
             textBoxSearch.TextChanged += TextBoxSearch_TextChanged;
             textBoxSearch.Leave += TextBoxSearch_Leave;
         }
 
-        // KeyPress для ФИО - только русские буквы, дефис и пробелы (макс 2)
-        private void TextBoxFIO_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            System.Windows.Forms.TextBox textBox = sender as System.Windows.Forms.TextBox;
-
-            if (e.KeyChar == (char)Keys.Back)
-                return;
-
-            // Разрешаем пробел
-            if (e.KeyChar == ' ')
-            {
-                int currentSpaceCount = textBox.Text.Count(c => c == ' ');
-                if (currentSpaceCount < 2)
-                    return;
-                else
-                {
-                    e.Handled = true;
-                    System.Media.SystemSounds.Beep.Play();
-                    return;
-                }
-            }
-
-            // Разрешаем дефис
-            if (e.KeyChar == '-')
-                return;
-
-            // Разрешаем русские буквы
-            if (IsRussianLetter(e.KeyChar))
-                return;
-
-            // Все остальные символы запрещены
-            e.Handled = true;
-        }
-
-        // KeyPress для ПОИСКА - только русские буквы и пробелы (макс 2)
-        private void TextBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            System.Windows.Forms.TextBox textBox = sender as System.Windows.Forms.TextBox;
-
-            if (e.KeyChar == (char)Keys.Back)
-                return;
-
-            // Разрешаем пробел
-            if (e.KeyChar == ' ')
-            {
-                int currentSpaceCount = textBox.Text.Count(c => c == ' ');
-                if (currentSpaceCount < 2)
-                    return;
-                else
-                {
-                    e.Handled = true;
-                    System.Media.SystemSounds.Beep.Play();
-                    return;
-                }
-            }
-
-            // Разрешаем русские буквы
-            if (IsRussianLetter(e.KeyChar))
-                return;
-
-            // Все остальные символы запрещены
-            e.Handled = true;
-        }
-
-        // TextChanged для ФИО - форматирование
-        private void TextBoxFIO_TextChanged(object sender, EventArgs e)
-        {
-            if (isFormattingFIO) return;
-
-            isFormattingFIO = true;
-
-            try
-            {
-                System.Windows.Forms.TextBox textBox = sender as System.Windows.Forms.TextBox;
-                string text = textBox.Text;
-                int cursorPosition = textBox.SelectionStart;
-
-                if (!string.IsNullOrEmpty(text))
-                {
-                    string formattedText = FormatFIOInRealTime(text);
-                    if (formattedText != text)
-                    {
-                        textBox.Text = formattedText;
-                        if (cursorPosition <= formattedText.Length)
-                            textBox.SelectionStart = cursorPosition;
-                        else
-                            textBox.SelectionStart = formattedText.Length;
-                    }
-                }
-            }
-            finally
-            {
-                isFormattingFIO = false;
-            }
-        }
-
-        // TextChanged для ПОИСКА - форматирование и ЖИВОЙ ПОИСК с начала строки
-        private void TextBoxSearch_TextChanged(object sender, EventArgs e)
-        {
-            if (isFormattingSearch) return;
-
-            isFormattingSearch = true;
-
-            try
-            {
-                System.Windows.Forms.TextBox textBox = sender as System.Windows.Forms.TextBox;
-                string text = textBox.Text;
-                int cursorPosition = textBox.SelectionStart;
-
-                if (!string.IsNullOrEmpty(text))
-                {
-                    string formattedText = FormatSearchText(text);
-                    if (formattedText != text)
-                    {
-                        textBox.Text = formattedText;
-                        if (cursorPosition <= formattedText.Length)
-                            textBox.SelectionStart = cursorPosition;
-                        else
-                            textBox.SelectionStart = formattedText.Length;
-                    }
-                }
-
-                // Применяем фильтры после форматирования (живой поиск)
-                ApplyFilters();
-            }
-            finally
-            {
-                isFormattingSearch = false;
-            }
-        }
-
-        // Форматирование текста поиска (первая буква каждого слова заглавная)
-        private string FormatSearchText(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            text = text.ToLower();
-            char[] chars = text.ToCharArray();
-
-            // Первая буква заглавная
-            if (chars.Length > 0 && IsRussianLetter(chars[0]))
-                chars[0] = char.ToUpper(chars[0]);
-
-            // После пробела буква заглавная
-            for (int i = 1; i < chars.Length; i++)
-            {
-                if (chars[i - 1] == ' ' && IsRussianLetter(chars[i]))
-                    chars[i] = char.ToUpper(chars[i]);
-            }
-
-            return new string(chars);
-        }
-
-        // Форматирование ФИО в реальном времени
-        private string FormatFIOInRealTime(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            char[] chars = text.ToCharArray();
-
-            if (chars.Length > 0 && IsRussianLetter(chars[0]))
-                chars[0] = char.ToUpper(chars[0]);
-
-            for (int i = 1; i < chars.Length; i++)
-            {
-                if ((chars[i - 1] == ' ' || chars[i - 1] == '-') && IsRussianLetter(chars[i]))
-                    chars[i] = char.ToUpper(chars[i]);
-                else if (IsRussianLetter(chars[i]) && i > 0 && !IsWordSeparator(chars[i - 1]))
-                    chars[i] = char.ToLower(chars[i]);
-            }
-
-            return new string(chars);
-        }
-
-        // Потеря фокуса для ПОИСКА
-        private void TextBoxSearch_Leave(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(textBoxSearch.Text))
-            {
-                string formattedText = FormatSearchText(textBoxSearch.Text);
-                if (formattedText != textBoxSearch.Text)
-                    textBoxSearch.Text = formattedText;
-            }
-        }
-
-        private bool IsWordSeparator(char c)
-        {
-            return c == ' ' || c == '-';
-        }
-
-        private void TextBoxFIO_Validating(object sender, CancelEventArgs e)
-        {
-            string text = textBoxFIO.Text.Trim();
-
-            if (text.Length > 100)
-            {
-                MessageBox.Show("ФИО не может превышать 100 символов!",
-                    "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                textBoxFIO.Focus();
-                textBoxFIO.SelectAll();
-                e.Cancel = true;
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(text))
-            {
-                if (!Regex.IsMatch(text, @"^[а-яА-ЯёЁ\s\-]+$"))
-                {
-                    MessageBox.Show("ФИО может содержать только русские буквы, пробелы и дефисы!",
-                        "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    textBoxFIO.Focus();
-                    textBoxFIO.SelectAll();
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        private void TextBoxFIO_Leave(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(textBoxFIO.Text))
-            {
-                string formattedFIO = FormatFIO(textBoxFIO.Text);
-                if (formattedFIO != textBoxFIO.Text)
-                    textBoxFIO.Text = formattedFIO;
-            }
-        }
-
-        // Полное форматирование ФИО
-        private string FormatFIO(string fio)
-        {
-            if (string.IsNullOrWhiteSpace(fio))
-                return fio;
-
-            string[] words = fio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (words[i].Length > 0)
-                {
-                    words[i] = char.ToUpper(words[i][0]) +
-                              (words[i].Length > 1 ? words[i].Substring(1).ToLower() : "");
-                }
-            }
-            return string.Join(" ", words);
-        }
-
-        // Для логина и пароля - английские буквы, цифры, спецсимволы (БЕЗ РУССКИХ)
-        private void TextBoxLogin_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-                return;
-
-            if (!IsValidCharacter(e.KeyChar))
-                e.Handled = true;
-        }
-
-        private void TextBoxLogin_Validating(object sender, CancelEventArgs e)
-        {
-            string text = textBoxLogin.Text.Trim();
-
-            if (text.Length > 50)
-            {
-                MessageBox.Show("Логин не может превышать 50 символов!", "Ошибка ввода",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                textBoxLogin.Focus();
-                textBoxLogin.SelectAll();
-                e.Cancel = true;
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(text))
-            {
-                if (text.Contains(" "))
-                {
-                    MessageBox.Show("Логин не должен содержать пробелов!", "Ошибка ввода",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    textBoxLogin.Focus();
-                    textBoxLogin.SelectAll();
-                    e.Cancel = true;
-                    return;
-                }
-
-                if (ContainsInvalidCharacters(text))
-                {
-                    MessageBox.Show("Логин может содержать только:\n" +
-                                  "• Английские буквы (A-Z, a-z)\n" +
-                                  "• Цифры (0-9)\n" +
-                                  "• Специальные символы: " + allowedSpecialChars,
-                                  "Недопустимые символы", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    textBoxLogin.Focus();
-                    textBoxLogin.SelectAll();
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        private void TextBoxPassword_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsControl(e.KeyChar))
-                return;
-
-            if (!IsValidCharacter(e.KeyChar))
-                e.Handled = true;
-        }
-
-        private void TextBoxPassword_Validating(object sender, CancelEventArgs e)
-        {
-            string text = textBoxPassword.Text;
-
-            if (text.Length > 50)
-            {
-                MessageBox.Show("Пароль не может превышать 50 символов!", "Ошибка ввода",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                textBoxPassword.Focus();
-                textBoxPassword.SelectAll();
-                e.Cancel = true;
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(text))
-            {
-                if (text.Contains(" "))
-                {
-                    MessageBox.Show("Пароль не должен содержать пробелов!", "Ошибка ввода",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    textBoxPassword.Focus();
-                    textBoxPassword.SelectAll();
-                    e.Cancel = true;
-                    return;
-                }
-
-                if (ContainsInvalidCharacters(text))
-                {
-                    MessageBox.Show("Пароль может содержать только:\n" +
-                                  "• Английские буквы (A-Z, a-z)\n" +
-                                  "• Цифры (0-9)\n" +
-                                  "• Специальные символы: " + allowedSpecialChars,
-                                  "Недопустимые символы", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    textBoxPassword.Focus();
-                    textBoxPassword.SelectAll();
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        private bool IsValidCharacter(char c)
-        {
-            // Запрещаем русские буквы
-            if ((c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я'))
-                return false;
-
-            if (c == ' ')
-                return false;
-
-            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-                return true;
-
-            if (c >= '0' && c <= '9')
-                return true;
-
-            if (allowedSpecialChars.Contains(c))
-                return true;
-
-            return false;
-        }
-
-        private bool IsRussianLetter(char c)
-        {
-            return (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я') || c == 'ё' || c == 'Ё';
-        }
-
-        private bool ContainsInvalidCharacters(string text)
-        {
-            foreach (char c in text)
-            {
-                if (!IsValidCharacter(c))
-                    return true;
-            }
-            return false;
-        }
-
         private void InitializeSearchAndFilter()
         {
-            // textBoxSearch уже подписан на TextChanged в InitializeInputValidation
             comboBoxRoleSort.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxRoleSort.SelectedIndexChanged += comboBoxRoleSort_SelectedIndexChanged;
         }
@@ -641,32 +385,337 @@ namespace dump
             dataGridViewUsers.Columns.Add(colRole);
         }
 
-        private void DataGridViewUsers_SelectionChanged(object sender, EventArgs e)
+        #endregion
+
+        #region Валидация и форматирование
+
+        private void TextBoxFIO_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (dataGridViewUsers.SelectedRows.Count > 0)
+            TextBox textBox = sender as TextBox;
+
+            if (e.KeyChar == (char)Keys.Back)
+                return;
+
+            if (e.KeyChar == ' ')
             {
-                DataRowView selectedRow = (DataRowView)bindingSource.Current;
-                if (selectedRow != null)
+                int currentSpaceCount = textBox.Text.Count(c => c == ' ');
+                if (currentSpaceCount >= 2)
                 {
-                    int userId = Convert.ToInt32(selectedRow["id_user"]);
-                    if (userId == currentAdminId)
+                    e.Handled = true;
+                    System.Media.SystemSounds.Beep.Play();
+                    return;
+                }
+                return;
+            }
+
+            if (e.KeyChar == '-')
+                return;
+
+            if (IsRussianLetter(e.KeyChar))
+                return;
+
+            e.Handled = true;
+        }
+
+        private void TextBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+
+            if (e.KeyChar == (char)Keys.Back)
+                return;
+
+            if (e.KeyChar == ' ')
+            {
+                int currentSpaceCount = textBox.Text.Count(c => c == ' ');
+                if (currentSpaceCount >= 2)
+                {
+                    e.Handled = true;
+                    System.Media.SystemSounds.Beep.Play();
+                    return;
+                }
+                return;
+            }
+
+            if (IsRussianLetter(e.KeyChar))
+                return;
+
+            e.Handled = true;
+        }
+
+        private void TextBoxFIO_TextChanged(object sender, EventArgs e)
+        {
+            if (isFormattingFIO) return;
+            isFormattingFIO = true;
+
+            try
+            {
+                TextBox textBox = sender as TextBox;
+                string text = textBox.Text;
+                int cursorPosition = textBox.SelectionStart;
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    string formattedText = FormatFIOInRealTime(text);
+                    if (formattedText != text)
                     {
-                        buttonDelete.Enabled = false;
-                        buttonDelete.FlatAppearance.BorderColor = Color.DarkGray;
-                    }
-                    else
-                    {
-                        buttonDelete.Enabled = true;
-                        buttonDelete.FlatAppearance.BorderColor = Color.Black;
+                        textBox.Text = formattedText;
+                        textBox.SelectionStart = Math.Min(cursorPosition, formattedText.Length);
                     }
                 }
             }
-            else
+            finally
             {
-                buttonDelete.Enabled = false;
-                buttonDelete.FlatAppearance.BorderColor = Color.DarkGray;
+                isFormattingFIO = false;
             }
         }
+
+        private void TextBoxSearch_TextChanged(object sender, EventArgs e)
+        {
+            if (isFormattingSearch) return;
+            isFormattingSearch = true;
+
+            try
+            {
+                TextBox textBox = sender as TextBox;
+                string text = textBox.Text;
+                int cursorPosition = textBox.SelectionStart;
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    string formattedText = FormatSearchText(text);
+                    if (formattedText != text)
+                    {
+                        textBox.Text = formattedText;
+                        textBox.SelectionStart = Math.Min(cursorPosition, formattedText.Length);
+                    }
+                }
+
+                ApplyFilters();
+            }
+            finally
+            {
+                isFormattingSearch = false;
+            }
+        }
+
+        private string FormatSearchText(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            text = text.ToLower();
+            char[] chars = text.ToCharArray();
+
+            if (chars.Length > 0 && IsRussianLetter(chars[0]))
+                chars[0] = char.ToUpper(chars[0]);
+
+            for (int i = 1; i < chars.Length; i++)
+            {
+                if (chars[i - 1] == ' ' && IsRussianLetter(chars[i]))
+                    chars[i] = char.ToUpper(chars[i]);
+            }
+
+            return new string(chars);
+        }
+
+        private string FormatFIOInRealTime(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            char[] chars = text.ToCharArray();
+
+            if (chars.Length > 0 && IsRussianLetter(chars[0]))
+                chars[0] = char.ToUpper(chars[0]);
+
+            for (int i = 1; i < chars.Length; i++)
+            {
+                if ((chars[i - 1] == ' ' || chars[i - 1] == '-') && IsRussianLetter(chars[i]))
+                    chars[i] = char.ToUpper(chars[i]);
+                else if (IsRussianLetter(chars[i]) && i > 0 && !IsWordSeparator(chars[i - 1]))
+                    chars[i] = char.ToLower(chars[i]);
+            }
+
+            return new string(chars);
+        }
+
+        private void TextBoxSearch_Leave(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(textBoxSearch.Text))
+            {
+                string formattedText = FormatSearchText(textBoxSearch.Text);
+                if (formattedText != textBoxSearch.Text)
+                    textBoxSearch.Text = formattedText;
+            }
+        }
+
+        private bool IsWordSeparator(char c) => c == ' ' || c == '-';
+
+        private void TextBoxFIO_Validating(object sender, CancelEventArgs e)
+        {
+            string text = textBoxFIO.Text.Trim();
+
+            if (text.Length > 100)
+            {
+                MessageBox.Show("ФИО не может превышать 100 символов!", "Ошибка ввода",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBoxFIO.Focus();
+                textBoxFIO.SelectAll();
+                e.Cancel = true;
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(text) && !Regex.IsMatch(text, @"^[а-яА-ЯёЁ\s\-]+$"))
+            {
+                MessageBox.Show("ФИО может содержать только русские буквы, пробелы и дефисы!",
+                    "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBoxFIO.Focus();
+                textBoxFIO.SelectAll();
+                e.Cancel = true;
+            }
+        }
+
+        private void TextBoxFIO_Leave(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(textBoxFIO.Text))
+            {
+                string formattedFIO = FormatFIO(textBoxFIO.Text);
+                if (formattedFIO != textBoxFIO.Text)
+                    textBoxFIO.Text = formattedFIO;
+            }
+        }
+
+        private string FormatFIO(string fio)
+        {
+            if (string.IsNullOrWhiteSpace(fio)) return fio;
+
+            string[] words = fio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length > 0)
+                {
+                    words[i] = char.ToUpper(words[i][0]) +
+                              (words[i].Length > 1 ? words[i].Substring(1).ToLower() : "");
+                }
+            }
+            return string.Join(" ", words);
+        }
+
+        private void TextBoxLogin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar)) return;
+            if (!IsValidCharacter(e.KeyChar)) e.Handled = true;
+        }
+
+        private void TextBoxLogin_Validating(object sender, CancelEventArgs e)
+        {
+            string text = textBoxLogin.Text.Trim();
+
+            if (text.Length > 50)
+            {
+                MessageBox.Show("Логин не может превышать 50 символов!", "Ошибка ввода",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBoxLogin.Focus();
+                textBoxLogin.SelectAll();
+                e.Cancel = true;
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                if (text.Contains(" "))
+                {
+                    MessageBox.Show("Логин не должен содержать пробелов!", "Ошибка ввода",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBoxLogin.Focus();
+                    textBoxLogin.SelectAll();
+                    e.Cancel = true;
+                    return;
+                }
+
+                if (ContainsInvalidCharacters(text))
+                {
+                    MessageBox.Show("Логин может содержать только:\n" +
+                                  "• Английские буквы (A-Z, a-z)\n" +
+                                  "• Цифры (0-9)\n" +
+                                  "• Специальные символы: " + allowedSpecialChars,
+                                  "Недопустимые символы", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBoxLogin.Focus();
+                    textBoxLogin.SelectAll();
+                    e.Cancel = true;
+                }
+            }
+        }
+
+        private void TextBoxPassword_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar)) return;
+            if (!IsValidCharacter(e.KeyChar)) e.Handled = true;
+        }
+
+        private void TextBoxPassword_Validating(object sender, CancelEventArgs e)
+        {
+            string text = textBoxPassword.Text;
+
+            if (text.Length > 50)
+            {
+                MessageBox.Show("Пароль не может превышать 50 символов!", "Ошибка ввода",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBoxPassword.Focus();
+                textBoxPassword.SelectAll();
+                e.Cancel = true;
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                if (text.Contains(" "))
+                {
+                    MessageBox.Show("Пароль не должен содержать пробелов!", "Ошибка ввода",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBoxPassword.Focus();
+                    textBoxPassword.SelectAll();
+                    e.Cancel = true;
+                    return;
+                }
+
+                if (ContainsInvalidCharacters(text))
+                {
+                    MessageBox.Show("Пароль может содержать только:\n" +
+                                  "• Английские буквы (A-Z, a-z)\n" +
+                                  "• Цифры (0-9)\n" +
+                                  "• Специальные символы: " + allowedSpecialChars,
+                                  "Недопустимые символы", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBoxPassword.Focus();
+                    textBoxPassword.SelectAll();
+                    e.Cancel = true;
+                }
+            }
+        }
+
+        private bool IsValidCharacter(char c)
+        {
+            if ((c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')) return false;
+            if (c == ' ') return false;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) return true;
+            if (c >= '0' && c <= '9') return true;
+            if (allowedSpecialChars.Contains(c)) return true;
+            return false;
+        }
+
+        private bool IsRussianLetter(char c)
+        {
+            return (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я') || c == 'ё' || c == 'Ё';
+        }
+
+        private bool ContainsInvalidCharacters(string text)
+        {
+            foreach (char c in text)
+                if (!IsValidCharacter(c)) return true;
+            return false;
+        }
+
+        #endregion
+
+        #region Загрузка данных
 
         private void LoadRolesForFilter()
         {
@@ -679,12 +728,8 @@ namespace dump
                 {
                     connection.Open();
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
-                    {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            filterRoles.Load(reader);
-                        }
-                    }
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                        filterRoles.Load(reader);
                 }
 
                 DataRow allRolesRow = filterRoles.NewRow();
@@ -704,28 +749,21 @@ namespace dump
             }
         }
 
-        // Загрузка пользователей с ЖИВЫМ поиском по НАЧАЛУ ФИО
         private void LoadUsers(string searchText = "", int roleId = 0)
         {
             try
             {
                 string query = @"
-                    SELECT u.id_user, u.FIO, u.login, 
-                           u.id_role, r.role_name 
+                    SELECT u.id_user, u.FIO, u.login, u.id_role, r.role_name 
                     FROM users u 
                     LEFT JOIN roles r ON u.id_role = r.id_role 
                     WHERE 1=1";
 
                 if (!string.IsNullOrWhiteSpace(searchText))
-                {
-                    // ИЗМЕНЕНО: поиск по началу строки (убрали первый %)
                     query += " AND u.FIO LIKE @search";
-                }
 
                 if (roleId > 0)
-                {
                     query += " AND u.id_role = @roleId";
-                }
 
                 query += " ORDER BY u.FIO";
 
@@ -735,15 +773,10 @@ namespace dump
                     dataAdapter = new MySqlDataAdapter(query, connection);
 
                     if (!string.IsNullOrWhiteSpace(searchText))
-                    {
-                        // ИЗМЕНЕНО: параметр теперь ищет только с начала строки
                         dataAdapter.SelectCommand.Parameters.AddWithValue("@search", $"{searchText}%");
-                    }
 
                     if (roleId > 0)
-                    {
                         dataAdapter.SelectCommand.Parameters.AddWithValue("@roleId", roleId);
-                    }
 
                     usersTable = new DataTable();
                     dataAdapter.Fill(usersTable);
@@ -762,6 +795,35 @@ namespace dump
             }
         }
 
+        private DataTable LoadRoles()
+        {
+            DataTable roles = new DataTable();
+            try
+            {
+                string query = "SELECT id_role, role_name FROM roles ORDER BY role_name";
+                using (MySqlConnection connection = SettingsBD.GetConnection())
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                        roles.Load(reader);
+                }
+            }
+            catch (Exception)
+            {
+                roles.Columns.Add("id_role", typeof(int));
+                roles.Columns.Add("role_name", typeof(string));
+                roles.Rows.Add(1, "Администратор");
+                roles.Rows.Add(2, "Менеджер");
+                roles.Rows.Add(3, "Пользователь");
+            }
+            return roles;
+        }
+
+        #endregion
+
+        #region Фильтрация
+
         private void comboBoxRoleSort_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxRoleSort.SelectedIndex >= 0)
@@ -779,22 +841,18 @@ namespace dump
             LoadUsers(searchText, selectedRoleId);
         }
 
+        #endregion
+
+        #region Работа с панелью редактирования
+
         private void ShowEditPanel()
         {
             if (!isEditMode)
             {
                 panelEdit.Visible = true;
                 isEditMode = true;
-                if (isNewUser)
-                {
-                    addLabel.Visible = true;
-                    editLabel.Visible = false;
-                }
-                else
-                {
-                    editLabel.Visible = true;
-                    addLabel.Visible = false;
-                }
+                addLabel.Visible = isNewUser;
+                editLabel.Visible = !isNewUser;
 
                 buttonAdd.Enabled = false;
                 buttonEdit.Enabled = false;
@@ -859,72 +917,29 @@ namespace dump
             }
         }
 
-        private DataTable LoadRoles()
+        #endregion
+
+        #region CRUD операции
+
+        private void DataGridViewUsers_SelectionChanged(object sender, EventArgs e)
         {
-            DataTable roles = new DataTable();
-            try
+            if (dataGridViewUsers.SelectedRows.Count > 0)
             {
-                string query = "SELECT id_role, role_name FROM roles ORDER BY role_name";
-                using (MySqlConnection connection = SettingsBD.GetConnection())
+                DataRowView selectedRow = (DataRowView)bindingSource.Current;
+                if (selectedRow != null)
                 {
-                    connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
-                    {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            roles.Load(reader);
-                        }
-                    }
+                    int userId = Convert.ToInt32(selectedRow["id_user"]);
+                    buttonDelete.Enabled = userId != currentAdminId;
+                    if (!buttonDelete.Enabled)
+                        buttonDelete.FlatAppearance.BorderColor = Color.DarkGray;
+                    else
+                        buttonDelete.FlatAppearance.BorderColor = Color.Black;
                 }
             }
-            catch (Exception)
+            else
             {
-                roles.Columns.Add("id_role", typeof(int));
-                roles.Columns.Add("role_name", typeof(string));
-                roles.Rows.Add(1, "Администратор");
-                roles.Rows.Add(2, "Менеджер");
-                roles.Rows.Add(3, "Пользователь");
-            }
-            return roles;
-        }
-
-        private string ComputeSHA256Hash(string password)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
-                byte[] hash = sha256.ComputeHash(bytes);
-
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in hash)
-                {
-                    builder.Append(b.ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
-
-        private int CountAdminsExcludingUser(int excludeUserId)
-        {
-            try
-            {
-                string query = "SELECT COUNT(*) FROM users WHERE id_role = 3 AND id_user != @ExcludeUserId";
-                using (MySqlConnection connection = SettingsBD.GetConnection())
-                {
-                    connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@ExcludeUserId", excludeUserId);
-                        object result = cmd.ExecuteScalar();
-                        return Convert.ToInt32(result);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при подсчете администраторов: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return 0;
+                buttonDelete.Enabled = false;
+                buttonDelete.FlatAppearance.BorderColor = Color.DarkGray;
             }
         }
 
@@ -1200,22 +1215,58 @@ namespace dump
             }
         }
 
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            HideEditPanel();
+        }
+
+        private string ComputeSHA256Hash(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in hash)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        private int CountAdminsExcludingUser(int excludeUserId)
+        {
+            try
+            {
+                string query = "SELECT COUNT(*) FROM users WHERE id_role = 3 AND id_user != @ExcludeUserId";
+                using (MySqlConnection connection = SettingsBD.GetConnection())
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@ExcludeUserId", excludeUserId);
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при подсчете администраторов: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 0;
+            }
+        }
+
         private string GetUserFriendlyDuplicateError(string mysqlError, string login)
         {
             if (mysqlError.Contains("users.login"))
                 return $"Пользователь с логином '{login}' уже существует!\nПожалуйста, выберите другой логин.";
-            else if (mysqlError.Contains("PRIMARY") || mysqlError.Contains("id_user"))
-                return "Ошибка дублирования ID пользователя. Обратитесь к администратору.";
             else if (mysqlError.Contains("users.FIO"))
                 return "Пользователь с таким ФИО уже существует.";
             else
                 return $"Запись уже существует в базе данных.\nЛогин '{login}' уже занят.";
         }
 
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            HideEditPanel();
-        }
+        #endregion
 
         private void UsersForm_Load(object sender, EventArgs e)
         {
@@ -1224,7 +1275,8 @@ namespace dump
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-            this.Visible = false;
+            isLoggingOut = true;
+            this.Close();
             AdminForm admin = new AdminForm();
             admin.Show();
         }

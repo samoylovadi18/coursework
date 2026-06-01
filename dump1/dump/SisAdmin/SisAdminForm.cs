@@ -8,24 +8,30 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
+using System.IO;
 
 namespace dump
 {
     public partial class SisAdminForm : Form
     {
         private bool isPasswordVisible = false;
-
+        private bool isLockDialogOpen = false;
         public SisAdminForm()
         {
             InitializeComponent();
 
-            this.FormClosing += SisAdminForm_FormClosing;
+            // Регистрируем форму в глобальном менеджере бездействия
+            InactivityManager.RegisterForm(this);
+            InactivityManager.OnLockRequest += InactivityManager_OnLockRequest;
 
-            tabControlBD.SelectedIndexChanged += TabControlBD_SelectedIndexChanged;
+            this.FormClosing += SisAdminForm_FormClosing;
+            tabControl.SelectedIndexChanged += TabControlBD_SelectedIndexChanged;
             LoadCurrentSettings();
             InitializeCustomComponents();
+            InitSecurityTab();
 
             this.Shown += SisAdminForm_Shown;
+
             btnSave.FlatStyle = FlatStyle.Flat;
             btnSave.FlatAppearance.BorderSize = 1;
             btnSave.FlatAppearance.BorderColor = Color.Black;
@@ -47,27 +53,209 @@ namespace dump
             btnTestConnection.MouseLeave += (s, e) => btnTestConnection.FlatAppearance.BorderColor = Color.Black;
         }
 
+        private void InactivityManager_OnLockRequest()
+        {
+            LockSystem();
+        }
+
+        // Инициализация вкладки безопасности
+        // Инициализация вкладки безопасности
+        private void InitSecurityTab()
+        {
+            numInactivityTime.Minimum = 0;
+            numInactivityTime.Maximum = 3600;
+
+            LoadSecuritySettings();
+
+
+
+            btnSaveSecurity.FlatStyle = FlatStyle.Flat;
+            btnSaveSecurity.FlatAppearance.BorderSize = 1;
+            btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
+            btnSaveSecurity.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btnSaveSecurity.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+
+            btnSaveSecurity.MouseDown += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.DarkBlue;
+            btnSaveSecurity.MouseUp += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
+            btnSaveSecurity.MouseLeave += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
+
+
+
+            btnCancelSecurity.FlatStyle = FlatStyle.Flat;
+            btnCancelSecurity.FlatAppearance.BorderSize = 1;
+            btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
+            btnCancelSecurity.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btnCancelSecurity.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+
+            btnCancelSecurity.MouseDown += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.DarkBlue;
+            btnCancelSecurity.MouseUp += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
+            btnCancelSecurity.MouseLeave += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
+
+            btnSaveSecurity.Click += BtnSaveSecurity_Click;
+            btnCancelSecurity.Click += BtnCancelSecurity_Click;
+        }
+        private void LoadSecuritySettings()
+        {
+            numInactivityTime.Value = InactivityManager.GetInactivityTime();
+            chkAutoLock.Checked = InactivityManager.GetAutoLockEnabled();
+        }
+
+        private void BtnSaveSecurity_Click(object sender, EventArgs e)
+        {
+            if (chkAutoLock.Checked && numInactivityTime.Value == 0)
+            {
+                MessageBox.Show("Установите время бездействия больше 0!", "Внимание",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            InactivityManager.SaveSecuritySettings((int)numInactivityTime.Value, chkAutoLock.Checked);
+            MessageBox.Show("Настройки безопасности сохранены!", "Успех",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnCancelSecurity_Click(object sender, EventArgs e)
+        {
+            LoadSecuritySettings();
+            MessageBox.Show("Изменения отменены", "Информация",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void LockSystem()
+        {
+            if (isLockDialogOpen) return;
+            isLockDialogOpen = true;
+
+            this.Invoke(new Action(() =>
+            {
+                Form lockDialog = new Form();
+                lockDialog.Text = "Блокировка системы";
+                lockDialog.Size = new Size(380, 230);
+                lockDialog.StartPosition = FormStartPosition.CenterScreen;
+                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                lockDialog.MaximizeBox = false;
+                lockDialog.MinimizeBox = false;
+                lockDialog.TopMost = true;
+
+                Label lblMessage = new Label();
+                lblMessage.Text = $"Система заблокирована из-за бездействия ({InactivityManager.GetInactivityTime()} сек.)\nВведите пароль для разблокировки:";
+                lblMessage.Location = new Point(20, 20);
+                lblMessage.Size = new Size(330, 50);
+                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
+
+                Label lblUser = new Label();
+                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
+                lblUser.Location = new Point(20, 75);
+                lblUser.Size = new Size(330, 25);
+                lblUser.TextAlign = ContentAlignment.MiddleCenter;
+                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
+
+                TextBox txtPassword = new TextBox();
+                txtPassword.Location = new Point(90, 110);
+                txtPassword.Size = new Size(180, 20);
+                txtPassword.UseSystemPasswordChar = true;
+
+                Button btnUnlock = new Button();
+                btnUnlock.Text = "Разблокировать";
+                btnUnlock.Location = new Point(130, 145);
+                btnUnlock.Size = new Size(100, 30);
+
+                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
+                txtPassword.KeyPress += (s, e) =>
+                {
+                    if (e.KeyChar == (char)Keys.Enter)
+                        CheckPasswordAndUnlock(txtPassword, lockDialog);
+                };
+
+                lockDialog.Controls.Add(lblMessage);
+                lockDialog.Controls.Add(lblUser);
+                lockDialog.Controls.Add(txtPassword);
+                lockDialog.Controls.Add(btnUnlock);
+                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; };
+                lockDialog.ShowDialog();
+            }));
+        }
+
+        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
+        {
+            bool isCorrect = false;
+
+            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
+            {
+                if (txtPassword.Text == "admin")
+                    isCorrect = true;
+            }
+            else
+            {
+                string dbPassword = GetPasswordFromDB();
+                string inputHash = HashPassword(txtPassword.Text);
+                if (inputHash == dbPassword)
+                    isCorrect = true;
+            }
+
+            if (isCorrect)
+            {
+                lockDialog.Close();
+                InactivityManager.ResetActivity();
+            }
+            else
+            {
+                MessageBox.Show("Неверный пароль! Вы будете перенаправлены на окно входа.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                lockDialog.Close();
+                InactivityManager.UnregisterForm();
+                this.Close();
+
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
+        }
+
+        private string GetPasswordFromDB()
+        {
+            try
+            {
+                using (var conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
+                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
+                    return cmd.ExecuteScalar()?.ToString();
+                }
+            }
+            catch { return null; }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in hash)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            InactivityManager.UnregisterForm();
+            base.OnFormClosed(e);
+        }
+
         private void SisAdminForm_Shown(object sender, EventArgs e)
         {
-            // При загрузке формы проверяем, какая вкладка активна
             UpdateSettingsElementsVisibility();
         }
 
         private void InitializeCustomComponents()
         {
-            // Скрываем лейбл статуса при загрузке формы
             if (lblStatus != null) lblStatus.Visible = false;
-
-            // Гарантируем, что пароль скрыт по умолчанию
-            if (txtPassword != null)
-            {
-                txtPassword.UseSystemPasswordChar = true;
-            }
-
-            // Сбрасываем состояние видимости пароля
+            if (txtPassword != null) txtPassword.UseSystemPasswordChar = true;
             isPasswordVisible = false;
-
-            // Настраиваем кнопку показа/скрытия пароля
             SetupPasswordToggleButton();
         }
 
@@ -75,13 +263,11 @@ namespace dump
         {
             if (visible_password == null) return;
 
-            // Настройка кнопки видимости пароля
             visible_password.FlatStyle = FlatStyle.Flat;
             visible_password.FlatAppearance.BorderSize = 0;
             visible_password.BackColor = Color.Transparent;
             visible_password.Cursor = Cursors.Hand;
 
-            // Загружаем иконку "закрытый глаз" по умолчанию
             try
             {
                 visible_password.Image = Image.FromFile("zac.png");
@@ -92,8 +278,6 @@ namespace dump
             }
 
             visible_password.ImageAlign = ContentAlignment.MiddleCenter;
-
-            // Подписываемся на событие клика
             visible_password.Click += Visible_password_settings_Click;
         }
 
@@ -164,14 +348,13 @@ namespace dump
             if (txtPassword != null)
             {
                 txtPassword.Text = config.Password;
-                txtPassword.UseSystemPasswordChar = true; // Пароль скрыт по умолчанию
+                txtPassword.UseSystemPasswordChar = true;
             }
         }
 
-        // Обновление видимости элементов в зависимости от выбранной вкладки
         private void UpdateSettingsElementsVisibility()
         {
-            bool isSettingsTab = (tabControlBD.SelectedIndex == 0);
+            bool isSettingsTab = (tabControl.SelectedIndex == 0);
 
             if (txtServer != null) txtServer.Visible = isSettingsTab;
             if (txtDatabase != null) txtDatabase.Visible = isSettingsTab;
@@ -180,12 +363,13 @@ namespace dump
             if (btnSave != null) btnSave.Visible = isSettingsTab;
             if (btnTestConnection != null) btnTestConnection.Visible = isSettingsTab;
             if (visible_password != null) visible_password.Visible = isSettingsTab;
-            if (lblStatus != null) lblStatus.Visible = false; // Статус всегда скрыт, пока не нажмут кнопку
+            if (lblStatus != null) lblStatus.Visible = false;
         }
 
-        // ОБРАБОТЧИК - при нажатии на крестик
         private void SisAdminForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            InactivityManager.UnregisterForm();
+
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
@@ -195,14 +379,12 @@ namespace dump
             }
         }
 
-        // ОБРАБОТЧИК - при переключении на вкладку
         private void TabControlBD_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateSettingsElementsVisibility();
-            if (tabControlBD.SelectedIndex == 0) // Если это вкладка с настройками, обновляем данные
+            if (tabControl.SelectedIndex == 0)
             {
                 LoadCurrentSettings();
-                // Убеждаемся, что пароль скрыт при переключении на вкладку настроек
                 if (txtPassword != null)
                 {
                     txtPassword.UseSystemPasswordChar = true;
@@ -210,10 +392,6 @@ namespace dump
                 }
             }
         }
-
-        private void tabPage1_Click(object sender, EventArgs e) { }
-        private void tabPage2_Click(object sender, EventArgs e) { }
-        private void SisAdminForm_Load(object sender, EventArgs e) { }
 
         private void btnTestConnection_Click(object sender, EventArgs e)
         {
@@ -247,7 +425,7 @@ namespace dump
             btnTestConnection.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
 
-            System.Threading.Tasks.Task.Run(() =>
+            Task.Run(() =>
             {
                 bool isConnected = false;
                 string errorMessage = "";
@@ -346,6 +524,16 @@ namespace dump
                 MessageBox.Show($"Ошибка при сохранении настроек:\n{ex.Message}",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void tabPageSecure_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SisAdminForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
