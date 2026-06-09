@@ -19,7 +19,8 @@ namespace dump
 
             public string GetConnectionString()
             {
-                return $"server={Server};username={Username};password={Password};database={Database};";
+                // КЛЮЧЕВОЕ: добавили Charset и Allow User Variables
+                return $"server={Server};username={Username};password={Password};database={Database};Charset=utf8mb4;Allow User Variables=True;";
             }
         }
 
@@ -42,7 +43,6 @@ namespace dump
                 }
                 else
                 {
-                    // Создаем конфиг по умолчанию
                     _currentConfig = new ConnectionConfig();
                     SaveConfig();
                 }
@@ -60,8 +60,6 @@ namespace dump
             {
                 string json = JsonSerializer.Serialize(_currentConfig, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(CONFIG_FILE, json);
-
-                // Сбрасываем активное подключение при сохранении новых настроек
                 _activeConnectionString = null;
             }
             catch (Exception ex)
@@ -87,6 +85,11 @@ namespace dump
             SaveConfig();
         }
 
+        public static string GetConnectionString()
+        {
+            return _currentConfig.GetConnectionString();
+        }
+
         public static string ConnectionString
         {
             get
@@ -94,7 +97,6 @@ namespace dump
                 if (string.IsNullOrEmpty(_activeConnectionString))
                 {
                     _activeConnectionString = _currentConfig.GetConnectionString();
-
                     if (!TestConnection(_activeConnectionString))
                     {
                         throw new InvalidOperationException("Не удалось подключиться к базе данных с текущими настройками");
@@ -107,7 +109,6 @@ namespace dump
         public static bool TestConnection(string connectionString = null)
         {
             string testString = connectionString ?? _currentConfig.GetConnectionString();
-
             try
             {
                 using (var connection = new MySqlConnection(testString))

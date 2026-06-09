@@ -52,10 +52,32 @@
             this.numInactivityTime = new System.Windows.Forms.NumericUpDown();
             this.lblInactivity = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.btnRestoreDB = new System.Windows.Forms.Button();
+            this.lblWarning = new System.Windows.Forms.Label();
+            this.txtLog = new System.Windows.Forms.RichTextBox();
+            this.grpImport = new System.Windows.Forms.GroupBox();
+            this.btnImport = new System.Windows.Forms.Button();
+            this.btnBrowseImport = new System.Windows.Forms.Button();
+            this.txtImportFilePath = new System.Windows.Forms.TextBox();
+            this.lblFile = new System.Windows.Forms.Label();
+            this.cmbTables = new System.Windows.Forms.ComboBox();
+            this.lblTable = new System.Windows.Forms.Label();
+            this.grpExport = new System.Windows.Forms.GroupBox();
+            this.btnExport = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cmbExportTables = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.tabControl.SuspendLayout();
             this.tabPageBD.SuspendLayout();
+            this.tabPageImport.SuspendLayout();
+            this.tabPageCopy.SuspendLayout();
             this.tabPageSecure.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).BeginInit();
+            this.grpImport.SuspendLayout();
+            this.grpExport.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl
@@ -214,6 +236,8 @@
             // 
             // tabPageImport
             // 
+            this.tabPageImport.Controls.Add(this.grpExport);
+            this.tabPageImport.Controls.Add(this.grpImport);
             this.tabPageImport.Location = new System.Drawing.Point(4, 30);
             this.tabPageImport.Name = "tabPageImport";
             this.tabPageImport.Padding = new System.Windows.Forms.Padding(3);
@@ -224,6 +248,9 @@
             // 
             // tabPageCopy
             // 
+            this.tabPageCopy.Controls.Add(this.btnRestoreDB);
+            this.tabPageCopy.Controls.Add(this.txtLog);
+            this.tabPageCopy.Controls.Add(this.lblWarning);
             this.tabPageCopy.Location = new System.Drawing.Point(4, 30);
             this.tabPageCopy.Name = "tabPageCopy";
             this.tabPageCopy.Padding = new System.Windows.Forms.Padding(3);
@@ -231,6 +258,7 @@
             this.tabPageCopy.TabIndex = 2;
             this.tabPageCopy.Text = "Резервное копирование/восстановление";
             this.tabPageCopy.UseVisualStyleBackColor = true;
+            this.tabPageCopy.Click += new System.EventHandler(this.tabPageCopy_Click);
             // 
             // tabPageSecure
             // 
@@ -307,6 +335,172 @@
             this.label1.TabIndex = 28;
             this.label1.Text = "Настройки";
             // 
+            // btnRestoreDB
+            // 
+            this.btnRestoreDB.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnRestoreDB.Location = new System.Drawing.Point(194, 142);
+            this.btnRestoreDB.Name = "btnRestoreDB";
+            this.btnRestoreDB.Size = new System.Drawing.Size(361, 46);
+            this.btnRestoreDB.TabIndex = 43;
+            this.btnRestoreDB.Text = " Восстановить структуру БД";
+            this.btnRestoreDB.UseVisualStyleBackColor = false;
+            // 
+            // lblWarning
+            // 
+            this.lblWarning.AutoSize = true;
+            this.lblWarning.Location = new System.Drawing.Point(199, 104);
+            this.lblWarning.Name = "lblWarning";
+            this.lblWarning.Size = new System.Drawing.Size(356, 21);
+            this.lblWarning.TabIndex = 0;
+            this.lblWarning.Text = "ВНИМАНИЕ! Все данные будут потеряны!";
+            // 
+            // txtLog
+            // 
+            this.txtLog.Location = new System.Drawing.Point(20, 288);
+            this.txtLog.Name = "txtLog";
+            this.txtLog.Size = new System.Drawing.Size(710, 193);
+            this.txtLog.TabIndex = 1;
+            this.txtLog.Text = "";
+            // 
+            // grpImport
+            // 
+            this.grpImport.Controls.Add(this.btnImport);
+            this.grpImport.Controls.Add(this.btnBrowseImport);
+            this.grpImport.Controls.Add(this.txtImportFilePath);
+            this.grpImport.Controls.Add(this.lblFile);
+            this.grpImport.Controls.Add(this.cmbTables);
+            this.grpImport.Controls.Add(this.lblTable);
+            this.grpImport.Location = new System.Drawing.Point(86, 19);
+            this.grpImport.Margin = new System.Windows.Forms.Padding(5);
+            this.grpImport.Name = "grpImport";
+            this.grpImport.Padding = new System.Windows.Forms.Padding(5);
+            this.grpImport.Size = new System.Drawing.Size(569, 211);
+            this.grpImport.TabIndex = 29;
+            this.grpImport.TabStop = false;
+            // 
+            // btnImport
+            // 
+            this.btnImport.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnImport.Location = new System.Drawing.Point(112, 111);
+            this.btnImport.Name = "btnImport";
+            this.btnImport.Size = new System.Drawing.Size(361, 46);
+            this.btnImport.TabIndex = 43;
+            this.btnImport.Text = "Импортировать";
+            this.btnImport.UseVisualStyleBackColor = false;
+            // 
+            // btnBrowseImport
+            // 
+            this.btnBrowseImport.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnBrowseImport.Location = new System.Drawing.Point(479, 65);
+            this.btnBrowseImport.Name = "btnBrowseImport";
+            this.btnBrowseImport.Size = new System.Drawing.Size(86, 29);
+            this.btnBrowseImport.TabIndex = 43;
+            this.btnBrowseImport.Text = "Обзор";
+            this.btnBrowseImport.UseVisualStyleBackColor = false;
+            // 
+            // txtImportFilePath
+            // 
+            this.txtImportFilePath.Location = new System.Drawing.Point(112, 65);
+            this.txtImportFilePath.Name = "txtImportFilePath";
+            this.txtImportFilePath.Size = new System.Drawing.Size(361, 29);
+            this.txtImportFilePath.TabIndex = 3;
+            // 
+            // lblFile
+            // 
+            this.lblFile.AutoSize = true;
+            this.lblFile.Location = new System.Drawing.Point(9, 73);
+            this.lblFile.Name = "lblFile";
+            this.lblFile.Size = new System.Drawing.Size(55, 21);
+            this.lblFile.TabIndex = 2;
+            this.lblFile.Text = "Файл:";
+            // 
+            // cmbTables
+            // 
+            this.cmbTables.FormattingEnabled = true;
+            this.cmbTables.Location = new System.Drawing.Point(112, 20);
+            this.cmbTables.Name = "cmbTables";
+            this.cmbTables.Size = new System.Drawing.Size(361, 29);
+            this.cmbTables.TabIndex = 1;
+            // 
+            // lblTable
+            // 
+            this.lblTable.AutoSize = true;
+            this.lblTable.Location = new System.Drawing.Point(9, 28);
+            this.lblTable.Name = "lblTable";
+            this.lblTable.Size = new System.Drawing.Size(81, 21);
+            this.lblTable.TabIndex = 0;
+            this.lblTable.Text = "Таблица:";
+            // 
+            // grpExport
+            // 
+            this.grpExport.Controls.Add(this.btnExport);
+            this.grpExport.Controls.Add(this.button2);
+            this.grpExport.Controls.Add(this.textBox1);
+            this.grpExport.Controls.Add(this.label2);
+            this.grpExport.Controls.Add(this.cmbExportTables);
+            this.grpExport.Controls.Add(this.label3);
+            this.grpExport.Location = new System.Drawing.Point(86, 270);
+            this.grpExport.Margin = new System.Windows.Forms.Padding(5);
+            this.grpExport.Name = "grpExport";
+            this.grpExport.Padding = new System.Windows.Forms.Padding(5);
+            this.grpExport.Size = new System.Drawing.Size(569, 211);
+            this.grpExport.TabIndex = 44;
+            this.grpExport.TabStop = false;
+            // 
+            // btnExport
+            // 
+            this.btnExport.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnExport.Location = new System.Drawing.Point(112, 111);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(361, 46);
+            this.btnExport.TabIndex = 43;
+            this.btnExport.Text = "Экспортировать";
+            this.btnExport.UseVisualStyleBackColor = false;
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.button2.Location = new System.Drawing.Point(479, 65);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(86, 29);
+            this.button2.TabIndex = 43;
+            this.button2.Text = "Обзор";
+            this.button2.UseVisualStyleBackColor = false;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(112, 65);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(361, 29);
+            this.textBox1.TabIndex = 3;
+
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(9, 73);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(55, 21);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Файл:";
+            // 
+            // cmbExportTables
+            // 
+            this.cmbExportTables.FormattingEnabled = true;
+            this.cmbExportTables.Location = new System.Drawing.Point(112, 20);
+            this.cmbExportTables.Name = "cmbExportTables";
+            this.cmbExportTables.Size = new System.Drawing.Size(361, 29);
+            this.cmbExportTables.TabIndex = 1;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(9, 28);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(81, 21);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "Таблица:";
+            // 
             // SisAdminForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
@@ -326,9 +520,16 @@
             this.tabControl.ResumeLayout(false);
             this.tabPageBD.ResumeLayout(false);
             this.tabPageBD.PerformLayout();
+            this.tabPageImport.ResumeLayout(false);
+            this.tabPageCopy.ResumeLayout(false);
+            this.tabPageCopy.PerformLayout();
             this.tabPageSecure.ResumeLayout(false);
             this.tabPageSecure.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).EndInit();
+            this.grpImport.ResumeLayout(false);
+            this.grpImport.PerformLayout();
+            this.grpExport.ResumeLayout(false);
+            this.grpExport.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -359,5 +560,23 @@
         private System.Windows.Forms.Label lblInactivity;
         private System.Windows.Forms.Button btnSaveSecurity;
         private System.Windows.Forms.Button btnCancelSecurity;
+        private System.Windows.Forms.Button btnRestoreDB;
+        private System.Windows.Forms.Label lblWarning;
+        private System.Windows.Forms.RichTextBox txtLog;
+        private System.Windows.Forms.GroupBox grpExport;
+        private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cmbExportTables;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox grpImport;
+        private System.Windows.Forms.Button btnImport;
+        private System.Windows.Forms.Button btnBrowseImport;
+        private System.Windows.Forms.TextBox txtImportFilePath;
+        private System.Windows.Forms.Label lblFile;
+        private System.Windows.Forms.ComboBox cmbTables;
+        private System.Windows.Forms.Label lblTable;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }

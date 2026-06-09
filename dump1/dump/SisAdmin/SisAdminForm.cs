@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
-using System.IO;
 
 namespace dump
 {
@@ -16,524 +14,644 @@ namespace dump
     {
         private bool isPasswordVisible = false;
         private bool isLockDialogOpen = false;
+        private Dictionary<string, int> tableColumnsCount = new Dictionary<string, int>();
+
         public SisAdminForm()
         {
             InitializeComponent();
-
-            // Регистрируем форму в глобальном менеджере бездействия
-            InactivityManager.RegisterForm(this);
-            InactivityManager.OnLockRequest += InactivityManager_OnLockRequest;
-
-            this.FormClosing += SisAdminForm_FormClosing;
-            tabControl.SelectedIndexChanged += TabControlBD_SelectedIndexChanged;
-            LoadCurrentSettings();
-            InitializeCustomComponents();
-            InitSecurityTab();
-
-            this.Shown += SisAdminForm_Shown;
-
-            btnSave.FlatStyle = FlatStyle.Flat;
-            btnSave.FlatAppearance.BorderSize = 1;
-            btnSave.FlatAppearance.BorderColor = Color.Black;
-            btnSave.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnSave.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            btnSave.MouseDown += (s, e) => btnSave.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnSave.MouseUp += (s, e) => btnSave.FlatAppearance.BorderColor = Color.Black;
-            btnSave.MouseLeave += (s, e) => btnSave.FlatAppearance.BorderColor = Color.Black;
-
-            btnTestConnection.FlatStyle = FlatStyle.Flat;
-            btnTestConnection.FlatAppearance.BorderSize = 1;
-            btnTestConnection.FlatAppearance.BorderColor = Color.Black;
-            btnTestConnection.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnTestConnection.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            btnTestConnection.MouseDown += (s, e) => btnTestConnection.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnTestConnection.MouseUp += (s, e) => btnTestConnection.FlatAppearance.BorderColor = Color.Black;
-            btnTestConnection.MouseLeave += (s, e) => btnTestConnection.FlatAppearance.BorderColor = Color.Black;
+            InitializeRestoreFeature();
+            InitializeImportExportFeature();
         }
 
-        private void InactivityManager_OnLockRequest()
+        // ===================== ВОССТАНОВЛЕНИЕ =====================
+
+        private void InitializeRestoreFeature()
         {
-            LockSystem();
-        }
-
-        // Инициализация вкладки безопасности
-        // Инициализация вкладки безопасности
-        private void InitSecurityTab()
-        {
-            numInactivityTime.Minimum = 0;
-            numInactivityTime.Maximum = 3600;
-
-            LoadSecuritySettings();
-
-
-
-            btnSaveSecurity.FlatStyle = FlatStyle.Flat;
-            btnSaveSecurity.FlatAppearance.BorderSize = 1;
-            btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
-            btnSaveSecurity.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnSaveSecurity.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            btnSaveSecurity.MouseDown += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnSaveSecurity.MouseUp += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
-            btnSaveSecurity.MouseLeave += (s, e) => btnSaveSecurity.FlatAppearance.BorderColor = Color.Black;
-
-
-
-            btnCancelSecurity.FlatStyle = FlatStyle.Flat;
-            btnCancelSecurity.FlatAppearance.BorderSize = 1;
-            btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
-            btnCancelSecurity.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnCancelSecurity.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            btnCancelSecurity.MouseDown += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnCancelSecurity.MouseUp += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
-            btnCancelSecurity.MouseLeave += (s, e) => btnCancelSecurity.FlatAppearance.BorderColor = Color.Black;
-
-            btnSaveSecurity.Click += BtnSaveSecurity_Click;
-            btnCancelSecurity.Click += BtnCancelSecurity_Click;
-        }
-        private void LoadSecuritySettings()
-        {
-            numInactivityTime.Value = InactivityManager.GetInactivityTime();
-            chkAutoLock.Checked = InactivityManager.GetAutoLockEnabled();
-        }
-
-        private void BtnSaveSecurity_Click(object sender, EventArgs e)
-        {
-            if (chkAutoLock.Checked && numInactivityTime.Value == 0)
+            if (btnRestoreDB != null)
             {
-                MessageBox.Show("Установите время бездействия больше 0!", "Внимание",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                btnRestoreDB.Text = "Восстановить структуру БД";
+                btnRestoreDB.Click += BtnRestoreDB_Click;
+                btnRestoreDB.BackColor = Color.DarkSeaGreen;
+                btnRestoreDB.FlatStyle = FlatStyle.Flat;
+                btnRestoreDB.FlatAppearance.BorderSize = 1;
+                btnRestoreDB.FlatAppearance.BorderColor = Color.Black;
             }
 
-            InactivityManager.SaveSecuritySettings((int)numInactivityTime.Value, chkAutoLock.Checked);
-            MessageBox.Show("Настройки безопасности сохранены!", "Успех",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void BtnCancelSecurity_Click(object sender, EventArgs e)
-        {
-            LoadSecuritySettings();
-            MessageBox.Show("Изменения отменены", "Информация",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void LockSystem()
-        {
-            if (isLockDialogOpen) return;
-            isLockDialogOpen = true;
-
-            this.Invoke(new Action(() =>
+            if (txtLog != null)
             {
-                Form lockDialog = new Form();
-                lockDialog.Text = "Блокировка системы";
-                lockDialog.Size = new Size(380, 230);
-                lockDialog.StartPosition = FormStartPosition.CenterScreen;
-                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
-                lockDialog.MaximizeBox = false;
-                lockDialog.MinimizeBox = false;
-                lockDialog.TopMost = true;
-
-                Label lblMessage = new Label();
-                lblMessage.Text = $"Система заблокирована из-за бездействия ({InactivityManager.GetInactivityTime()} сек.)\nВведите пароль для разблокировки:";
-                lblMessage.Location = new Point(20, 20);
-                lblMessage.Size = new Size(330, 50);
-                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
-
-                Label lblUser = new Label();
-                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
-                lblUser.Location = new Point(20, 75);
-                lblUser.Size = new Size(330, 25);
-                lblUser.TextAlign = ContentAlignment.MiddleCenter;
-                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
-
-                TextBox txtPassword = new TextBox();
-                txtPassword.Location = new Point(90, 110);
-                txtPassword.Size = new Size(180, 20);
-                txtPassword.UseSystemPasswordChar = true;
-
-                Button btnUnlock = new Button();
-                btnUnlock.Text = "Разблокировать";
-                btnUnlock.Location = new Point(130, 145);
-                btnUnlock.Size = new Size(100, 30);
-
-                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
-                txtPassword.KeyPress += (s, e) =>
-                {
-                    if (e.KeyChar == (char)Keys.Enter)
-                        CheckPasswordAndUnlock(txtPassword, lockDialog);
-                };
-
-                lockDialog.Controls.Add(lblMessage);
-                lockDialog.Controls.Add(lblUser);
-                lockDialog.Controls.Add(txtPassword);
-                lockDialog.Controls.Add(btnUnlock);
-                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; };
-                lockDialog.ShowDialog();
-            }));
-        }
-
-        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
-        {
-            bool isCorrect = false;
-
-            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
-            {
-                if (txtPassword.Text == "admin")
-                    isCorrect = true;
-            }
-            else
-            {
-                string dbPassword = GetPasswordFromDB();
-                string inputHash = HashPassword(txtPassword.Text);
-                if (inputHash == dbPassword)
-                    isCorrect = true;
-            }
-
-            if (isCorrect)
-            {
-                lockDialog.Close();
-                InactivityManager.ResetActivity();
-            }
-            else
-            {
-                MessageBox.Show("Неверный пароль! Вы будете перенаправлены на окно входа.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                lockDialog.Close();
-                InactivityManager.UnregisterForm();
-                this.Close();
-
-                LoginForm login = new LoginForm();
-                login.Show();
+                txtLog.Clear();
+                txtLog.ReadOnly = true;
+                txtLog.BackColor = Color.WhiteSmoke;
             }
         }
 
-        private string GetPasswordFromDB()
+        private void BtnRestoreDB_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "ВНИМАНИЕ! Восстановление структуры базы данных приведет к:\n\n" +
+                "• Удалению всех существующих таблиц\n" +
+                "• Потере всех данных\n" +
+                "• Созданию новой структуры\n\n" +
+                "Вы уверены, что хотите продолжить?",
+                "Подтверждение восстановления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                RestoreDatabaseStructure();
+            }
+        }
+
+        private void RestoreDatabaseStructure()
         {
             try
             {
-                using (var conn = SettingsBD.GetConnection())
+                LogMessage("Начало восстановления структуры БД...");
+
+                using (MySqlConnection conn = SettingsBD.GetConnection())
                 {
                     conn.Open();
-                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
-                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
-                    return cmd.ExecuteScalar()?.ToString();
-                }
-            }
-            catch { return null; }
-        }
+                    LogMessage("Подключение успешно.");
 
-        private string HashPassword(string password)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
-                byte[] hash = sha256.ComputeHash(bytes);
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in hash)
-                    builder.Append(b.ToString("x2"));
-                return builder.ToString();
-            }
-        }
-
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            InactivityManager.UnregisterForm();
-            base.OnFormClosed(e);
-        }
-
-        private void SisAdminForm_Shown(object sender, EventArgs e)
-        {
-            UpdateSettingsElementsVisibility();
-        }
-
-        private void InitializeCustomComponents()
-        {
-            if (lblStatus != null) lblStatus.Visible = false;
-            if (txtPassword != null) txtPassword.UseSystemPasswordChar = true;
-            isPasswordVisible = false;
-            SetupPasswordToggleButton();
-        }
-
-        private void SetupPasswordToggleButton()
-        {
-            if (visible_password == null) return;
-
-            visible_password.FlatStyle = FlatStyle.Flat;
-            visible_password.FlatAppearance.BorderSize = 0;
-            visible_password.BackColor = Color.Transparent;
-            visible_password.Cursor = Cursors.Hand;
-
-            try
-            {
-                visible_password.Image = Image.FromFile("zac.png");
-            }
-            catch
-            {
-                visible_password.Image = CreateSimpleEyeIcon(false);
-            }
-
-            visible_password.ImageAlign = ContentAlignment.MiddleCenter;
-            visible_password.Click += Visible_password_settings_Click;
-        }
-
-        private void Visible_password_settings_Click(object sender, EventArgs e)
-        {
-            isPasswordVisible = !isPasswordVisible;
-
-            try
-            {
-                if (isPasswordVisible)
-                {
-                    txtPassword.UseSystemPasswordChar = false;
-                    visible_password.Image = Image.FromFile("otc.png");
-                }
-                else
-                {
-                    txtPassword.UseSystemPasswordChar = true;
-                    visible_password.Image = Image.FromFile("zac.png");
-                }
-            }
-            catch
-            {
-                if (isPasswordVisible)
-                {
-                    txtPassword.UseSystemPasswordChar = false;
-                    visible_password.Image = CreateSimpleEyeIcon(true);
-                }
-                else
-                {
-                    txtPassword.UseSystemPasswordChar = true;
-                    visible_password.Image = CreateSimpleEyeIcon(false);
-                }
-            }
-
-            txtPassword.Focus();
-        }
-
-        private Image CreateSimpleEyeIcon(bool open)
-        {
-            Bitmap bmp = new Bitmap(24, 24);
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.Clear(Color.Transparent);
-                using (Pen pen = new Pen(Color.Gray, 2))
-                {
-                    if (open)
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
-                        g.DrawEllipse(pen, 4, 6, 16, 12);
-                        g.FillEllipse(Brushes.Gray, 10, 10, 4, 4);
+                        cmd.ExecuteNonQuery();
                     }
-                    else
+
+                    LogMessage("Удаление таблиц...");
+                    DropAllTables(conn);
+
+                    LogMessage("Создание таблиц...");
+                    CreateAllTables(conn);
+
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                     {
-                        g.DrawLine(pen, 4, 6, 20, 18);
-                        g.DrawLine(pen, 4, 12, 20, 12);
-                        g.DrawLine(pen, 4, 18, 20, 6);
+                        cmd.ExecuteNonQuery();
                     }
                 }
-            }
-            return bmp;
-        }
 
-        private void LoadCurrentSettings()
-        {
-            var config = SettingsBD.GetCurrentConfig();
-            if (txtServer != null) txtServer.Text = config.Server;
-            if (txtDatabase != null) txtDatabase.Text = config.Database;
-            if (txtUsername != null) txtUsername.Text = config.Username;
-            if (txtPassword != null)
+                LogMessage("Восстановление успешно завершено!");
+                LoadTableLists();
+                MessageBox.Show("Структура БД восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
             {
-                txtPassword.Text = config.Password;
-                txtPassword.UseSystemPasswordChar = true;
+                LogMessage($"ОШИБКА: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void UpdateSettingsElementsVisibility()
+        private void DropAllTables(MySqlConnection conn)
         {
-            bool isSettingsTab = (tabControl.SelectedIndex == 0);
+            string[] tables = {
+                "order_dish", "other_orders", "orders", "certificates", "dishes",
+                "users", "present", "categories", "order_statuses", "status_certificates", "roles"
+            };
 
-            if (txtServer != null) txtServer.Visible = isSettingsTab;
-            if (txtDatabase != null) txtDatabase.Visible = isSettingsTab;
-            if (txtUsername != null) txtUsername.Visible = isSettingsTab;
-            if (txtPassword != null) txtPassword.Visible = isSettingsTab;
-            if (btnSave != null) btnSave.Visible = isSettingsTab;
-            if (btnTestConnection != null) btnTestConnection.Visible = isSettingsTab;
-            if (visible_password != null) visible_password.Visible = isSettingsTab;
-            if (lblStatus != null) lblStatus.Visible = false;
-        }
-
-        private void SisAdminForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            InactivityManager.UnregisterForm();
-
-            if (e.CloseReason == CloseReason.UserClosing)
+            foreach (string table in tables)
             {
-                e.Cancel = true;
-                this.Visible = false;
-                LoginForm login = new LoginForm();
-                login.Show();
-            }
-        }
-
-        private void TabControlBD_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            UpdateSettingsElementsVisibility();
-            if (tabControl.SelectedIndex == 0)
-            {
-                LoadCurrentSettings();
-                if (txtPassword != null)
-                {
-                    txtPassword.UseSystemPasswordChar = true;
-                    isPasswordVisible = false;
-                }
-            }
-        }
-
-        private void btnTestConnection_Click(object sender, EventArgs e)
-        {
-            if (lblStatus != null) lblStatus.Visible = true;
-
-            if (string.IsNullOrWhiteSpace(txtServer.Text))
-            {
-                lblStatus.Text = "❌ Введите сервер!";
-                lblStatus.ForeColor = Color.Red;
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(txtDatabase.Text))
-            {
-                lblStatus.Text = "❌ Введите название базы данных!";
-                lblStatus.ForeColor = Color.Red;
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(txtUsername.Text))
-            {
-                lblStatus.Text = "❌ Введите имя пользователя!";
-                lblStatus.ForeColor = Color.Red;
-                return;
-            }
-
-            string connectionString = $"server={txtServer.Text};username={txtUsername.Text};password={txtPassword.Text};database={txtDatabase.Text};";
-
-            lblStatus.Text = "⏳ Проверка подключения...";
-            lblStatus.ForeColor = Color.Blue;
-            btnTestConnection.Enabled = false;
-            this.Cursor = Cursors.WaitCursor;
-
-            Task.Run(() =>
-            {
-                bool isConnected = false;
-                string errorMessage = "";
-
                 try
                 {
-                    using (var connection = new MySqlConnection(connectionString))
+                    using (MySqlCommand cmd = new MySqlCommand($"DROP TABLE IF EXISTS `{table}`;", conn))
                     {
-                        connection.Open();
-                        isConnected = true;
+                        cmd.ExecuteNonQuery();
                     }
                 }
                 catch (Exception ex)
                 {
-                    errorMessage = ex.Message;
+                    LogMessage($"Ошибка при удалении {table}: {ex.Message}");
                 }
-
-                this.Invoke(new Action(() =>
-                {
-                    btnTestConnection.Enabled = true;
-                    this.Cursor = Cursors.Default;
-
-                    if (isConnected)
-                    {
-                        lblStatus.Text = "✅ Подключение успешно!";
-                        lblStatus.ForeColor = Color.Green;
-                        MessageBox.Show("Подключение к базе данных успешно установлено!",
-                            "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        lblStatus.Text = "❌ Ошибка подключения!";
-                        lblStatus.ForeColor = Color.Red;
-                        MessageBox.Show($"Не удалось подключиться к базе данных:\n{errorMessage}",
-                            "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }));
-            });
+            }
         }
 
-        private void btnSave_Click(object sender, EventArgs e)
+        private void CreateAllTables(MySqlConnection conn)
         {
-            if (string.IsNullOrWhiteSpace(txtServer.Text))
+            // roles
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `roles` (
+                    `id_role` INT NOT NULL AUTO_INCREMENT,
+                    `role_name` VARCHAR(50) NOT NULL,
+                    PRIMARY KEY (`id_role`),
+                    UNIQUE KEY `role_name` (`role_name`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
-                MessageBox.Show("Введите адрес сервера!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtServer.Focus();
+                cmd.ExecuteNonQuery();
+            }
+
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                INSERT INTO `roles` (`id_role`, `role_name`) VALUES 
+                (1, 'manager'), (2, 'director'), (3, 'admin');", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // users
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `users` (
+                    `id_user` INT NOT NULL AUTO_INCREMENT,
+                    `FIO` VARCHAR(100) NOT NULL,
+                    `id_role` INT NOT NULL,
+                    `login` VARCHAR(50) NOT NULL,
+                    `password_hash` VARCHAR(64) NOT NULL,
+                    PRIMARY KEY (`id_user`),
+                    UNIQUE KEY `login` (`login`),
+                    KEY `id_role` (`id_role`),
+                    CONSTRAINT `users_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id_role`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // order_statuses
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `order_statuses` (
+                    `id_status` INT NOT NULL AUTO_INCREMENT,
+                    `status_name` VARCHAR(255) DEFAULT NULL,
+                    PRIMARY KEY (`id_status`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                INSERT INTO `order_statuses` (`id_status`, `status_name`) VALUES 
+                (1, 'В обработке'), (2, 'Принят'), (3, 'В приготовлении'),
+                (4, 'Готов'), (5, 'В пути'), (6, 'Доставлен'), (7, 'Отменён');", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // categories
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `categories` (
+                    `id_category` INT NOT NULL AUTO_INCREMENT,
+                    `category_name` VARCHAR(255) NOT NULL,
+                    PRIMARY KEY (`id_category`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // dishes
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `dishes` (
+                    `id_dish` INT NOT NULL AUTO_INCREMENT,
+                    `dish_name` VARCHAR(255) NOT NULL,
+                    `compound` VARCHAR(255) DEFAULT NULL,
+                    `id_category` INT NOT NULL,
+                    `price` DECIMAL(10,2) NOT NULL,
+                    `photo` LONGBLOB,
+                    `weight_volume` VARCHAR(20) NOT NULL,
+                    `cost` DECIMAL(10,2) DEFAULT '0.00',
+                    PRIMARY KEY (`id_dish`),
+                    KEY `FK_id_category` (`id_category`),
+                    CONSTRAINT `dishes_ibfk_1` FOREIGN KEY (`id_category`) REFERENCES `categories` (`id_category`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // status_certificates
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `status_certificates` (
+                    `id_status_certificate` INT NOT NULL AUTO_INCREMENT,
+                    `name` VARCHAR(255) DEFAULT NULL,
+                    PRIMARY KEY (`id_status_certificate`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                INSERT INTO `status_certificates` (`id_status_certificate`, `name`) VALUES 
+                (1, 'Активен'), (2, 'Использован'), (3, 'Возвращён');", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // certificates
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `certificates` (
+                    `id_certificate` INT NOT NULL AUTO_INCREMENT,
+                    `last_name` VARCHAR(255) NOT NULL,
+                    `first_name` VARCHAR(255) NOT NULL,
+                    `middle_name` VARCHAR(255) DEFAULT NULL,
+                    `price` DECIMAL(10,2) NOT NULL,
+                    `date` DATE NOT NULL,
+                    `id_status_certificate` INT DEFAULT NULL,
+                    `phone_number` VARCHAR(20) NOT NULL,
+                    PRIMARY KEY (`id_certificate`),
+                    KEY `FK_id_status_certificate` (`id_status_certificate`),
+                    CONSTRAINT `certificates_ibfk_1` FOREIGN KEY (`id_status_certificate`) REFERENCES `status_certificates` (`id_status_certificate`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // present
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `present` (
+                    `id_present` INT NOT NULL AUTO_INCREMENT,
+                    `name` VARCHAR(255) DEFAULT NULL,
+                    `from_price` DECIMAL(10,2) DEFAULT NULL,
+                    PRIMARY KEY (`id_present`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // orders
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `orders` (
+                    `id_order` INT NOT NULL AUTO_INCREMENT,
+                    `order_number` VARCHAR(20) NOT NULL,
+                    `name_client` VARCHAR(255) NOT NULL,
+                    `phone_number` VARCHAR(20) NOT NULL,
+                    `address` VARCHAR(255) NOT NULL,
+                    `number_persons` INT DEFAULT NULL,
+                    `delivery_date` DATE NOT NULL,
+                    `delivery_time` TIME NOT NULL,
+                    `comment` VARCHAR(255) DEFAULT NULL,
+                    `payment_method` VARCHAR(50) NOT NULL DEFAULT 'Наличные',
+                    `id_status` INT NOT NULL,
+                    `total_amount` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+                    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id_order`),
+                    UNIQUE KEY `order_number` (`order_number`),
+                    KEY `id_status` (`id_status`),
+                    CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // order_dish
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `order_dish` (
+                    `id_order_dish` INT NOT NULL AUTO_INCREMENT,
+                    `id_order` INT NOT NULL,
+                    `id_dish` INT NOT NULL,
+                    `quantity` INT NOT NULL DEFAULT '1',
+                    `price_at_order` DECIMAL(10,2) NOT NULL,
+                    `is_gift` TINYINT(1) NOT NULL DEFAULT '0',
+                    `id_present` INT DEFAULT NULL,
+                    PRIMARY KEY (`id_order_dish`),
+                    KEY `id_order` (`id_order`),
+                    KEY `id_dish` (`id_dish`),
+                    KEY `id_present` (`id_present`),
+                    CONSTRAINT `order_dish_ibfk_1` FOREIGN KEY (`id_order`) REFERENCES `orders` (`id_order`) ON DELETE CASCADE,
+                    CONSTRAINT `order_dish_ibfk_2` FOREIGN KEY (`id_dish`) REFERENCES `dishes` (`id_dish`),
+                    CONSTRAINT `order_dish_ibfk_3` FOREIGN KEY (`id_present`) REFERENCES `present` (`id_present`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+
+            // other_orders
+            using (MySqlCommand cmd = new MySqlCommand(@"
+                CREATE TABLE IF NOT EXISTS `other_orders` (
+                    `id_other` INT NOT NULL AUTO_INCREMENT,
+                    `id_order` INT DEFAULT NULL,
+                    `id_status` INT DEFAULT NULL,
+                    PRIMARY KEY (`id_other`),
+                    KEY `id_order` (`id_order`),
+                    KEY `other_orders_ibfk_1` (`id_status`),
+                    CONSTRAINT `other_orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+            {
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void LogMessage(string message)
+        {
+            if (txtLog == null) return;
+
+            if (txtLog.InvokeRequired)
+            {
+                txtLog.Invoke(new Action(() => LogMessage(message)));
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtDatabase.Text))
+            txtLog.AppendText($"{DateTime.Now:HH:mm:ss} - {message}{Environment.NewLine}");
+            txtLog.ScrollToCaret();
+        }
+
+        // ===================== ИМПОРТ/ЭКСПОРТ =====================
+
+        private void InitializeImportExportFeature()
+        {
+            if (cmbTables != null)
             {
-                MessageBox.Show("Введите название базы данных!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDatabase.Focus();
-                return;
+                cmbTables.DropDownStyle = ComboBoxStyle.DropDownList;
             }
 
-            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            if (btnBrowseImport != null)
             {
-                MessageBox.Show("Введите имя пользователя!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtUsername.Focus();
-                return;
+                btnBrowseImport.Text = "Обзор...";
+                btnBrowseImport.Click += BtnBrowseImport_Click;
             }
 
-            var newConfig = new SettingsBD.ConnectionConfig
+            if (btnImport != null)
             {
-                Server = txtServer.Text.Trim(),
-                Database = txtDatabase.Text.Trim(),
-                Username = txtUsername.Text.Trim(),
-                Password = txtPassword.Text
-            };
+                btnImport.Text = "Импортировать";
+                btnImport.Enabled = false;
+                btnImport.Click += BtnImport_Click;
+            }
 
+            if (txtImportFilePath != null)
+            {
+                txtImportFilePath.ReadOnly = true;
+                txtImportFilePath.TextChanged += (s, e) => btnImport.Enabled = !string.IsNullOrEmpty(txtImportFilePath.Text);
+            }
+
+            if (cmbExportTables != null)
+            {
+                cmbExportTables.DropDownStyle = ComboBoxStyle.DropDownList;
+            }
+
+            if (btnExport != null)
+            {
+                btnExport.Text = "Экспортировать";
+                btnExport.Click += BtnExport_Click;
+            }
+
+            if (saveFileDialog != null)
+            {
+                saveFileDialog.Filter = "CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*";
+                saveFileDialog.DefaultExt = "csv";
+                saveFileDialog.AddExtension = true;
+            }
+
+            LoadTableLists();
+        }
+
+        private void LoadTableLists()
+        {
             try
             {
-                if (!SettingsBD.TestConnection(newConfig.GetConnectionString()))
+                using (MySqlConnection conn = SettingsBD.GetConnection())
                 {
-                    DialogResult result = MessageBox.Show(
-                        "Не удалось подключиться к базе данных с указанными настройками.\n" +
-                        "Сохранить настройки всё равно?",
-                        "Предупреждение",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
+                    conn.Open();
+                    DataTable schema = conn.GetSchema("Tables");
 
-                    if (result != DialogResult.Yes)
-                        return;
+                    if (cmbTables != null) cmbTables.Items.Clear();
+                    if (cmbExportTables != null) cmbExportTables.Items.Clear();
+
+                    foreach (DataRow row in schema.Rows)
+                    {
+                        string tableName = row["TABLE_NAME"].ToString();
+                        if (!tableName.StartsWith("mysql") && !tableName.StartsWith("information_schema"))
+                        {
+                            if (cmbTables != null) cmbTables.Items.Add(tableName);
+                            if (cmbExportTables != null) cmbExportTables.Items.Add(tableName);
+                        }
+                    }
+
+                    if (cmbTables != null && cmbTables.Items.Count > 0)
+                        cmbTables.SelectedIndex = 0;
+
+                    if (cmbExportTables != null && cmbExportTables.Items.Count > 0)
+                        cmbExportTables.SelectedIndex = 0;
                 }
-
-                SettingsBD.UpdateConfig(newConfig);
-                MessageBox.Show("Настройки успешно сохранены!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении настроек:\n{ex.Message}",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка: {ex.Message}");
             }
         }
 
-        private void tabPageSecure_Click(object sender, EventArgs e)
+        private void BtnBrowseImport_Click(object sender, EventArgs e)
         {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "Выберите CSV файл для импорта";
+                ofd.Filter = "CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*";
+                ofd.FilterIndex = 1;
+                ofd.RestoreDirectory = true;
 
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    txtImportFilePath.Text = ofd.FileName;
+                }
+            }
         }
 
-        private void SisAdminForm_Load(object sender, EventArgs e)
+        private void BtnImport_Click(object sender, EventArgs e)
         {
+            try
+            {
+                if (cmbTables?.SelectedItem == null)
+                {
+                    MessageBox.Show("Выберите таблицу для импорта!");
+                    return;
+                }
 
+                string tableName = cmbTables.SelectedItem.ToString();
+                string filePath = txtImportFilePath.Text;
+
+                if (!File.Exists(filePath))
+                {
+                    MessageBox.Show("Файл не существует!");
+                    return;
+                }
+
+                string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
+
+                if (lines.Length < 2)
+                {
+                    MessageBox.Show("Файл пуст или не содержит данных!");
+                    return;
+                }
+
+                using (MySqlConnection conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+
+                    // ОТКЛЮЧАЕМ ПРОВЕРКУ ВНЕШНИХ КЛЮЧЕЙ
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Очищаем таблицу
+                    try
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand($"TRUNCATE TABLE `{tableName}`", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand($"DELETE FROM `{tableName}`", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        using (MySqlCommand cmd = new MySqlCommand($"ALTER TABLE `{tableName}` AUTO_INCREMENT = 1", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    char delimiter = lines[0].Contains(';') ? ';' : ',';
+                    int importedCount = 0;
+
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(lines[i])) continue;
+
+                        string[] values = ParseCSVLine(lines[i], delimiter);
+                        string placeholders = string.Join(",", values.Select((v, idx) => $"@p{idx}"));
+                        string query = $"INSERT INTO `{tableName}` VALUES ({placeholders})";
+
+                        using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                        {
+                            for (int j = 0; j < values.Length; j++)
+                            {
+                                string val = values[j].Trim().Trim('"');
+                                if (string.IsNullOrEmpty(val) || val == "NULL")
+                                {
+                                    cmd.Parameters.AddWithValue($"@p{j}", DBNull.Value);
+                                }
+                                else
+                                {
+                                    cmd.Parameters.AddWithValue($"@p{j}", val);
+                                }
+                            }
+                            cmd.ExecuteNonQuery();
+                            importedCount++;
+                        }
+                    }
+
+                    // ВКЛЮЧАЕМ ОБРАТНО ПРОВЕРКУ ВНЕШНИХ КЛЮЧЕЙ
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show($"Импорт завершен!\nДобавлено записей: {importedCount}");
+                    txtImportFilePath.Text = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте: {ex.Message}");
+            }
         }
+
+        private void BtnExport_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cmbExportTables?.SelectedItem == null)
+                {
+                    MessageBox.Show("Выберите таблицу для экспорта!");
+                    return;
+                }
+
+                string tableName = cmbExportTables.SelectedItem.ToString();
+
+                if (saveFileDialog?.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = saveFileDialog.FileName;
+                    ExportToCSV(tableName, filePath);
+                    MessageBox.Show($"Таблица '{tableName}' успешно экспортирована!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте: {ex.Message}");
+            }
+        }
+
+        private void ExportToCSV(string tableName, string filePath)
+        {
+            using (MySqlConnection conn = SettingsBD.GetConnection())
+            {
+                conn.Open();
+
+                // Принудительно устанавливаем кодировку для соединения
+                using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+
+                string query = $"SELECT * FROM `{tableName}`";
+                MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                StringBuilder sb = new StringBuilder();
+
+                // Заголовки (разделитель ;)
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    sb.Append($"{dt.Columns[i].ColumnName}");
+                    if (i < dt.Columns.Count - 1) sb.Append(";");
+                }
+                sb.AppendLine();
+
+                // Данные
+                foreach (DataRow row in dt.Rows)
+                {
+                    for (int i = 0; i < dt.Columns.Count; i++)
+                    {
+                        string value = row[i]?.ToString() ?? "";
+                        sb.Append(value);
+                        if (i < dt.Columns.Count - 1) sb.Append(";");
+                    }
+                    sb.AppendLine();
+                }
+
+                // Сохраняем в UTF-8 с BOM (Excel 2016+ открывает нормально)
+                File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(true));
+            }
+        }
+
+        private string[] ParseCSVLine(string line, char delimiter)
+        {
+            List<string> result = new List<string>();
+            bool inQuotes = false;
+            StringBuilder current = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == delimiter && !inQuotes)
+                {
+                    result.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    current.Append(c);
+                }
+            }
+            result.Add(current.ToString());
+            return result.ToArray();
+        }
+
+        // ===================== ЗАГЛУШКИ ДЛЯ ДРУГИХ СОБЫТИЙ =====================
+
+        private void SisAdminForm_Load(object sender, EventArgs e) { }
+        private void btnTestConnection_Click(object sender, EventArgs e) { }
+        private void btnSave_Click(object sender, EventArgs e) { }
+        private void tabPageSecure_Click(object sender, EventArgs e) { }
+        private void tabPageCopy_Click(object sender, EventArgs e) { }
     }
 }
