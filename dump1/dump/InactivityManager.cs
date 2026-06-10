@@ -1,85 +1,101 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Text.Json;
 
 namespace dump
 {
     public static class InactivityManager
     {
         private static Timer inactivityTimer;
-        private static int inactiveSeconds = 0;
-        private static int inactivityTime = 0;
+        private static DateTime lastActivityTime;
+        private static bool isLocked = false;
+        private static List<Form> registeredForms = new List<Form>();
+
+        // Настройки блокировки
         private static bool autoLockEnabled = false;
-        private static string settingsFile = Application.StartupPath + "\\security_settings.txt";
-        private static Form currentActiveForm = null;
+        private static int inactivityTimeSeconds = 60;
+
+        private const string SETTINGS_FILE = "inactivity_settings.json";
 
         public static event Action OnLockRequest;
 
         static InactivityManager()
         {
-            LoadSecuritySettings();
+            LoadSettings();
 
             inactivityTimer = new Timer();
             inactivityTimer.Interval = 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
 
-            if (autoLockEnabled && inactivityTime > 0)
+            if (autoLockEnabled)
             {
                 inactivityTimer.Start();
             }
         }
 
-        private static void LoadSecuritySettings()
+        /// <summary>
+        /// Загрузка настроек блокировки из файла
+        /// </summary>
+        private static void LoadSettings()
         {
             try
             {
-                if (File.Exists(settingsFile))
+                if (File.Exists(SETTINGS_FILE))
                 {
-                    string[] lines = File.ReadAllLines(settingsFile);
-                    foreach (string line in lines)
+                    string json = File.ReadAllText(SETTINGS_FILE);
+                    var settings = JsonSerializer.Deserialize<InactivitySettings>(json);
+                    if (settings != null)
                     {
-                        if (line.StartsWith("InactivityTime="))
-                        {
-                            string value = line.Replace("InactivityTime=", "");
-                            inactivityTime = Convert.ToInt32(value);
-                        }
-                        else if (line.StartsWith("AutoLockEnabled="))
-                        {
-                            string value = line.Replace("AutoLockEnabled=", "");
-                            autoLockEnabled = Convert.ToBoolean(value);
-                        }
+                        autoLockEnabled = settings.AutoLockEnabled;
+                        inactivityTimeSeconds = settings.InactivityTimeSeconds;
                     }
                 }
-                else
-                {
-                    inactivityTime = 0;
-                    autoLockEnabled = false;
-                }
             }
-            catch
+            catch (Exception ex)
             {
-                inactivityTime = 0;
-                autoLockEnabled = false;
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки настроек: {ex.Message}");
             }
         }
 
-        public static void SaveSecuritySettings(int time, bool enabled)
+        /// <summary>
+        /// Сохранение настроек блокировки в файл
+        /// </summary>
+        public static void SaveSettings()
         {
-            inactivityTime = time;
-            autoLockEnabled = enabled;
-
             try
             {
-                string content = $"InactivityTime={inactivityTime}\nAutoLockEnabled={autoLockEnabled}";
-                File.WriteAllText(settingsFile, content);
+                var settings = new InactivitySettings
+                {
+                    AutoLockEnabled = autoLockEnabled,
+                    InactivityTimeSeconds = inactivityTimeSeconds
+                };
+                string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(SETTINGS_FILE, json);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка сохранения настроек: {ex.Message}");
+            }
+        }
 
-            ResetTimer();
+        /// <summary>
+        /// Установка настроек блокировки
+        /// </summary>
+        public static void SetSecuritySettings(bool enabled, int seconds)
+        {
+            autoLockEnabled = enabled;
+            inactivityTimeSeconds = seconds;
+            SaveSettings();
 
-            if (autoLockEnabled && inactivityTime > 0)
+            if (autoLockEnabled)
             {
                 inactivityTimer.Start();
+                ResetActivity();
             }
             else
             {
@@ -87,86 +103,90 @@ namespace dump
             }
         }
 
-        public static int GetInactivityTime()
-        {
-            return inactivityTime;
-        }
-
-        public static bool GetAutoLockEnabled()
-        {
-            return autoLockEnabled;
-        }
+        /// <summary>
+        /// Получение текущих настроек
+        /// </summary>
+        public static bool GetAutoLockEnabled() => autoLockEnabled;
+        public static int GetInactivityTime() => inactivityTimeSeconds;
 
         public static void RegisterForm(Form form)
         {
-            if (currentActiveForm != null)
+            if (!registeredForms.Contains(form))
             {
-                currentActiveForm.MouseMove -= ResetTimer;
-                currentActiveForm.KeyPress -= ResetTimer;
+                registeredForms.Add(form);
+
+                // Подписываемся на события активности формы
+                form.MouseMove += OnUserActivity;
+                form.KeyPress += OnUserActivity;
+                form.Click += OnUserActivity;
+                form.FormClosing += Form_FormClosing;
             }
 
-            currentActiveForm = form;
-
-            form.MouseMove += ResetTimer;
-            form.KeyPress += ResetTimer;
-
-            SubscribeControls(form.Controls);
-
-            ResetTimer();
+            ResetActivity();
         }
 
-        private static void SubscribeControls(Control.ControlCollection controls)
+        public static void UnregisterForm(Form form = null)
         {
-            foreach (Control control in controls)
+            if (form != null)
             {
-                control.MouseMove += ResetTimer;
-                control.KeyPress += ResetTimer;
-
-                if (control.HasChildren)
-                {
-                    SubscribeControls(control.Controls);
-                }
+                form.MouseMove -= OnUserActivity;
+                form.KeyPress -= OnUserActivity;
+                form.Click -= OnUserActivity;
+                form.FormClosing -= Form_FormClosing;
+                registeredForms.Remove(form);
             }
         }
 
-        public static void UnregisterForm()
+        private static void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (currentActiveForm != null)
+            if (sender is Form form)
             {
-                currentActiveForm.MouseMove -= ResetTimer;
-                currentActiveForm.KeyPress -= ResetTimer;
-                currentActiveForm = null;
+                UnregisterForm(form);
             }
         }
 
-        private static void ResetTimer(object sender = null, EventArgs e = null)
+        private static void OnUserActivity(object sender, EventArgs e)
         {
-            if (autoLockEnabled && inactivityTime > 0)
+            ResetActivity();
+        }
+
+        public static void ResetActivity()
+        {
+            if (!isLocked)
             {
-                inactiveSeconds = 0;
-                if (!inactivityTimer.Enabled)
-                {
-                    inactivityTimer.Start();
-                }
+                lastActivityTime = DateTime.Now;
             }
         }
 
         private static void InactivityTimer_Tick(object sender, EventArgs e)
         {
-            if (autoLockEnabled && inactivityTime > 0)
+            if (!autoLockEnabled) return;
+            if (isLocked) return;
+            if (registeredForms.Count == 0) return;
+
+            TimeSpan inactiveDuration = DateTime.Now - lastActivityTime;
+            if (inactiveDuration.TotalSeconds >= inactivityTimeSeconds)
             {
-                inactiveSeconds++;
-                if (inactiveSeconds >= inactivityTime)
-                {
-                    inactivityTimer.Stop();
-                    OnLockRequest?.Invoke();
-                }
+                RequestLock();
             }
         }
 
-        public static void ResetActivity()
+        private static void RequestLock()
         {
-            ResetTimer();
+            isLocked = true;
+            OnLockRequest?.Invoke();
+        }
+
+        public static void Unlock()
+        {
+            isLocked = false;
+            ResetActivity();
+        }
+
+        private class InactivitySettings
+        {
+            public bool AutoLockEnabled { get; set; }
+            public int InactivityTimeSeconds { get; set; }
         }
     }
 }

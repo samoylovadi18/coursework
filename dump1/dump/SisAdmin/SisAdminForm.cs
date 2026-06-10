@@ -16,216 +16,474 @@ namespace dump
         private bool isLockDialogOpen = false;
         private Dictionary<string, int> tableColumnsCount = new Dictionary<string, int>();
 
-        // ===================== ДЛЯ БЛОКИРОВКИ =====================
-        private Timer inactivityTimer;
-        private int inactivityTimeSeconds = 60; // Время бездействия в секундах
-        private DateTime lastActivityTime;
-        private bool isLocked = false;
+        // Поля для пароля (если есть на форме)
+        private TextBox txtPasswordField;
 
         public SisAdminForm()
         {
             InitializeComponent();
+
+            // Инициализируем элементы для пароля
+            InitializePasswordField();
+
             InitializeRestoreFeature();
             InitializeImportExportFeature();
-            InitializeSecurityFeature(); // Добавляем инициализацию блокировки
+            InitializeSecurityFeature();
+
+            // Стилизуем ВСЕ кнопки
+            StyleAllButtons();
+
+            // ЗАГРУЖАЕМ ТЕКУЩИЕ НАСТРОЙКИ В ПОЛЯ
+            LoadCurrentSettings();
+
+            // Добавляем обработчик закрытия формы
+            this.FormClosing += SisAdminForm_FormClosing;
+        }
+
+        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
+
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на LoginForm
+        /// </summary>
+        private void SisAdminForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем форму входа
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
+        }
+
+        // ===================== НАСТРОЙКИ ПОДКЛЮЧЕНИЯ =====================
+
+        /// <summary>
+        /// Загрузка текущих настроек подключения в поля
+        /// </summary>
+        private void LoadCurrentSettings()
+        {
+            try
+            {
+                var config = SettingsBD.GetCurrentConfig();
+
+                // Ищем текстовые поля на форме
+                TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
+                TextBox txtDatabase = this.Controls.Find("txtDatabase", true).FirstOrDefault() as TextBox;
+                TextBox txtUsername = this.Controls.Find("txtUsername", true).FirstOrDefault() as TextBox;
+
+                if (txtServer != null) txtServer.Text = config.Server;
+                if (txtDatabase != null) txtDatabase.Text = config.Database;
+                if (txtUsername != null) txtUsername.Text = config.Username;
+                if (txtPasswordField != null)
+                {
+                    txtPasswordField.Text = config.Password;
+                    txtPasswordField.UseSystemPasswordChar = true;
+                }
+
+                LogMessage("Настройки подключения загружены");
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка загрузки настроек: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Сохранение настроек подключения
+        /// </summary>
+        private void SaveConnectionSettings()
+        {
+            try
+            {
+                TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
+                TextBox txtDatabase = this.Controls.Find("txtDatabase", true).FirstOrDefault() as TextBox;
+                TextBox txtUsername = this.Controls.Find("txtUsername", true).FirstOrDefault() as TextBox;
+
+                string server = txtServer?.Text.Trim() ?? "localhost";
+                string database = txtDatabase?.Text.Trim() ?? "da";
+                string username = txtUsername?.Text.Trim() ?? "root";
+                string password = txtPasswordField?.Text ?? "";
+
+                var newConfig = new SettingsBD.ConnectionConfig
+                {
+                    Server = server,
+                    Database = database,
+                    Username = username,
+                    Password = password
+                };
+
+                SettingsBD.UpdateConfig(newConfig);
+                LogMessage("Настройки подключения сохранены");
+                MessageBox.Show("Настройки подключения успешно сохранены!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка сохранения настроек: {ex.Message}");
+                MessageBox.Show($"Ошибка сохранения настроек: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Проверка подключения к базе данных
+        /// </summary>
+        private void TestConnection()
+        {
+            try
+            {
+                TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
+                TextBox txtDatabase = this.Controls.Find("txtDatabase", true).FirstOrDefault() as TextBox;
+                TextBox txtUsername = this.Controls.Find("txtUsername", true).FirstOrDefault() as TextBox;
+
+                string server = txtServer?.Text.Trim() ?? "localhost";
+                string database = txtDatabase?.Text.Trim() ?? "da";
+                string username = txtUsername?.Text.Trim() ?? "root";
+                string password = txtPasswordField?.Text ?? "";
+
+                string connectionString = $"server={server};username={username};password={password};database={database};Charset=utf8mb4;";
+
+                using (var conn = new MySqlConnection(connectionString))
+                {
+                    conn.Open();
+                    MessageBox.Show("Подключение к базе данных успешно установлено!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LogMessage("Проверка подключения: успешно");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка подключения: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LogMessage($"Проверка подключения: ошибка - {ex.Message}");
+            }
+        }
+
+        // ===================== ВИДИМОСТЬ ПАРОЛЯ =====================
+
+        /// <summary>
+        /// Инициализация поля для пароля и кнопки видимости
+        /// </summary>
+        private void InitializePasswordField()
+        {
+            // Ищем поле для пароля на форме
+            txtPasswordField = this.Controls.Find("txtPassword", true).FirstOrDefault() as TextBox;
+
+            if (txtPasswordField != null)
+            {
+                isPasswordVisible = false;
+                txtPasswordField.UseSystemPasswordChar = true;
+
+                // Загружаем иконку закрытого глаза
+                try
+                {
+                    if (visible_password != null)
+                    {
+                        visible_password.Image = Image.FromFile("zac.png");
+                        visible_password.Click += Visible_password_Click;
+                    }
+                }
+                catch
+                {
+                    if (visible_password != null)
+                    {
+                        visible_password.Image = CreateSimpleEyeIcon(false);
+                        visible_password.Click += Visible_password_Click;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Обработчик клика по иконке глаза
+        /// </summary>
+        private void Visible_password_Click(object sender, EventArgs e)
+        {
+            if (txtPasswordField == null) return;
+
+            isPasswordVisible = !isPasswordVisible;
+
+            try
+            {
+                if (isPasswordVisible)
+                {
+                    txtPasswordField.UseSystemPasswordChar = false;
+                    if (visible_password != null)
+                        visible_password.Image = Image.FromFile("otc.png");
+                }
+                else
+                {
+                    txtPasswordField.UseSystemPasswordChar = true;
+                    if (visible_password != null)
+                        visible_password.Image = Image.FromFile("zac.png");
+                }
+            }
+            catch
+            {
+                if (isPasswordVisible)
+                {
+                    txtPasswordField.UseSystemPasswordChar = false;
+                    if (visible_password != null)
+                        visible_password.Image = CreateSimpleEyeIcon(true);
+                }
+                else
+                {
+                    txtPasswordField.UseSystemPasswordChar = true;
+                    if (visible_password != null)
+                        visible_password.Image = CreateSimpleEyeIcon(false);
+                }
+            }
+
+            txtPasswordField.Focus();
+        }
+
+        /// <summary>
+        /// Создание простой иконки глаза
+        /// </summary>
+        private Image CreateSimpleEyeIcon(bool open)
+        {
+            Bitmap bmp = new Bitmap(24, 24);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+                using (Pen pen = new Pen(Color.Gray, 2))
+                {
+                    if (open)
+                    {
+                        g.DrawEllipse(pen, 4, 6, 16, 12);
+                        g.FillEllipse(Brushes.Gray, 10, 10, 4, 4);
+                    }
+                    else
+                    {
+                        g.DrawLine(pen, 4, 6, 20, 18);
+                        g.DrawLine(pen, 4, 12, 20, 12);
+                        g.DrawLine(pen, 4, 18, 20, 6);
+                    }
+                }
+            }
+            return bmp;
+        }
+
+        /// <summary>
+        /// Стилизация всех кнопок на форме
+        /// </summary>
+        private void StyleAllButtons()
+        {
+            // Стилизуем кнопки по именам
+            StyleButton(btnTestConnection);
+            StyleButton(btnSave);
+            StyleButton(btnRestoreDB);
+            StyleButton(btnBrowseImport);
+            StyleButton(btnImport);
+            StyleButton(btnExport);
+
+            // Стилизуем кнопки безопасности
+            StyleButton(btnSaveSecurity);
+            StyleButton(btnCancelSecurity);
+
+            // Стилизуем кнопку видимости пароля
+            if (visible_password != null)
+            {
+                visible_password.Cursor = Cursors.Hand;
+                visible_password.BackColor = Color.Transparent;
+            }
+
+            // Находим все кнопки на форме
+            foreach (Control control in this.Controls)
+            {
+                if (control is Button btn)
+                {
+                    StyleButton(btn);
+                }
+
+                if (control is GroupBox groupBox)
+                {
+                    foreach (Control innerControl in groupBox.Controls)
+                    {
+                        if (innerControl is Button innerBtn)
+                        {
+                            StyleButton(innerBtn);
+                        }
+                    }
+                }
+
+                if (control is Panel panel)
+                {
+                    foreach (Control innerControl in panel.Controls)
+                    {
+                        if (innerControl is Button innerBtn)
+                        {
+                            StyleButton(innerBtn);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Универсальный метод для стилизации кнопки
+        /// </summary>
+        private void StyleButton(Button btn)
+        {
+            if (btn == null) return;
+
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = Color.Black;
+            btn.BackColor = Color.DarkSeaGreen;
+            btn.ForeColor = Color.Black;
+            btn.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btn.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+
+            btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
+            btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
+            btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
         // ===================== БЛОКИРОВКА СИСТЕМЫ =====================
 
         private void InitializeSecurityFeature()
         {
-            // Настройка чекбокса
             if (chkAutoLock != null)
             {
                 chkAutoLock.Text = "Включить блокировку при бездействии";
+                chkAutoLock.Checked = InactivityManager.GetAutoLockEnabled();
                 chkAutoLock.CheckedChanged += ChkAutoLock_CheckedChanged;
             }
 
-            // Настройка NumericUpDown для времени
             if (numInactivityTime != null)
             {
                 numInactivityTime.Minimum = 1;
                 numInactivityTime.Maximum = 3600;
-                numInactivityTime.Value = inactivityTimeSeconds;
-                numInactivityTime.Enabled = false; // По умолчанию выключено
+                numInactivityTime.Value = InactivityManager.GetInactivityTime();
+                numInactivityTime.Enabled = InactivityManager.GetAutoLockEnabled();
                 numInactivityTime.ValueChanged += NumInactivityTime_ValueChanged;
             }
 
-            // Создаем таймер
-            inactivityTimer = new Timer();
-            inactivityTimer.Interval = 1000; // Проверяем каждую секунду
-            inactivityTimer.Tick += InactivityTimer_Tick;
+            // Подписываемся на события кнопок безопасности
+            if (btnSaveSecurity != null)
+            {
+                btnSaveSecurity.Click += BtnSaveSecurity_Click;
+            }
 
-            // Подписываемся на события активности
-            this.MouseMove += OnUserActivity;
-            this.KeyPress += OnUserActivity;
-            this.Click += OnUserActivity;
-
-            // Записываем время последней активности
-            lastActivityTime = DateTime.Now;
+            if (btnCancelSecurity != null)
+            {
+                btnCancelSecurity.Click += BtnCancelSecurity_Click;
+            }
         }
 
         private void ChkAutoLock_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkAutoLock.Checked)
+            bool isChecked = chkAutoLock.Checked;
+            InactivityManager.SetSecuritySettings(isChecked, InactivityManager.GetInactivityTime());
+
+            if (numInactivityTime != null)
             {
-                // Если чекбокс включен - активируем таймер
-                inactivityTimer.Start();
-                if (numInactivityTime != null) numInactivityTime.Enabled = true;
-                lastActivityTime = DateTime.Now;
-                LogMessage($"Блокировка включена. Время бездействия: {inactivityTimeSeconds} сек.");
+                numInactivityTime.Enabled = isChecked;
             }
-            else
-            {
-                // Если чекбокс выключен - останавливаем таймер
-                inactivityTimer.Stop();
-                if (numInactivityTime != null) numInactivityTime.Enabled = false;
-                LogMessage("Блокировка выключена.");
-            }
+
+            LogMessage(isChecked ? "Блокировка включена" : "Блокировка выключена");
         }
 
         private void NumInactivityTime_ValueChanged(object sender, EventArgs e)
         {
             if (numInactivityTime != null)
             {
-                inactivityTimeSeconds = (int)numInactivityTime.Value;
-                LogMessage($"Время бездействия изменено на {inactivityTimeSeconds} сек.");
+                int seconds = (int)numInactivityTime.Value;
+                InactivityManager.SetSecuritySettings(InactivityManager.GetAutoLockEnabled(), seconds);
+                LogMessage($"Время бездействия изменено на {seconds} сек.");
             }
         }
 
-        private void OnUserActivity(object sender, EventArgs e)
+        /// <summary>
+        /// Сохранение настроек безопасности
+        /// </summary>
+        private void BtnSaveSecurity_Click(object sender, EventArgs e)
         {
-            if (!isLocked)
+            try
             {
-                lastActivityTime = DateTime.Now;
-            }
-        }
+                bool isEnabled = chkAutoLock?.Checked ?? false;
+                int seconds = (int)(numInactivityTime?.Value ?? 60);
 
-        private void InactivityTimer_Tick(object sender, EventArgs e)
-        {
-            // Проверяем только если блокировка включена и форма не заблокирована
-            if (chkAutoLock != null && chkAutoLock.Checked && !isLocked)
-            {
-                TimeSpan inactiveDuration = DateTime.Now - lastActivityTime;
+                InactivityManager.SetSecuritySettings(isEnabled, seconds);
 
-                if (inactiveDuration.TotalSeconds >= inactivityTimeSeconds)
+                LogMessage($"Настройки безопасности сохранены: блокировка {(isEnabled ? "включена" : "выключена")}, время {seconds} сек.");
+
+                // Формируем сообщение в зависимости от состояния блокировки
+                string message;
+                if (isEnabled)
                 {
-                    LockSystem();
+                    message = $"Настройки безопасности успешно сохранены!\n\n" +
+                             $"Блокировка: Включена\n" +
+                             $"Время бездействия: {seconds} сек.";
                 }
-            }
-        }
-
-        private void LockSystem()
-        {
-            if (isLockDialogOpen) return;
-            isLockDialogOpen = true;
-            isLocked = true;
-
-            this.Invoke(new Action(() =>
-            {
-                Form lockDialog = new Form();
-                lockDialog.Text = "Блокировка системы";
-                lockDialog.Size = new Size(400, 250);
-                lockDialog.StartPosition = FormStartPosition.CenterScreen;
-                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
-                lockDialog.MaximizeBox = false;
-                lockDialog.MinimizeBox = false;
-                lockDialog.TopMost = true;
-
-                Label lblMessage = new Label();
-                lblMessage.Text = $"Система заблокирована из-за бездействия ({inactivityTimeSeconds} сек.)\nВведите пароль для разблокировки:";
-                lblMessage.Location = new Point(20, 20);
-                lblMessage.Size = new Size(360, 60);
-                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
-
-                Label lblUser = new Label();
-                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
-                lblUser.Location = new Point(20, 90);
-                lblUser.Size = new Size(360, 25);
-                lblUser.TextAlign = ContentAlignment.MiddleCenter;
-                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
-
-                TextBox txtPassword = new TextBox();
-                txtPassword.Location = new Point(100, 130);
-                txtPassword.Size = new Size(200, 20);
-                txtPassword.UseSystemPasswordChar = true;
-
-                Button btnUnlock = new Button();
-                btnUnlock.Text = "Разблокировать";
-                btnUnlock.Location = new Point(150, 170);
-                btnUnlock.Size = new Size(100, 30);
-
-                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
-                txtPassword.KeyPress += (s, e) =>
+                else
                 {
-                    if (e.KeyChar == (char)Keys.Enter)
-                        CheckPasswordAndUnlock(txtPassword, lockDialog);
-                };
+                    message = $"Настройки безопасности успешно сохранены!\n\n" +
+                             $"Блокировка: Выключена";
+                }
 
-                lockDialog.Controls.Add(lblMessage);
-                lockDialog.Controls.Add(lblUser);
-                lockDialog.Controls.Add(txtPassword);
-                lockDialog.Controls.Add(btnUnlock);
-                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; isLocked = false; };
-                lockDialog.ShowDialog();
-            }));
-        }
-
-        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
-        {
-            bool isCorrect = false;
-
-            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
-            {
-                if (txtPassword.Text == "admin")
-                    isCorrect = true;
+                MessageBox.Show(message, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            else
+            catch (Exception ex)
             {
-                string dbPassword = GetPasswordFromDB();
-                string inputHash = HashPassword(txtPassword.Text);
-                if (inputHash == dbPassword)
-                    isCorrect = true;
-            }
-
-            if (isCorrect)
-            {
-                lockDialog.Close();
-                lastActivityTime = DateTime.Now; // Сбрасываем время активности
-                LogMessage("Система разблокирована.");
-            }
-            else
-            {
-                MessageBox.Show("Неверный пароль!", "Ошибка",
+                LogMessage($"Ошибка сохранения настроек безопасности: {ex.Message}");
+                MessageBox.Show($"Ошибка сохранения настроек: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private string GetPasswordFromDB()
+        /// <summary>
+        /// Отмена изменений - загрузка сохраненных настроек
+        /// </summary>
+        private void BtnCancelSecurity_Click(object sender, EventArgs e)
         {
             try
             {
-                using (var conn = SettingsBD.GetConnection())
-                {
-                    conn.Open();
-                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
-                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
-                    return cmd.ExecuteScalar()?.ToString();
-                }
-            }
-            catch { return null; }
-        }
+                bool savedEnabled = InactivityManager.GetAutoLockEnabled();
+                int savedSeconds = InactivityManager.GetInactivityTime();
 
-        private string HashPassword(string password)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                if (chkAutoLock != null)
+                {
+                    chkAutoLock.Checked = savedEnabled;
+                }
+
+                if (numInactivityTime != null)
+                {
+                    numInactivityTime.Value = savedSeconds;
+                    numInactivityTime.Enabled = savedEnabled;
+                }
+
+                LogMessage("Настройки безопасности сброшены до сохраненных");
+
+                // Формируем сообщение в зависимости от состояния блокировки
+                string message;
+                if (savedEnabled)
+                {
+                    message = $"Настройки безопасности сброшены до последних сохраненных значений.\n\n" +
+                             $"Блокировка: Включена\n" +
+                             $"Время бездействия: {savedSeconds} сек.";
+                }
+                else
+                {
+                    message = $"Настройки безопасности сброшены до последних сохраненных значений.\n\n" +
+                             $"Блокировка: Выключена";
+                }
+
+                MessageBox.Show(message, "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(password);
-                byte[] hash = sha256.ComputeHash(bytes);
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in hash)
-                    builder.Append(b.ToString("x2"));
-                return builder.ToString();
+                LogMessage($"Ошибка при отмене изменений: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -237,10 +495,6 @@ namespace dump
             {
                 btnRestoreDB.Text = "Восстановить структуру БД";
                 btnRestoreDB.Click += BtnRestoreDB_Click;
-                btnRestoreDB.BackColor = Color.DarkSeaGreen;
-                btnRestoreDB.FlatStyle = FlatStyle.Flat;
-                btnRestoreDB.FlatAppearance.BorderSize = 1;
-                btnRestoreDB.FlatAppearance.BorderColor = Color.Black;
             }
 
             if (txtLog != null)
@@ -675,13 +929,11 @@ namespace dump
                 {
                     conn.Open();
 
-                    // ОТКЛЮЧАЕМ ПРОВЕРКУ ВНЕШНИХ КЛЮЧЕЙ
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
 
-                    // Очищаем таблицу
                     try
                     {
                         using (MySqlCommand cmd = new MySqlCommand($"TRUNCATE TABLE `{tableName}`", conn))
@@ -731,7 +983,6 @@ namespace dump
                         }
                     }
 
-                    // ВКЛЮЧАЕМ ОБРАТНО ПРОВЕРКУ ВНЕШНИХ КЛЮЧЕЙ
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                     {
                         cmd.ExecuteNonQuery();
@@ -778,7 +1029,6 @@ namespace dump
             {
                 conn.Open();
 
-                // Принудительно устанавливаем кодировку для соединения
                 using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
                 {
                     cmd.ExecuteNonQuery();
@@ -791,7 +1041,6 @@ namespace dump
 
                 StringBuilder sb = new StringBuilder();
 
-                // Заголовки (разделитель ;)
                 for (int i = 0; i < dt.Columns.Count; i++)
                 {
                     sb.Append($"{dt.Columns[i].ColumnName}");
@@ -799,7 +1048,6 @@ namespace dump
                 }
                 sb.AppendLine();
 
-                // Данные
                 foreach (DataRow row in dt.Rows)
                 {
                     for (int i = 0; i < dt.Columns.Count; i++)
@@ -811,7 +1059,6 @@ namespace dump
                     sb.AppendLine();
                 }
 
-                // Сохраняем в UTF-8 с BOM
                 File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(true));
             }
         }
@@ -852,11 +1099,21 @@ namespace dump
             return result.ToArray();
         }
 
+        // ===================== ОБРАБОТЧИКИ КНОПОК =====================
+
+        private void btnTestConnection_Click(object sender, EventArgs e)
+        {
+            TestConnection();
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveConnectionSettings();
+        }
+
         // ===================== ЗАГЛУШКИ ДЛЯ ДРУГИХ СОБЫТИЙ =====================
 
         private void SisAdminForm_Load(object sender, EventArgs e) { }
-        private void btnTestConnection_Click(object sender, EventArgs e) { }
-        private void btnSave_Click(object sender, EventArgs e) { }
         private void tabPageSecure_Click(object sender, EventArgs e) { }
         private void tabPageCopy_Click(object sender, EventArgs e) { }
     }
