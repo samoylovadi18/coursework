@@ -16,11 +16,217 @@ namespace dump
         private bool isLockDialogOpen = false;
         private Dictionary<string, int> tableColumnsCount = new Dictionary<string, int>();
 
+        // ===================== ДЛЯ БЛОКИРОВКИ =====================
+        private Timer inactivityTimer;
+        private int inactivityTimeSeconds = 60; // Время бездействия в секундах
+        private DateTime lastActivityTime;
+        private bool isLocked = false;
+
         public SisAdminForm()
         {
             InitializeComponent();
             InitializeRestoreFeature();
             InitializeImportExportFeature();
+            InitializeSecurityFeature(); // Добавляем инициализацию блокировки
+        }
+
+        // ===================== БЛОКИРОВКА СИСТЕМЫ =====================
+
+        private void InitializeSecurityFeature()
+        {
+            // Настройка чекбокса
+            if (chkAutoLock != null)
+            {
+                chkAutoLock.Text = "Включить блокировку при бездействии";
+                chkAutoLock.CheckedChanged += ChkAutoLock_CheckedChanged;
+            }
+
+            // Настройка NumericUpDown для времени
+            if (numInactivityTime != null)
+            {
+                numInactivityTime.Minimum = 1;
+                numInactivityTime.Maximum = 3600;
+                numInactivityTime.Value = inactivityTimeSeconds;
+                numInactivityTime.Enabled = false; // По умолчанию выключено
+                numInactivityTime.ValueChanged += NumInactivityTime_ValueChanged;
+            }
+
+            // Создаем таймер
+            inactivityTimer = new Timer();
+            inactivityTimer.Interval = 1000; // Проверяем каждую секунду
+            inactivityTimer.Tick += InactivityTimer_Tick;
+
+            // Подписываемся на события активности
+            this.MouseMove += OnUserActivity;
+            this.KeyPress += OnUserActivity;
+            this.Click += OnUserActivity;
+
+            // Записываем время последней активности
+            lastActivityTime = DateTime.Now;
+        }
+
+        private void ChkAutoLock_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkAutoLock.Checked)
+            {
+                // Если чекбокс включен - активируем таймер
+                inactivityTimer.Start();
+                if (numInactivityTime != null) numInactivityTime.Enabled = true;
+                lastActivityTime = DateTime.Now;
+                LogMessage($"Блокировка включена. Время бездействия: {inactivityTimeSeconds} сек.");
+            }
+            else
+            {
+                // Если чекбокс выключен - останавливаем таймер
+                inactivityTimer.Stop();
+                if (numInactivityTime != null) numInactivityTime.Enabled = false;
+                LogMessage("Блокировка выключена.");
+            }
+        }
+
+        private void NumInactivityTime_ValueChanged(object sender, EventArgs e)
+        {
+            if (numInactivityTime != null)
+            {
+                inactivityTimeSeconds = (int)numInactivityTime.Value;
+                LogMessage($"Время бездействия изменено на {inactivityTimeSeconds} сек.");
+            }
+        }
+
+        private void OnUserActivity(object sender, EventArgs e)
+        {
+            if (!isLocked)
+            {
+                lastActivityTime = DateTime.Now;
+            }
+        }
+
+        private void InactivityTimer_Tick(object sender, EventArgs e)
+        {
+            // Проверяем только если блокировка включена и форма не заблокирована
+            if (chkAutoLock != null && chkAutoLock.Checked && !isLocked)
+            {
+                TimeSpan inactiveDuration = DateTime.Now - lastActivityTime;
+
+                if (inactiveDuration.TotalSeconds >= inactivityTimeSeconds)
+                {
+                    LockSystem();
+                }
+            }
+        }
+
+        private void LockSystem()
+        {
+            if (isLockDialogOpen) return;
+            isLockDialogOpen = true;
+            isLocked = true;
+
+            this.Invoke(new Action(() =>
+            {
+                Form lockDialog = new Form();
+                lockDialog.Text = "Блокировка системы";
+                lockDialog.Size = new Size(400, 250);
+                lockDialog.StartPosition = FormStartPosition.CenterScreen;
+                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                lockDialog.MaximizeBox = false;
+                lockDialog.MinimizeBox = false;
+                lockDialog.TopMost = true;
+
+                Label lblMessage = new Label();
+                lblMessage.Text = $"Система заблокирована из-за бездействия ({inactivityTimeSeconds} сек.)\nВведите пароль для разблокировки:";
+                lblMessage.Location = new Point(20, 20);
+                lblMessage.Size = new Size(360, 60);
+                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
+
+                Label lblUser = new Label();
+                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
+                lblUser.Location = new Point(20, 90);
+                lblUser.Size = new Size(360, 25);
+                lblUser.TextAlign = ContentAlignment.MiddleCenter;
+                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
+
+                TextBox txtPassword = new TextBox();
+                txtPassword.Location = new Point(100, 130);
+                txtPassword.Size = new Size(200, 20);
+                txtPassword.UseSystemPasswordChar = true;
+
+                Button btnUnlock = new Button();
+                btnUnlock.Text = "Разблокировать";
+                btnUnlock.Location = new Point(150, 170);
+                btnUnlock.Size = new Size(100, 30);
+
+                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
+                txtPassword.KeyPress += (s, e) =>
+                {
+                    if (e.KeyChar == (char)Keys.Enter)
+                        CheckPasswordAndUnlock(txtPassword, lockDialog);
+                };
+
+                lockDialog.Controls.Add(lblMessage);
+                lockDialog.Controls.Add(lblUser);
+                lockDialog.Controls.Add(txtPassword);
+                lockDialog.Controls.Add(btnUnlock);
+                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; isLocked = false; };
+                lockDialog.ShowDialog();
+            }));
+        }
+
+        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
+        {
+            bool isCorrect = false;
+
+            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
+            {
+                if (txtPassword.Text == "admin")
+                    isCorrect = true;
+            }
+            else
+            {
+                string dbPassword = GetPasswordFromDB();
+                string inputHash = HashPassword(txtPassword.Text);
+                if (inputHash == dbPassword)
+                    isCorrect = true;
+            }
+
+            if (isCorrect)
+            {
+                lockDialog.Close();
+                lastActivityTime = DateTime.Now; // Сбрасываем время активности
+                LogMessage("Система разблокирована.");
+            }
+            else
+            {
+                MessageBox.Show("Неверный пароль!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GetPasswordFromDB()
+        {
+            try
+            {
+                using (var conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
+                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
+                    return cmd.ExecuteScalar()?.ToString();
+                }
+            }
+            catch { return null; }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in hash)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
         }
 
         // ===================== ВОССТАНОВЛЕНИЕ =====================
@@ -605,7 +811,7 @@ namespace dump
                     sb.AppendLine();
                 }
 
-                // Сохраняем в UTF-8 с BOM (Excel 2016+ открывает нормально)
+                // Сохраняем в UTF-8 с BOM
                 File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(true));
             }
         }

@@ -272,7 +272,7 @@ namespace dump
 
         private void button1_Click(object sender, EventArgs e)
         {
-            ProfitForm profit = new ProfitForm();
+            TopDishForm profit = new TopDishForm();
             profit.Owner = this;
             this.Hide();
             profit.Show();
