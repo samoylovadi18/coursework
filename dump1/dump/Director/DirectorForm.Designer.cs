@@ -57,6 +57,7 @@
             this.buttonStatistics.TabIndex = 9;
             this.buttonStatistics.Text = "Статистика по сертификатам";
             this.buttonStatistics.UseVisualStyleBackColor = false;
+            this.buttonStatistics.Click += new System.EventHandler(this.buttonStatistics_Click);
             // 
             // ButtonReport
             // 

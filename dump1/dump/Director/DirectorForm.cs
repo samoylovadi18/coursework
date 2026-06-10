@@ -20,7 +20,7 @@ namespace dump
             InitializeComponent();
 
             // Подписываемся на события ТОЛЬКО для кнопок, которые НА ПАНЕЛИ
-            buttonStatistics.Click += ButtonStatistics_Click;
+           
 
             // Подписываемся на события для кнопок статистики
 
@@ -192,19 +192,7 @@ namespace dump
         }
 
         // Обработчик нажатия на кнопку Statistics
-        private void ButtonStatistics_Click(object sender, EventArgs e)
-        {
-            Panel statisticsPanel = this.Controls["panelStatistics"] as Panel;
-            if (statisticsPanel == null) return;
-
-            // Показываем панель статистики
-            statisticsPanel.Visible = true;
-            statisticsPanel.BringToFront();
-
-            // Показываем кнопки на панели
-
-            // ButtonRev НЕ ТРОГАЕМ - она на форме и всегда видна
-        }
+       
 
         // Закрытие панели через pictureBox4
         private void pictureBox4_Click(object sender, EventArgs e)
@@ -240,12 +228,6 @@ namespace dump
         }
 
         // Обработчики для кнопок статистики
-        private void buttonCertificates_Click(object sender, EventArgs e)
-        {
-            this.Visible = false;
-            CertificateStatisticsForm certificate = new CertificateStatisticsForm();
-            certificate.Show();
-        }
 
         private void buttonClientTop_Click(object sender, EventArgs e)
         {
@@ -286,6 +268,13 @@ namespace dump
         private void panelStatistics_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void buttonStatistics_Click(object sender, EventArgs e)
+        {
+            this.Visible = false;
+            CertificateStatisticsForm certificate = new CertificateStatisticsForm();
+            certificate.Show();
         }
     }
 }

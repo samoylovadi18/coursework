@@ -25,39 +25,29 @@ namespace dump
         public CertificateStatisticsForm()
         {
             InitializeComponent();
-
-            // Инициализация компонентов вручную, если они не созданы в дизайнере
             InitializeCustomComponents();
-
             toolTip1 = new System.Windows.Forms.ToolTip();
 
             certificatesStats = new DataTable();
 
-            // Установка ограничений на даты
             datePickerStart.MinDate = minDate;
             datePickerStart.MaxDate = DateTime.Now;
             datePickerEnd.MinDate = minDate;
             datePickerEnd.MaxDate = DateTime.Now;
 
-            // Установка значений по умолчанию (текущий месяц)
             datePickerEnd.Value = DateTime.Now;
             datePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
-            // Подписка на события
             btnGenerate.Click += btnGenerate_Click;
             btnExport.Click += BtnExport_Click;
 
-            // Настройка DataGridView
             SetupDataGridView();
-
-            // Создаем пустую таблицу с колонками для отображения шапки
             CreateEmptyTable();
-
-            // Настройка кнопок
             SetupButtons();
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -182,13 +172,13 @@ namespace dump
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
+
         private void InitializeCustomComponents()
         {
-            // Создаем компоненты, если они еще не созданы в дизайнере
             if (datePickerStart == null)
             {
                 datePickerStart = new DateTimePicker();
-                datePickerStart.Location = new Point(150, 20); // Настройте позицию под ваш макет
+                datePickerStart.Location = new Point(150, 20);
                 datePickerStart.Size = new Size(150, 22);
                 datePickerStart.Format = DateTimePickerFormat.Short;
                 this.Controls.Add(datePickerStart);
@@ -197,7 +187,7 @@ namespace dump
             if (datePickerEnd == null)
             {
                 datePickerEnd = new DateTimePicker();
-                datePickerEnd.Location = new Point(350, 20); // Настройте позицию под ваш макет
+                datePickerEnd.Location = new Point(350, 20);
                 datePickerEnd.Size = new Size(150, 22);
                 datePickerEnd.Format = DateTimePickerFormat.Short;
                 this.Controls.Add(datePickerEnd);
@@ -207,7 +197,7 @@ namespace dump
             {
                 labelStart = new Label();
                 labelStart.Text = "Начало периода:";
-                labelStart.Location = new Point(40, 22); // Настройте позицию под ваш макет
+                labelStart.Location = new Point(40, 22);
                 labelStart.Size = new Size(100, 20);
                 this.Controls.Add(labelStart);
             }
@@ -216,7 +206,7 @@ namespace dump
             {
                 labelEnd = new Label();
                 labelEnd.Text = "Конец периода:";
-                labelEnd.Location = new Point(250, 22); // Настройте позицию под ваш макет
+                labelEnd.Location = new Point(250, 22);
                 labelEnd.Size = new Size(100, 20);
                 this.Controls.Add(labelEnd);
             }
@@ -224,45 +214,25 @@ namespace dump
 
         private void SetupButtons()
         {
-            // Настройка кнопки Generate
             btnGenerate.FlatStyle = FlatStyle.Flat;
             btnGenerate.FlatAppearance.BorderSize = 1;
             btnGenerate.FlatAppearance.BorderColor = Color.Black;
             btnGenerate.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             btnGenerate.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
 
-            btnGenerate.MouseDown += (s, e) =>
-            {
-                btnGenerate.FlatAppearance.BorderColor = Color.DarkBlue;
-            };
-            btnGenerate.MouseUp += (s, e) =>
-            {
-                btnGenerate.FlatAppearance.BorderColor = Color.Black;
-            };
-            btnGenerate.MouseLeave += (s, e) =>
-            {
-                btnGenerate.FlatAppearance.BorderColor = Color.Black;
-            };
+            btnGenerate.MouseDown += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.DarkBlue;
+            btnGenerate.MouseUp += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.Black;
+            btnGenerate.MouseLeave += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.Black;
 
-            // Настройка кнопки Export
             btnExport.FlatStyle = FlatStyle.Flat;
             btnExport.FlatAppearance.BorderSize = 1;
             btnExport.FlatAppearance.BorderColor = Color.Black;
             btnExport.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             btnExport.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
 
-            btnExport.MouseDown += (s, e) =>
-            {
-                btnExport.FlatAppearance.BorderColor = Color.DarkBlue;
-            };
-            btnExport.MouseUp += (s, e) =>
-            {
-                btnExport.FlatAppearance.BorderColor = Color.Black;
-            };
-            btnExport.MouseLeave += (s, e) =>
-            {
-                btnExport.FlatAppearance.BorderColor = Color.Black;
-            };
+            btnExport.MouseDown += (s, e) => btnExport.FlatAppearance.BorderColor = Color.DarkBlue;
+            btnExport.MouseUp += (s, e) => btnExport.FlatAppearance.BorderColor = Color.Black;
+            btnExport.MouseLeave += (s, e) => btnExport.FlatAppearance.BorderColor = Color.Black;
         }
 
         private void CreateEmptyTable()
@@ -298,7 +268,6 @@ namespace dump
             dgvCertificates.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvCertificates.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
             dgvCertificates.ColumnHeadersHeight = 45;
-            dgvCertificates.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
             dgvCertificates.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
             dgvCertificates.DefaultCellStyle.Padding = new Padding(5);
@@ -313,82 +282,19 @@ namespace dump
             dgvCertificates.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
 
             dgvCertificates.RowTemplate.Height = 35;
-            dgvCertificates.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dgvCertificates.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-
             dgvCertificates.GridColor = Color.Gray;
             dgvCertificates.BorderStyle = BorderStyle.Fixed3D;
-            dgvCertificates.CellBorderStyle = DataGridViewCellBorderStyle.Single;
 
             toolTip1.SetToolTip(dgvCertificates, "Статистика по сертификатам");
 
             dgvCertificates.Columns.Clear();
 
-            // Статус
-            DataGridViewTextBoxColumn colStatus = new DataGridViewTextBoxColumn();
-            colStatus.Name = "Статус";
-            colStatus.HeaderText = "Статус";
-            colStatus.DataPropertyName = "Статус";
-            colStatus.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colStatus.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colStatus);
-
-            // Количество
-            DataGridViewTextBoxColumn colCount = new DataGridViewTextBoxColumn();
-            colCount.Name = "Количество";
-            colCount.HeaderText = "Количество";
-            colCount.DataPropertyName = "Количество";
-            colCount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colCount.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colCount);
-
-            // Общая сумма
-            DataGridViewTextBoxColumn colTotalSum = new DataGridViewTextBoxColumn();
-            colTotalSum.Name = "Общая сумма";
-            colTotalSum.HeaderText = "Общая сумма";
-            colTotalSum.DataPropertyName = "Общая сумма";
-            colTotalSum.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colTotalSum.DefaultCellStyle.Format = "N2";
-            colTotalSum.DefaultCellStyle.ForeColor = Color.DarkGreen;
-            colTotalSum.DefaultCellStyle.SelectionForeColor = Color.DarkGreen;
-            colTotalSum.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colTotalSum);
-
-            // Средняя сумма
-            DataGridViewTextBoxColumn colAvgSum = new DataGridViewTextBoxColumn();
-            colAvgSum.Name = "Средняя сумма";
-            colAvgSum.HeaderText = "Средняя сумма";
-            colAvgSum.DataPropertyName = "Средняя сумма";
-            colAvgSum.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colAvgSum.DefaultCellStyle.Format = "N2";
-            colAvgSum.DefaultCellStyle.ForeColor = Color.DarkGreen;
-            colAvgSum.DefaultCellStyle.SelectionForeColor = Color.DarkGreen;
-            colAvgSum.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colAvgSum);
-
-            // Мин. сумма
-            DataGridViewTextBoxColumn colMinSum = new DataGridViewTextBoxColumn();
-            colMinSum.Name = "Мин. сумма";
-            colMinSum.HeaderText = "Мин. сумма";
-            colMinSum.DataPropertyName = "Мин. сумма";
-            colMinSum.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colMinSum.DefaultCellStyle.Format = "N2";
-            colMinSum.DefaultCellStyle.ForeColor = Color.DarkGreen;
-            colMinSum.DefaultCellStyle.SelectionForeColor = Color.DarkGreen;
-            colMinSum.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colMinSum);
-
-            // Макс. сумма
-            DataGridViewTextBoxColumn colMaxSum = new DataGridViewTextBoxColumn();
-            colMaxSum.Name = "Макс. сумма";
-            colMaxSum.HeaderText = "Макс. сумма";
-            colMaxSum.DataPropertyName = "Макс. сумма";
-            colMaxSum.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colMaxSum.DefaultCellStyle.Format = "N2";
-            colMaxSum.DefaultCellStyle.ForeColor = Color.DarkGreen;
-            colMaxSum.DefaultCellStyle.SelectionForeColor = Color.DarkGreen;
-            colMaxSum.SortMode = DataGridViewColumnSortMode.NotSortable;
-            dgvCertificates.Columns.Add(colMaxSum);
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Статус", HeaderText = "Статус", DataPropertyName = "Статус", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft } });
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Количество", HeaderText = "Количество", DataPropertyName = "Количество", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Общая сумма", HeaderText = "Общая сумма", DataPropertyName = "Общая сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Средняя сумма", HeaderText = "Средняя сумма", DataPropertyName = "Средняя сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Мин. сумма", HeaderText = "Мин. сумма", DataPropertyName = "Мин. сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
+            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Макс. сумма", HeaderText = "Макс. сумма", DataPropertyName = "Макс. сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
         }
 
         private void LoadCertificateStatistics(DateTime startDate, DateTime endDate)
@@ -418,60 +324,43 @@ namespace dump
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                     certificatesStats.Clear();
                     adapter.Fill(certificatesStats);
-
-                    if (certificatesStats.Rows.Count == 0)
-                    {
-                        CreateEmptyTable();
-                    }
-                    else
-                    {
-                        dgvCertificates.DataSource = certificatesStats;
-                    }
                 }
             }
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            // Проверяем, прошло ли меньше 1 секунды с последнего нажатия
             if ((DateTime.Now - lastClickTime).TotalSeconds < 1)
-            {
-                return; // Игнорируем повторное нажатие
-            }
+                return;
 
-            lastClickTime = DateTime.Now; // Запоминаем время нажатия
+            lastClickTime = DateTime.Now;
 
             try
             {
                 DateTime startDate = datePickerStart.Value.Date;
                 DateTime endDate = datePickerEnd.Value.Date;
 
-                // Проверка корректности дат
                 if (startDate > endDate)
                 {
-                    MessageBox.Show("Дата начала не может быть позже даты окончания!",
-                        "Ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    MessageBox.Show("Дата начала не может быть позже даты окончания!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Загружаем статистику по сертификатам
                 LoadCertificateStatistics(startDate, endDate);
 
-                // Проверка на наличие данных
                 if (certificatesStats.Rows.Count == 0)
                 {
-                    MessageBox.Show($"За выбранный период ({startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}) записей не найдено.",
-                        "Информация",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    CreateEmptyTable();
+                    MessageBox.Show($"За выбранный период ({startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}) записей не найдено.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    dgvCertificates.DataSource = certificatesStats;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -481,15 +370,12 @@ namespace dump
             {
                 if (certificatesStats == null || certificatesStats.Rows.Count == 0)
                 {
-                    MessageBox.Show("Невозможно сформировать отчёт, так как нет данных за выбранный период.",
-                        "Предупреждение",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    MessageBox.Show("Нет данных для экспорта!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 SaveFileDialog saveDialog = new SaveFileDialog();
-                saveDialog.Filter = "Excel файлы (*.xlsx)|*.xlsx|Excel файлы (*.xls)|*.xls";
+                saveDialog.Filter = "Excel файлы (*.xlsx)|*.xlsx";
                 saveDialog.FileName = $"Статистика_сертификатов_{DateTime.Now:yyyyMMdd_HHmmss}";
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
@@ -501,18 +387,13 @@ namespace dump
 
                     if (result == DialogResult.Yes)
                     {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = saveDialog.FileName,
-                            UseShellExecute = true
-                        });
+                        Process.Start(new ProcessStartInfo { FileName = saveDialog.FileName, UseShellExecute = true });
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте в Excel: {ex.Message}\n\nУбедитесь, что установлен Microsoft Excel.",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при экспорте в Excel: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -526,24 +407,22 @@ namespace dump
             {
                 excelApp = new Excel.Application();
                 excelApp.DisplayAlerts = false;
-
                 workbook = excelApp.Workbooks.Add();
                 worksheet = (Excel.Worksheet)workbook.Worksheets[1];
                 worksheet.Name = "Статистика сертификатов";
 
                 // ЗАГОЛОВОК
-                Excel.Range titleRange = worksheet.Range["A1:F1"];
+                Excel.Range titleRange = worksheet.Range["A1:G1"];
                 titleRange.Merge();
                 titleRange.Value = "СТАТИСТИКА ПО СЕРТИФИКАТАМ";
                 titleRange.Font.Bold = true;
-                titleRange.Font.Size = 14;
+                titleRange.Font.Size = 16;
                 titleRange.Font.Name = "Times New Roman";
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                titleRange.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                titleRange.RowHeight = 30;
+                titleRange.RowHeight = 35;
 
                 // ПЕРИОД
-                Excel.Range periodRange = worksheet.Range["A2:F2"];
+                Excel.Range periodRange = worksheet.Range["A2:G2"];
                 periodRange.Merge();
                 periodRange.Value = $"Период: {datePickerStart.Value:dd.MM.yyyy} - {datePickerEnd.Value:dd.MM.yyyy}";
                 periodRange.Font.Bold = true;
@@ -552,181 +431,231 @@ namespace dump
                 periodRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 periodRange.RowHeight = 25;
 
-                // Пустая строка
-                worksheet.Range["A3:F3"].RowHeight = 10;
+                worksheet.Range["A3:G3"].RowHeight = 10;
 
-                // СТАТИСТИКА ПО СТАТУСАМ - заголовок
-                int tableStartRow = 4;
-                Excel.Range statsTitleRange = worksheet.Range[$"A{tableStartRow}:F{tableStartRow}"];
+                // СВОДНАЯ ИНФОРМАЦИЯ
+                int summaryStartRow = 4;
+                Excel.Range summaryTitleRange = worksheet.Range[$"A{summaryStartRow}:G{summaryStartRow}"];
+                summaryTitleRange.Merge();
+                summaryTitleRange.Value = "СВОДНАЯ ИНФОРМАЦИЯ:";
+                summaryTitleRange.Font.Bold = true;
+                summaryTitleRange.Font.Size = 12;
+                summaryTitleRange.Font.Name = "Times New Roman";
+                summaryTitleRange.Font.Underline = true;
+                summaryTitleRange.RowHeight = 25;
+
+                // Рассчитываем итоги
+                int totalIssued = 0;
+                int totalUsed = 0;
+                int totalReturned = 0;
+                int totalActive = 0;
+                decimal totalIssuedSum = 0;
+                decimal totalUsedSum = 0;
+                decimal totalReturnedSum = 0;
+
+                foreach (DataRow row in certificatesStats.Rows)
+                {
+                    string status = row["Статус"].ToString();
+                    int count = Convert.ToInt32(row["Количество"]);
+                    decimal sum = Convert.ToDecimal(row["Общая сумма"]);
+
+                    if (status == "Активен")
+                    {
+                        totalActive = count;
+                        totalIssued += count;
+                        totalIssuedSum += sum;
+                    }
+                    else if (status == "Использован")
+                    {
+                        totalUsed = count;
+                        totalIssued += count;
+                        totalIssuedSum += sum;
+                        totalUsedSum = sum;
+                    }
+                    else if (status == "Возвращён")
+                    {
+                        totalReturned = count;
+                        totalReturnedSum = sum;
+                    }
+                }
+
+                // Форматирование для денежных значений
+                string currencyFormat = "#,##0.00";
+
+                // Строка 1
+                int summaryRow = summaryStartRow + 1;
+                worksheet.Cells[summaryRow, 1] = "Всего выпущено сертификатов:";
+                worksheet.Cells[summaryRow, 2] = totalIssued;
+                worksheet.Cells[summaryRow, 3] = "шт.";
+                worksheet.Cells[summaryRow, 4] = "Общая сумма выпущенных:";
+                worksheet.Cells[summaryRow, 5] = totalIssuedSum;
+                ((Excel.Range)worksheet.Cells[summaryRow, 5]).NumberFormat = currencyFormat;
+                worksheet.Cells[summaryRow, 5].Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
+
+                // Строка 2
+                int summaryRow2 = summaryStartRow + 2;
+                worksheet.Cells[summaryRow2, 1] = "Из них использовано:";
+                worksheet.Cells[summaryRow2, 2] = totalUsed;
+                worksheet.Cells[summaryRow2, 3] = "шт.";
+                worksheet.Cells[summaryRow2, 4] = "Общая сумма использованных:";
+                worksheet.Cells[summaryRow2, 5] = totalUsedSum;
+                ((Excel.Range)worksheet.Cells[summaryRow2, 5]).NumberFormat = currencyFormat;
+                worksheet.Cells[summaryRow2, 5].Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
+
+                // Строка 3
+                int summaryRow3 = summaryStartRow + 3;
+                worksheet.Cells[summaryRow3, 1] = "Активных (неиспользованных):";
+                worksheet.Cells[summaryRow3, 2] = totalActive;
+                worksheet.Cells[summaryRow3, 3] = "шт.";
+                worksheet.Cells[summaryRow3, 4] = "Общая сумма активных:";
+                worksheet.Cells[summaryRow3, 5] = totalIssuedSum - totalUsedSum;
+                ((Excel.Range)worksheet.Cells[summaryRow3, 5]).NumberFormat = currencyFormat;
+                worksheet.Cells[summaryRow3, 5].Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
+
+                // Строка 4
+                int summaryRow4 = summaryStartRow + 4;
+                worksheet.Cells[summaryRow4, 1] = "Возвращено сертификатов:";
+                worksheet.Cells[summaryRow4, 2] = totalReturned;
+                worksheet.Cells[summaryRow4, 3] = "шт.";
+                worksheet.Cells[summaryRow4, 4] = "Общая сумма возвращённых:";
+                worksheet.Cells[summaryRow4, 5] = totalReturnedSum;
+                ((Excel.Range)worksheet.Cells[summaryRow4, 5]).NumberFormat = currencyFormat;
+                worksheet.Cells[summaryRow4, 5].Font.Color = System.Drawing.ColorTranslator.ToOle(Color.Red);
+
+                // Оформление сводной информации
+                for (int i = summaryStartRow + 1; i <= summaryStartRow + 4; i++)
+                {
+                    worksheet.Rows[i].RowHeight = 22;
+                    worksheet.Rows[i].Font.Name = "Times New Roman";
+                    worksheet.Rows[i].Font.Size = 11;
+                }
+
+                // Пустая строка перед таблицей
+                int tableStartRow = summaryStartRow + 6;
+
+                // СТАТИСТИКА ПО СТАТУСАМ
+                Excel.Range statsTitleRange = worksheet.Range[$"A{tableStartRow}:G{tableStartRow}"];
                 statsTitleRange.Merge();
                 statsTitleRange.Value = "СТАТИСТИКА ПО СТАТУСАМ:";
                 statsTitleRange.Font.Bold = true;
                 statsTitleRange.Font.Size = 12;
                 statsTitleRange.Font.Name = "Times New Roman";
                 statsTitleRange.Font.Underline = true;
-                statsTitleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                 statsTitleRange.RowHeight = 25;
 
-                // Устанавливаем ширину колонок
-                worksheet.Columns[1].ColumnWidth = 28;
-                worksheet.Columns[2].ColumnWidth = 15;
-                worksheet.Columns[3].ColumnWidth = 22;
+                // Ширина колонок
+                worksheet.Columns[1].ColumnWidth = 25;
+                worksheet.Columns[2].ColumnWidth = 12;
+                worksheet.Columns[3].ColumnWidth = 15;
                 worksheet.Columns[4].ColumnWidth = 22;
-                worksheet.Columns[5].ColumnWidth = 20;
+                worksheet.Columns[5].ColumnWidth = 22;
                 worksheet.Columns[6].ColumnWidth = 20;
+                worksheet.Columns[7].ColumnWidth = 20;
 
-                worksheet.Range[$"A{tableStartRow + 1}:F100"].Font.Name = "Times New Roman";
-                worksheet.Range[$"A{tableStartRow + 1}:F100"].Font.Size = 10;
+                int dataStartRow = tableStartRow + 1;
+                string[] headers = { "Статус", "Количество", "Общая сумма", "Средняя сумма", "Мин. сумма", "Макс. сумма" };
 
-                if (certificatesStats.Rows.Count > 0)
+                for (int i = 0; i < headers.Length; i++)
                 {
-                    int dataStartRow = tableStartRow + 1;
+                    Excel.Range cell = worksheet.Cells[dataStartRow, i + 1];
+                    cell.Value = headers[i];
+                    cell.Font.Bold = true;
+                    cell.Font.Size = 11;
+                    cell.Font.Name = "Times New Roman";
+                    cell.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
+                    cell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                    cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    cell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    cell.RowHeight = 35;
+                    cell.WrapText = true;
+                }
 
-                    for (int i = 0; i < certificatesStats.Columns.Count; i++)
+                for (int i = 0; i < certificatesStats.Rows.Count; i++)
+                {
+                    int rowNum = dataStartRow + 1 + i;
+                    worksheet.Rows[rowNum].RowHeight = 25;
+
+                    for (int j = 0; j < certificatesStats.Columns.Count; j++)
                     {
-                        Excel.Range cell = (Excel.Range)worksheet.Cells[dataStartRow, i + 1];
-                        cell.Value = certificatesStats.Columns[i].ColumnName;
-                        cell.Font.Bold = true;
-                        cell.Font.Size = 11;
-                        cell.Font.Name = "Times New Roman";
-                        cell.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
-                        cell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                        cell.Borders.Weight = Excel.XlBorderWeight.xlThin;
-                        cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                        cell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                        cell.RowHeight = 35;
-                        cell.WrapText = true;
-                    }
+                        Excel.Range cell = worksheet.Cells[rowNum, j + 1];
 
-                    for (int i = 0; i < certificatesStats.Rows.Count; i++)
-                    {
-                        ((Excel.Range)worksheet.Rows[dataStartRow + 1 + i]).RowHeight = 25;
-
-                        for (int j = 0; j < certificatesStats.Columns.Count; j++)
+                        if (certificatesStats.Rows[i][j] != DBNull.Value)
                         {
-                            Excel.Range cell = (Excel.Range)worksheet.Cells[dataStartRow + 1 + i, j + 1];
+                            cell.Value = certificatesStats.Rows[i][j];
+                        }
+                        else
+                        {
+                            cell.Value = "";
+                        }
 
-                            if (certificatesStats.Rows[i][j] != DBNull.Value)
-                            {
-                                if (j >= 2 && certificatesStats.Rows[i][j] is decimal)
-                                {
-                                    cell.Value = Convert.ToDecimal(certificatesStats.Rows[i][j]);
-                                }
-                                else
-                                {
-                                    cell.Value = certificatesStats.Rows[i][j];
-                                }
-                            }
-                            else
-                            {
-                                cell.Value = "";
-                            }
+                        cell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                        cell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                        cell.WrapText = true;
 
-                            cell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                            cell.Borders.Weight = Excel.XlBorderWeight.xlThin;
-                            cell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                            cell.WrapText = true;
-
-                            if (j == 0)
+                        if (j == 0)
+                            cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                        else if (j == 1)
+                            cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                        else
+                        {
+                            cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                            if (j >= 2)
                             {
-                                cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
-                            }
-                            else if (j == 1)
-                            {
-                                cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                            }
-                            else
-                            {
-                                cell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                                if (j >= 2)
-                                {
-                                    cell.NumberFormat = "#,##0.00";
-                                }
+                                ((Excel.Range)cell).NumberFormat = currencyFormat;
                             }
                         }
                     }
-
-                    int totalRow = dataStartRow + 1 + certificatesStats.Rows.Count;
-
-                    Excel.Range totalLabelRange = worksheet.Range[$"A{totalRow}"];
-                    totalLabelRange.Value = "ИТОГО:";
-                    totalLabelRange.Font.Bold = true;
-                    totalLabelRange.Font.Size = 11;
-                    totalLabelRange.Font.Name = "Times New Roman";
-                    totalLabelRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
-                    totalLabelRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                    totalLabelRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
-
-                    int totalCertificates = 0;
-                    decimal totalSum_all = 0;
-
-                    foreach (DataRow row in certificatesStats.Rows)
-                    {
-                        totalCertificates += Convert.ToInt32(row["Количество"]);
-                        totalSum_all += row["Общая сумма"] == DBNull.Value ? 0 : Convert.ToDecimal(row["Общая сумма"]);
-                    }
-
-                    Excel.Range totalCountRange = worksheet.Range[$"B{totalRow}"];
-                    totalCountRange.Value = totalCertificates;
-                    totalCountRange.Font.Bold = true;
-                    totalCountRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                    totalCountRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                    totalCountRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
-
-                    Excel.Range totalSumRange = worksheet.Range[$"C{totalRow}"];
-                    totalSumRange.Value = totalSum_all;
-                    totalSumRange.Font.Bold = true;
-                    totalSumRange.NumberFormat = "#,##0.00";
-                    totalSumRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                    totalSumRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                    totalSumRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
-
-                    for (int j = 3; j < certificatesStats.Columns.Count; j++)
-                    {
-                        Excel.Range emptyCell = (Excel.Range)worksheet.Cells[totalRow, j + 1];
-                        emptyCell.Value = "";
-                        emptyCell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                        emptyCell.Borders.Weight = Excel.XlBorderWeight.xlThin;
-                    }
-
-                    ((Excel.Range)worksheet.Rows[totalRow]).RowHeight = 30;
-                    ((Excel.Range)worksheet.Rows[totalRow]).Font.Bold = true;
                 }
-                else
+
+                int totalRow = dataStartRow + certificatesStats.Rows.Count + 1;
+                worksheet.Cells[totalRow, 1] = "ИТОГО:";
+                worksheet.Cells[totalRow, 1].Font.Bold = true;
+                worksheet.Cells[totalRow, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                worksheet.Cells[totalRow, 1].Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+
+                worksheet.Cells[totalRow, 2] = totalIssued;
+                worksheet.Cells[totalRow, 2].Font.Bold = true;
+                worksheet.Cells[totalRow, 2].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                worksheet.Cells[totalRow, 2].Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+
+                worksheet.Cells[totalRow, 3] = totalIssuedSum;
+                worksheet.Cells[totalRow, 3].Font.Bold = true;
+                ((Excel.Range)worksheet.Cells[totalRow, 3]).NumberFormat = currencyFormat;
+                worksheet.Cells[totalRow, 3].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                worksheet.Cells[totalRow, 3].Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+
+                for (int j = 4; j <= 6; j++)
                 {
-                    Excel.Range noDataRange = worksheet.Range[$"A{tableStartRow + 1}:F{tableStartRow + 1}"];
-                    noDataRange.Merge();
-                    noDataRange.Value = "Нет данных за выбранный период";
-                    noDataRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                    noDataRange.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                    noDataRange.Font.Italic = true;
-                    noDataRange.Font.Size = 12;
-                    noDataRange.Font.Name = "Times New Roman";
-                    noDataRange.RowHeight = 40;
-                    noDataRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                    noDataRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+                    worksheet.Cells[totalRow, j].Value = "";
+                    worksheet.Cells[totalRow, j].Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                 }
+
+                worksheet.Rows[totalRow].RowHeight = 30;
+                worksheet.Rows[totalRow].Font.Bold = true;
 
                 worksheet.PageSetup.Orientation = Excel.XlPageOrientation.xlLandscape;
                 worksheet.PageSetup.FitToPagesWide = 1;
-                worksheet.PageSetup.Zoom = 100;
+                worksheet.PageSetup.Zoom = 90;
 
                 workbook.SaveAs(filePath);
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при создании Excel: {ex.Message}");
+            }
             finally
             {
+                if (worksheet != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
                 if (workbook != null)
                 {
                     workbook.Close(false);
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
                 }
-
                 if (excelApp != null)
                 {
                     excelApp.Quit();
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
                 }
-
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
@@ -741,7 +670,6 @@ namespace dump
 
         private void CertificateStatisticsForm_Load(object sender, EventArgs e)
         {
-
         }
     }
 }
