@@ -222,12 +222,6 @@
       <DependentUpon>OrdersReportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SettingsBD.cs" />
-    <Compile Include="Director\TopClientsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Director\TopClientsForm.Designer.cs">
-      <DependentUpon>TopClientsForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Director\TopDishForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -303,9 +297,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Director\OrdersReportForm.resx">
       <DependentUpon>OrdersReportForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Director\TopClientsForm.resx">
-      <DependentUpon>TopClientsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SisAdmin\SisAdminForm.resx">
       <DependentUpon>SisAdminForm.cs</DependentUpon>

@@ -30,9 +30,9 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OrdersReportForm));
             this.dtpStartDate = new System.Windows.Forms.DateTimePicker();
-            this.btnGenerate = new System.Windows.Forms.Button();
+            this.btnExportOrders = new System.Windows.Forms.Button();
             this.dgvOrders = new System.Windows.Forms.DataGridView();
-            this.btnExport = new System.Windows.Forms.Button();
+            this.btnExportProfit = new System.Windows.Forms.Button();
             this.labelStartDate = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -40,6 +40,7 @@
             this.dtpEndDate = new System.Windows.Forms.DateTimePicker();
             this.labelEndDate = new System.Windows.Forms.Label();
             this.buttonDetail = new System.Windows.Forms.Button();
+            this.chkFilterByPeriod = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOrders)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -53,16 +54,16 @@
             this.dtpStartDate.Size = new System.Drawing.Size(207, 29);
             this.dtpStartDate.TabIndex = 4;
             // 
-            // btnGenerate
+            // btnExportOrders
             // 
-            this.btnGenerate.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.btnGenerate.Location = new System.Drawing.Point(580, 691);
-            this.btnGenerate.Margin = new System.Windows.Forms.Padding(5);
-            this.btnGenerate.Name = "btnGenerate";
-            this.btnGenerate.Size = new System.Drawing.Size(192, 47);
-            this.btnGenerate.TabIndex = 5;
-            this.btnGenerate.Text = "Сформировать отчёт";
-            this.btnGenerate.UseVisualStyleBackColor = false;
+            this.btnExportOrders.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnExportOrders.Location = new System.Drawing.Point(580, 691);
+            this.btnExportOrders.Margin = new System.Windows.Forms.Padding(5);
+            this.btnExportOrders.Name = "btnExportOrders";
+            this.btnExportOrders.Size = new System.Drawing.Size(192, 47);
+            this.btnExportOrders.TabIndex = 5;
+            this.btnExportOrders.Text = "Отчёт по заказам";
+            this.btnExportOrders.UseVisualStyleBackColor = false;
             // 
             // dgvOrders
             // 
@@ -80,16 +81,16 @@
             this.dgvOrders.Size = new System.Drawing.Size(933, 520);
             this.dgvOrders.TabIndex = 6;
             // 
-            // btnExport
+            // btnExportProfit
             // 
-            this.btnExport.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.btnExport.Location = new System.Drawing.Point(795, 691);
-            this.btnExport.Margin = new System.Windows.Forms.Padding(5);
-            this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(192, 47);
-            this.btnExport.TabIndex = 7;
-            this.btnExport.Text = "Экспорт в Excel";
-            this.btnExport.UseVisualStyleBackColor = false;
+            this.btnExportProfit.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnExportProfit.Location = new System.Drawing.Point(795, 691);
+            this.btnExportProfit.Margin = new System.Windows.Forms.Padding(5);
+            this.btnExportProfit.Name = "btnExportProfit";
+            this.btnExportProfit.Size = new System.Drawing.Size(192, 47);
+            this.btnExportProfit.TabIndex = 7;
+            this.btnExportProfit.Text = "Отчёт по прибыли\t";
+            this.btnExportProfit.UseVisualStyleBackColor = false;
             // 
             // labelStartDate
             // 
@@ -128,11 +129,11 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Times New Roman", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.ForeColor = System.Drawing.Color.DarkSeaGreen;
-            this.label1.Location = new System.Drawing.Point(370, 5);
+            this.label1.Location = new System.Drawing.Point(411, 5);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(295, 40);
+            this.label1.Size = new System.Drawing.Size(224, 40);
             this.label1.TabIndex = 22;
-            this.label1.Text = "Отчёт по заказам";
+            this.label1.Text = "Учёт заказов";
             // 
             // dtpEndDate
             // 
@@ -163,6 +164,16 @@
             this.buttonDetail.Text = "Детальная инф.";
             this.buttonDetail.UseVisualStyleBackColor = false;
             // 
+            // chkFilterByPeriod
+            // 
+            this.chkFilterByPeriod.AutoSize = true;
+            this.chkFilterByPeriod.Location = new System.Drawing.Point(54, 49);
+            this.chkFilterByPeriod.Name = "chkFilterByPeriod";
+            this.chkFilterByPeriod.Size = new System.Drawing.Size(228, 25);
+            this.chkFilterByPeriod.TabIndex = 27;
+            this.chkFilterByPeriod.Text = "Фильтровать по периоду";
+            this.chkFilterByPeriod.UseVisualStyleBackColor = true;
+            // 
             // OrdersReportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
@@ -170,6 +181,7 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1029, 763);
             this.ControlBox = false;
+            this.Controls.Add(this.chkFilterByPeriod);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.labelEndDate);
             this.Controls.Add(this.dtpEndDate);
@@ -177,9 +189,9 @@
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.pictureBox3);
             this.Controls.Add(this.labelStartDate);
-            this.Controls.Add(this.btnExport);
+            this.Controls.Add(this.btnExportProfit);
             this.Controls.Add(this.dgvOrders);
-            this.Controls.Add(this.btnGenerate);
+            this.Controls.Add(this.btnExportOrders);
             this.Controls.Add(this.dtpStartDate);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -199,9 +211,9 @@
 
         #endregion
         private System.Windows.Forms.DateTimePicker dtpStartDate;
-        private System.Windows.Forms.Button btnGenerate;
+        private System.Windows.Forms.Button btnExportOrders;
         private System.Windows.Forms.DataGridView dgvOrders;
-        private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.Button btnExportProfit;
         private System.Windows.Forms.Label labelStartDate;
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -209,5 +221,6 @@
         private System.Windows.Forms.DateTimePicker dtpEndDate;
         private System.Windows.Forms.Label labelEndDate;
         private System.Windows.Forms.Button buttonDetail;
+        private System.Windows.Forms.CheckBox chkFilterByPeriod;
     }
 }

@@ -231,9 +231,7 @@ namespace dump
 
         private void buttonClientTop_Click(object sender, EventArgs e)
         {
-            this.Visible = false;
-            TopClientsForm topClients = new TopClientsForm();
-            topClients.Show();
+           
         }
 
         private void buttonTopDish_Click(object sender, EventArgs e)

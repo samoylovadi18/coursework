@@ -127,7 +127,6 @@ C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\du
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Properties.Resources.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Spravochnici.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.OrdersReportForm.resources
-C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.TopClientsForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.GenerateResource.cache
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.CoreCompileInputs.cache
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.exe
