@@ -99,6 +99,31 @@ namespace dump
             {
                 dgvOrders.CellDoubleClick += DgvOrders_CellDoubleClick;
             }
+
+            // Добавляем обработчик закрытия формы
+            this.FormClosing += OrdersReportForm_FormClosing;
+        }
+
+        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
+
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на DirectorForm
+        /// </summary>
+        private void OrdersReportForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем форму директора
+                DirectorForm director = new DirectorForm();
+                director.Show();
+            }
         }
 
         private void ChkFilterByPeriod_CheckedChanged(object sender, EventArgs e)

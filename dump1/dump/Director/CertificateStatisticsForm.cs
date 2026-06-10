@@ -38,7 +38,7 @@ namespace dump
             datePickerEnd.Value = DateTime.Now;
             datePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
-            btnGenerate.Click += btnGenerate_Click;
+            // Подписываемся только на экспорт
             btnExport.Click += BtnExport_Click;
 
             SetupDataGridView();
@@ -46,6 +46,84 @@ namespace dump
             SetupButtons();
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
+
+            // Добавляем обработчик закрытия формы
+            this.FormClosing += CertificateStatisticsForm_FormClosing;
+
+            // Подписываемся на изменение дат для автоматической загрузки
+            datePickerStart.ValueChanged += DatePicker_ValueChanged;
+            datePickerEnd.ValueChanged += DatePicker_ValueChanged;
+
+            // Загружаем данные при загрузке формы
+            this.Load += CertificateStatisticsForm_Load;
+        }
+
+        // ===================== АВТОМАТИЧЕСКАЯ ЗАГРУЗКА ПРИ ИЗМЕНЕНИИ ДАТ =====================
+
+        private void DatePicker_ValueChanged(object sender, EventArgs e)
+        {
+            LoadStatistics();
+        }
+
+        private void CertificateStatisticsForm_Load(object sender, EventArgs e)
+        {
+            LoadStatistics();
+        }
+
+        private void LoadStatistics()
+        {
+            try
+            {
+                DateTime startDate = datePickerStart.Value.Date;
+                DateTime endDate = datePickerEnd.Value.Date;
+
+                if (startDate > endDate)
+                {
+                    CreateEmptyTable();
+                    return;
+                }
+
+                LoadCertificateStatistics(startDate, endDate);
+
+                if (certificatesStats.Rows.Count == 0)
+                {
+                    CreateEmptyTable();
+                }
+                else
+                {
+                    dgvCertificates.DataSource = certificatesStats;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке данных: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
+
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на DirectorForm
+        /// </summary>
+        private void CertificateStatisticsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Отписываемся от менеджера бездействия
+                InactivityManager.UnregisterForm();
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем форму директора
+                DirectorForm director = new DirectorForm();
+                director.Show();
+            }
         }
 
         private void LockSystem()
@@ -210,20 +288,14 @@ namespace dump
                 labelEnd.Size = new Size(100, 20);
                 this.Controls.Add(labelEnd);
             }
+
+            // Скрываем кнопку "Сформировать отчёт", если она есть
+           
         }
 
         private void SetupButtons()
         {
-            btnGenerate.FlatStyle = FlatStyle.Flat;
-            btnGenerate.FlatAppearance.BorderSize = 1;
-            btnGenerate.FlatAppearance.BorderColor = Color.Black;
-            btnGenerate.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnGenerate.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            btnGenerate.MouseDown += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnGenerate.MouseUp += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.Black;
-            btnGenerate.MouseLeave += (s, e) => btnGenerate.FlatAppearance.BorderColor = Color.Black;
-
+            // Настройка только кнопки экспорта
             btnExport.FlatStyle = FlatStyle.Flat;
             btnExport.FlatAppearance.BorderSize = 1;
             btnExport.FlatAppearance.BorderColor = Color.Black;
@@ -325,42 +397,6 @@ namespace dump
                     certificatesStats.Clear();
                     adapter.Fill(certificatesStats);
                 }
-            }
-        }
-
-        private void btnGenerate_Click(object sender, EventArgs e)
-        {
-            if ((DateTime.Now - lastClickTime).TotalSeconds < 1)
-                return;
-
-            lastClickTime = DateTime.Now;
-
-            try
-            {
-                DateTime startDate = datePickerStart.Value.Date;
-                DateTime endDate = datePickerEnd.Value.Date;
-
-                if (startDate > endDate)
-                {
-                    MessageBox.Show("Дата начала не может быть позже даты окончания!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                LoadCertificateStatistics(startDate, endDate);
-
-                if (certificatesStats.Rows.Count == 0)
-                {
-                    CreateEmptyTable();
-                    MessageBox.Show($"За выбранный период ({startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}) записей не найдено.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    dgvCertificates.DataSource = certificatesStats;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -666,10 +702,6 @@ namespace dump
             this.Visible = false;
             DirectorForm director = new DirectorForm();
             director.Show();
-        }
-
-        private void CertificateStatisticsForm_Load(object sender, EventArgs e)
-        {
         }
     }
 }

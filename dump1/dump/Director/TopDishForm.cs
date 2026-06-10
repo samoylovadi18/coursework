@@ -21,6 +21,7 @@ namespace dump
         private DataTable dishesData;
         private System.Windows.Forms.ToolTip toolTip1;
         private bool isLockDialogOpen = false;
+        private DateTime minDate = new DateTime(2024, 1, 1); // Минимальная дата
 
         public TopDishForm()
         {
@@ -28,16 +29,115 @@ namespace dump
             dishesData = new DataTable();
             toolTip1 = new System.Windows.Forms.ToolTip();
 
-            dateTimePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            // Настройка ограничений для дат
+            dateTimePickerStart.MinDate = minDate;
+            dateTimePickerStart.MaxDate = DateTime.Now;
+            dateTimePickerEnd.MinDate = minDate;
+            dateTimePickerEnd.MaxDate = DateTime.Now;
+
             dateTimePickerEnd.Value = DateTime.Now;
+            dateTimePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
             SetupButtonStyles();
 
-            buttonGenerate.Click += ButtonGenerate_Click;
+            // Подписываемся только на экспорт
             buttonExport.Click += ButtonExport_Click;
+
             this.Load += TopDishForm_Load;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
+
+            // Добавляем обработчик закрытия формы
+            this.FormClosing += TopDishForm_FormClosing;
+
+            // Подписываемся на изменение дат для автоматической загрузки
+            dateTimePickerStart.ValueChanged += DateTimePicker_ValueChanged;
+            dateTimePickerEnd.ValueChanged += DateTimePicker_ValueChanged;
+
+            // Подписываемся на изменение категории
+            comboBoxCategory.SelectedIndexChanged += ComboBoxCategory_SelectedIndexChanged;
+        }
+
+        // ===================== АВТОМАТИЧЕСКАЯ ЗАГРУЗКА ПРИ ИЗМЕНЕНИИ =====================
+
+        private void DateTimePicker_ValueChanged(object sender, EventArgs e)
+        {
+            LoadTopDishesAutomatically();
+        }
+
+        private void ComboBoxCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadTopDishesAutomatically();
+        }
+
+        private void LoadTopDishesAutomatically()
+        {
+            try
+            {
+                DateTime startDate = dateTimePickerStart.Value.Date;
+                DateTime endDate = dateTimePickerEnd.Value.Date;
+
+                if (startDate > endDate)
+                {
+                    CreateEmptyTable();
+                    labelTotalRevenue.Visible = false;
+                    labelTotalSold.Visible = false;
+                    return;
+                }
+
+                LoadTopDishes();
+                UpdateSummaryInfo();
+
+                if (dishesData != null && dishesData.Rows.Count > 0)
+                {
+                    labelTotalRevenue.Visible = true;
+                    labelTotalSold.Visible = true;
+                }
+                else
+                {
+                    labelTotalRevenue.Visible = false;
+                    labelTotalSold.Visible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке данных: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CreateEmptyTable()
+        {
+            DataTable emptyTable = new DataTable();
+            emptyTable.Columns.Add("Блюдо", typeof(string));
+            emptyTable.Columns.Add("Категория", typeof(string));
+            emptyTable.Columns.Add("Кол-во продаж", typeof(int));
+            emptyTable.Columns.Add("Общая выручка", typeof(decimal));
+            dataGridViewTopDish.DataSource = emptyTable;
+        }
+
+        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
+
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на DirectorForm
+        /// </summary>
+        private void TopDishForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Отписываемся от менеджера бездействия
+                InactivityManager.UnregisterForm();
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем форму директора
+                DirectorForm director = new DirectorForm();
+                director.Show();
+            }
         }
 
         private void LockSystem()
@@ -167,16 +267,7 @@ namespace dump
 
         private void SetupButtonStyles()
         {
-            buttonGenerate.FlatStyle = FlatStyle.Flat;
-            buttonGenerate.FlatAppearance.BorderSize = 1;
-            buttonGenerate.FlatAppearance.BorderColor = Color.Black;
-            buttonGenerate.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonGenerate.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonGenerate.MouseDown += (s, e) => buttonGenerate.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonGenerate.MouseUp += (s, e) => buttonGenerate.FlatAppearance.BorderColor = Color.Black;
-            buttonGenerate.MouseLeave += (s, e) => buttonGenerate.FlatAppearance.BorderColor = Color.Black;
-
+            // Настройка только кнопки экспорта
             buttonExport.FlatStyle = FlatStyle.Flat;
             buttonExport.FlatAppearance.BorderSize = 1;
             buttonExport.FlatAppearance.BorderColor = Color.Black;
@@ -194,6 +285,9 @@ namespace dump
             LoadCategories();
             labelTotalRevenue.Visible = false;
             labelTotalSold.Visible = false;
+
+            // Загружаем данные при загрузке формы
+            LoadTopDishesAutomatically();
         }
 
         private void SetupDataGridView()
@@ -265,31 +359,6 @@ namespace dump
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при загрузке категорий: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void ButtonGenerate_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (dateTimePickerStart.Value > dateTimePickerEnd.Value)
-                {
-                    MessageBox.Show("Начальная дата не может быть больше конечной!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                LoadTopDishes();
-                UpdateSummaryInfo();
-
-                if (dishesData != null && dishesData.Rows.Count > 0)
-                {
-                    labelTotalRevenue.Visible = true;
-                    labelTotalSold.Visible = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при загрузке данных: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -367,7 +436,7 @@ namespace dump
             {
                 if (dishesData == null || dishesData.Rows.Count == 0)
                 {
-                    MessageBox.Show("Сначала сформируйте отчёт!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Нет данных для экспорта!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -535,7 +604,7 @@ namespace dump
                     Excel.Range xValues = worksheet.Range[$"B{firstDataRow}:B{lastDataRow}"];
                     Excel.Range yValues = worksheet.Range[$"E{firstDataRow}:E{lastDataRow}"];
 
-                    // Диаграмма в правой части (Left = 850 - далеко справа)
+                    // Диаграмма в правой части
                     Excel.ChartObjects chartObjects = (Excel.ChartObjects)worksheet.ChartObjects();
                     Excel.ChartObject chartObject = chartObjects.Add(800, 60, 550, 350);
                     Excel.Chart chart = chartObject.Chart;

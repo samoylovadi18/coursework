@@ -20,7 +20,7 @@ namespace dump
             InitializeComponent();
 
             // Подписываемся на события ТОЛЬКО для кнопок, которые НА ПАНЕЛИ
-           
+
 
             // Подписываемся на события для кнопок статистики
 
@@ -31,7 +31,36 @@ namespace dump
             SetupButtonStyles();
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
+
+            // Добавляем обработчик закрытия формы
+            this.FormClosing += DirectorForm_FormClosing;
         }
+
+        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
+
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на LoginForm
+        /// </summary>
+        private void DirectorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Отменяем закрытие формы
+                e.Cancel = true;
+
+                // Отписываемся от менеджера бездействия
+                InactivityManager.UnregisterForm();
+
+                // Скрываем текущую форму
+                this.Visible = false;
+
+                // Открываем форму входа
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
+        }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -156,6 +185,7 @@ namespace dump
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
+
         private void SetupButtonStyles()
         {
             SetupPanelButtonStyle(buttonStatistics);
@@ -192,7 +222,7 @@ namespace dump
         }
 
         // Обработчик нажатия на кнопку Statistics
-       
+
 
         // Закрытие панели через pictureBox4
         private void pictureBox4_Click(object sender, EventArgs e)
@@ -231,7 +261,7 @@ namespace dump
 
         private void buttonClientTop_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void buttonTopDish_Click(object sender, EventArgs e)
@@ -260,7 +290,7 @@ namespace dump
 
         private void buttonMenu_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void panelStatistics_Paint(object sender, PaintEventArgs e)

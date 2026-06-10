@@ -35,7 +35,6 @@
             this.btnExportProfit = new System.Windows.Forms.Button();
             this.labelStartDate = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.dtpEndDate = new System.Windows.Forms.DateTimePicker();
             this.labelEndDate = new System.Windows.Forms.Label();
@@ -43,7 +42,6 @@
             this.chkFilterByPeriod = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOrders)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // dtpStartDate
@@ -113,17 +111,6 @@
             this.pictureBox3.TabIndex = 18;
             this.pictureBox3.TabStop = false;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::dump.Properties.Resources.remove;
-            this.pictureBox1.Location = new System.Drawing.Point(976, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(41, 33);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 19;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -180,13 +167,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1029, 763);
-            this.ControlBox = false;
             this.Controls.Add(this.chkFilterByPeriod);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.labelEndDate);
             this.Controls.Add(this.dtpEndDate);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.pictureBox3);
             this.Controls.Add(this.labelStartDate);
             this.Controls.Add(this.btnExportProfit);
@@ -196,14 +181,15 @@
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5);
+            this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1045, 779);
+            this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(1045, 779);
             this.Name = "OrdersReportForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.RevenueForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvOrders)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -216,7 +202,6 @@
         private System.Windows.Forms.Button btnExportProfit;
         private System.Windows.Forms.Label labelStartDate;
         private System.Windows.Forms.PictureBox pictureBox3;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DateTimePicker dtpEndDate;
         private System.Windows.Forms.Label labelEndDate;

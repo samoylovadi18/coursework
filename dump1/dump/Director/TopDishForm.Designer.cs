@@ -35,15 +35,12 @@
             this.dataGridViewTopDish = new System.Windows.Forms.DataGridView();
             this.labelTotalRevenue = new System.Windows.Forms.Label();
             this.labelTotalSold = new System.Windows.Forms.Label();
-            this.pictureBoxBack = new System.Windows.Forms.PictureBox();
             this.buttonExport = new System.Windows.Forms.Button();
-            this.buttonGenerate = new System.Windows.Forms.Button();
             this.lblEndDate = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTopDish)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBack)).BeginInit();
             this.SuspendLayout();
             // 
             // dateTimePickerStart
@@ -101,17 +98,6 @@
             this.labelTotalSold.TabIndex = 16;
             this.labelTotalSold.Text = "label1";
             // 
-            // pictureBoxBack
-            // 
-            this.pictureBoxBack.Image = global::dump.Properties.Resources.remove;
-            this.pictureBoxBack.Location = new System.Drawing.Point(963, 2);
-            this.pictureBoxBack.Name = "pictureBoxBack";
-            this.pictureBoxBack.Size = new System.Drawing.Size(41, 33);
-            this.pictureBoxBack.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxBack.TabIndex = 27;
-            this.pictureBoxBack.TabStop = false;
-            this.pictureBoxBack.Click += new System.EventHandler(this.pictureBoxBack_Click);
-            // 
             // buttonExport
             // 
             this.buttonExport.BackColor = System.Drawing.Color.DarkSeaGreen;
@@ -122,17 +108,6 @@
             this.buttonExport.TabIndex = 29;
             this.buttonExport.Text = "Экспорт в Excel";
             this.buttonExport.UseVisualStyleBackColor = false;
-            // 
-            // buttonGenerate
-            // 
-            this.buttonGenerate.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonGenerate.Location = new System.Drawing.Point(593, 681);
-            this.buttonGenerate.Margin = new System.Windows.Forms.Padding(5);
-            this.buttonGenerate.Name = "buttonGenerate";
-            this.buttonGenerate.Size = new System.Drawing.Size(192, 47);
-            this.buttonGenerate.TabIndex = 28;
-            this.buttonGenerate.Text = "Сформировать отчёт";
-            this.buttonGenerate.UseVisualStyleBackColor = false;
             // 
             // lblEndDate
             // 
@@ -182,14 +157,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1029, 763);
-            this.ControlBox = false;
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lblEndDate);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonExport);
-            this.Controls.Add(this.buttonGenerate);
-            this.Controls.Add(this.pictureBoxBack);
             this.Controls.Add(this.labelTotalSold);
             this.Controls.Add(this.labelTotalRevenue);
             this.Controls.Add(this.dataGridViewTopDish);
@@ -199,13 +171,14 @@
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
+            this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1045, 779);
+            this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(1045, 779);
             this.Name = "TopDishForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.TopDishForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTopDish)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBack)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -219,9 +192,7 @@
         private System.Windows.Forms.DataGridView dataGridViewTopDish;
         private System.Windows.Forms.Label labelTotalRevenue;
         private System.Windows.Forms.Label labelTotalSold;
-        private System.Windows.Forms.PictureBox pictureBoxBack;
         private System.Windows.Forms.Button buttonExport;
-        private System.Windows.Forms.Button buttonGenerate;
         private System.Windows.Forms.Label lblEndDate;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;

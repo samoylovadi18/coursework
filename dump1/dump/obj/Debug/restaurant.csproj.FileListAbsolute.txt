@@ -123,7 +123,6 @@ C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\du
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ManagerForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.AdminMenu.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Orders.resources
-C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ProfitForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Properties.Resources.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Spravochnici.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.OrdersReportForm.resources
