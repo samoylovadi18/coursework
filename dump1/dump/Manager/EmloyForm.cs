@@ -222,6 +222,17 @@ namespace dump
 
             // Пункт "Поставить статус 'Возвращён'"
             ToolStripMenuItem changeStatusItem = new ToolStripMenuItem("Поставить статус 'Возвращён'");
+
+            // ОТКЛЮЧАЕМ ПУНКТ МЕНЮ, ЕСЛИ СТАТУС "ВОЗВРАЩЁН" ИЛИ "ИСПОЛЬЗОВАН"
+            if (currentStatus == "Возвращён" || currentStatus == "Использован")
+            {
+                changeStatusItem.Enabled = false;
+                if (currentStatus == "Возвращён")
+                    changeStatusItem.ToolTipText = "Сертификат уже имеет статус 'Возвращён'";
+                else if (currentStatus == "Использован")
+                    changeStatusItem.ToolTipText = "Сертификат уже использован! Возврат невозможен";
+            }
+
             changeStatusItem.Click += (s, ev) => ChangeStatusToReturned(certificateId, currentStatus);
             contextMenu.Items.Add(changeStatusItem);
 
@@ -255,6 +266,7 @@ namespace dump
                 return;
             }
 
+            // Проверка на случай, если пункт меню всё же был активен
             if (currentStatus == "Возвращён")
             {
                 MessageBox.Show($"Сертификат №{certificateId} уже имеет статус 'Возвращён'!", "Предупреждение",

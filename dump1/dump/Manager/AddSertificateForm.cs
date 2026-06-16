@@ -20,7 +20,6 @@ namespace dump
             InitializeForm();
             LoadPricesToComboBox();
 
-            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
             this.FormClosing += AddSertificateForm_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
@@ -150,19 +149,12 @@ namespace dump
             base.OnFormClosed(e);
         }
 
-        // ОБРАБОТЧИК - при закрытии формы (крестик)
         private void AddSertificateForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие не было вызвано из кода
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // ОТКРЫВАЕМ ManagerForm
                 ManagerForm manager = new ManagerForm();
                 manager.Show();
             }
@@ -170,25 +162,21 @@ namespace dump
 
         private void InitializeForm()
         {
-            // Настройка DateTimePicker
             dtpIssueDate.Value = DateTime.Now;
             dtpIssueDate.Enabled = false;
             dtpIssueDate.Format = DateTimePickerFormat.Custom;
             dtpIssueDate.CustomFormat = "dd.MM.yyyy HH:mm:ss";
 
-            // НАСТРОЙКА MASKEDTEXTBOX ДЛЯ ТЕЛЕФОНА
             mtxtPhone.Mask = "+7 (999) 000-00-00";
             mtxtPhone.TextMaskFormat = MaskFormat.IncludePromptAndLiterals;
             mtxtPhone.Font = new Font("Times New Roman", 20);
             mtxtPhone.BeepOnError = true;
             mtxtPhone.ValidatingType = typeof(int);
 
-            // ===== ЗАПРЕТ ПРОБЕЛОВ =====
             txtLastName.KeyPress += TextBox_KeyPress_NoSpaces;
             txtFirstName.KeyPress += TextBox_KeyPress_NoSpaces;
             txtMiddleName.KeyPress += TextBox_KeyPress_NoSpaces;
 
-            // Настройка текстовых полей для ФИО (только русские буквы)
             txtLastName.KeyPress += TextBox_KeyPress_RussianOnly;
             txtFirstName.KeyPress += TextBox_KeyPress_RussianOnly;
             txtMiddleName.KeyPress += TextBox_KeyPress_RussianOnly;
@@ -197,7 +185,6 @@ namespace dump
             txtFirstName.TextChanged += TextBox_TextChanged_CapitalizeFirst;
             txtMiddleName.TextChanged += TextBox_TextChanged_CapitalizeFirst;
 
-            // Настройка кнопки "Выдать"
             btnIssue.FlatStyle = FlatStyle.Flat;
             btnIssue.FlatAppearance.BorderSize = 1;
             btnIssue.FlatAppearance.BorderColor = Color.Black;
@@ -207,19 +194,16 @@ namespace dump
             btnIssue.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
             btnIssue.Click += BtnIssue_Click;
 
-   
-
             btnIssue.MouseDown += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.DarkBlue;
             btnIssue.MouseUp += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
             btnIssue.MouseLeave += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
         }
 
-        // ===== ЗАПРЕТ ПРОБЕЛОВ =====
         private void TextBox_KeyPress_NoSpaces(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == ' ')
             {
-                e.Handled = true;  // Пробел не будет введён
+                e.Handled = true;
             }
         }
 
@@ -255,8 +239,6 @@ namespace dump
             char c = e.KeyChar;
             bool isRussian = (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я') || c == 'ё' || c == 'Ё';
 
-            // Разрешаем: управляющие символы (Backspace, Enter), русские буквы и дефис
-            // ПРОБЕЛ ЗАПРЕЩЁН
             if (!char.IsControl(e.KeyChar) && !isRussian && c != '-')
             {
                 e.Handled = true;
@@ -377,7 +359,6 @@ namespace dump
                             MessageBox.Show($"Сертификат №{newId} успешно выдан!\n\nСтатус: АКТИВЕН\nСрок действия: 1 год",
      "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                            // СПРАШИВАЕМ, СОЗДАВАТЬ ЛИ СЕРТИФИКАТ В WORD
                             DialogResult createWordResult = MessageBox.Show(
                                 "Создать сертификат в Word?",
                                 "Создание сертификата",
@@ -386,7 +367,6 @@ namespace dump
 
                             if (createWordResult == DialogResult.Yes)
                             {
-                                // ВЫЗЫВАЕМ МЕТОД С ВЫБОРОМ ПУТИ
                                 CreateWordCertificateWithDialog(newId, lastName, firstName, middleName, fullPhone, price, issueDate);
                             }
 
@@ -423,47 +403,35 @@ namespace dump
             }
         }
 
-        // ===== НОВЫЙ МЕТОД С ВЫБОРОМ ПУТИ СОХРАНЕНИЯ =====
         private void CreateWordCertificateWithDialog(long certificateId, string lastName, string firstName,
             string middleName, string phone, decimal price, DateTime issueDate)
         {
             try
             {
-                // СОЗДАЕМ ДИАЛОГ ВЫБОРА ПУТИ СОХРАНЕНИЯ
                 SaveFileDialog saveDialog = new SaveFileDialog();
 
-                // Настройка фильтров
                 saveDialog.Filter = "Документ Word (*.docx)|*.docx|Все файлы (*.*)|*.*";
                 saveDialog.FilterIndex = 1;
 
-                // Имя файла по умолчанию
                 saveDialog.FileName = $"Сертификат_№{certificateId}_{lastName}_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
 
-                // Заголовок окна
                 saveDialog.Title = "ВЫБЕРИТЕ МЕСТО ДЛЯ СОХРАНЕНИЯ СЕРТИФИКАТА";
 
-                // Начальная папка - РАБОЧИЙ СТОЛ
                 saveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-                // Настройки диалога
-                saveDialog.OverwritePrompt = true;  // Спрашивать при перезаписи
-                saveDialog.CheckPathExists = true;  // Проверять существование пути
-                saveDialog.ValidateNames = true;    // Проверять имя файла
-                saveDialog.AddExtension = true;     // Добавлять расширение автоматически
-                saveDialog.DefaultExt = "docx";     // Расширение по умолчанию
+                saveDialog.OverwritePrompt = true;
+                saveDialog.CheckPathExists = true;
+                saveDialog.ValidateNames = true;
+                saveDialog.AddExtension = true;
+                saveDialog.DefaultExt = "docx";
 
-                // ПОКАЗЫВАЕМ ДИАЛОГ И ЖДЕМ ВЫБОРА ПОЛЬЗОВАТЕЛЯ
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // ПОЛУЧАЕМ ВЫБРАННЫЙ ПУТЬ
                     string selectedPath = saveDialog.FileName;
-
-                    // СОЗДАЕМ СЕРТИФИКАТ ПО ВЫБРАННОМУ ПУТИ
                     CreateWordCertificate(selectedPath, certificateId, lastName, firstName, middleName, phone, price, issueDate);
                 }
                 else
                 {
-                    // Пользователь нажал Отмена
                     MessageBox.Show("Создание сертификата отменено.", "Информация",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -475,7 +443,6 @@ namespace dump
             }
         }
 
-        // ===== ИЗМЕНЕННЫЙ МЕТОД ДЛЯ СОЗДАНИЯ СЕРТИФИКАТА (принимает путь) =====
         private void CreateWordCertificate(string filePath, long certificateId, string lastName, string firstName,
             string middleName, string phone, decimal price, DateTime issueDate)
         {
@@ -484,24 +451,19 @@ namespace dump
 
             try
             {
-                // Создаем приложение Word
                 wordApp = new Word.Application();
-                wordApp.Visible = true; // Делаем видимым
+                wordApp.Visible = true;
 
-                // Создаем новый документ
                 doc = wordApp.Documents.Add();
                 doc.Activate();
 
-                // Получаем выделение для вставки текста
                 Word.Selection selection = wordApp.Selection;
 
-                // ===== НАСТРОЙКА ПАРАМЕТРОВ СТРАНИЦЫ ДЛЯ КОМПАКТНОГО РАЗМЕЩЕНИЯ =====
                 doc.PageSetup.TopMargin = wordApp.CentimetersToPoints(1.5f);
                 doc.PageSetup.BottomMargin = wordApp.CentimetersToPoints(1.5f);
                 doc.PageSetup.LeftMargin = wordApp.CentimetersToPoints(2);
                 doc.PageSetup.RightMargin = wordApp.CentimetersToPoints(2);
 
-                // Устанавливаем размер бумаги A4
                 doc.PageSetup.PageHeight = wordApp.CentimetersToPoints(29.7f);
                 doc.PageSetup.PageWidth = wordApp.CentimetersToPoints(21);
 
@@ -537,17 +499,12 @@ namespace dump
                 selection.TypeParagraph();
                 selection.TypeParagraph();
 
-                // Сумма (крупно)
+                // ===== СУММА (ТОЛЬКО ЧИСЛА, БЕЗ СКОБОК И ПОВТОРОВ) =====
                 selection.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
                 selection.Font.Size = 20;
                 selection.Font.Bold = 1;
                 selection.Font.Color = Word.WdColor.wdColorDarkRed;
-                selection.TypeText($"{price.ToString("N0")} (");
-
-                // Пропись суммы
-                string priceText = NumberToWords(price);
-                selection.TypeText(priceText);
-                selection.TypeText(") рублей");
+                selection.TypeText($"{price.ToString("N0")} рублей");
                 selection.TypeParagraph();
                 selection.TypeParagraph();
 
@@ -621,7 +578,6 @@ namespace dump
                 selection.Font.Italic = 1;
                 selection.TypeText("Ресторан | Тел.: +7 (999) 123-45-67 | www.restaurant.ru");
 
-                // Сохраняем документ
                 doc.SaveAs(filePath);
 
                 MessageBox.Show($"✅ Сертификат сохранен!\n\nПуть: {filePath}",
@@ -634,56 +590,8 @@ namespace dump
             }
             finally
             {
-                // НЕ ЗАКРЫВАЕМ WORD! Пользователь сам закроет его
+                // НЕ ЗАКРЫВАЕМ WORD
             }
-        }
-
-        // ===== ПРЕОБРАЗОВАНИЕ ЧИСЛА В ПРОПИСЬ =====
-        private string NumberToWords(decimal number)
-        {
-            int num = (int)number;
-            if (num == 0)
-                return "ноль";
-
-            string words = "";
-
-            if ((num / 1000000) > 0)
-            {
-                words += NumberToWords(num / 1000000) + " миллионов ";
-                num %= 1000000;
-            }
-
-            if ((num / 1000) > 0)
-            {
-                words += NumberToWords(num / 1000) + " тысяч ";
-                num %= 1000;
-            }
-
-            if ((num / 100) > 0)
-            {
-                words += NumberToWords(num / 100) + " сотен ";
-                num %= 100;
-            }
-
-            if (num > 0)
-            {
-                if (words != "")
-                    words += " ";
-
-                var unitsMap = new[] { "ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать" };
-                var tensMap = new[] { "ноль", "десять", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто" };
-
-                if (num < 20)
-                    words += unitsMap[num];
-                else
-                {
-                    words += tensMap[num / 10];
-                    if ((num % 10) > 0)
-                        words += " " + unitsMap[num % 10];
-                }
-            }
-
-            return words.Trim();
         }
 
         private void ClearForm()

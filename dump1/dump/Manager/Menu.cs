@@ -28,6 +28,7 @@ namespace dump
         private Color selectionColor = Color.FromArgb(233, 242, 236);
         private Color buttonColor = Color.DarkSeaGreen;
         private bool isLockDialogOpen = false;
+
         public Menu()
         {
             InitializeComponent();
@@ -48,6 +49,13 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
+        public void RefreshGiftFromCart()
+        {
+            UpdateGift();
+            UpdateCartCount();
+        }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -238,20 +246,20 @@ namespace dump
 
         private void SetupButtonStyles()
         {
-            StyleButton(buttonReset);
+            SetupPanelButtonStyle(buttonReset);
         }
 
-        private void StyleButton(Button btn)
+        private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
 
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 1;
             btn.FlatAppearance.BorderColor = Color.Black;
-            btn.BackColor = buttonColor;
+            btn.BackColor = Color.DarkSeaGreen;
             btn.ForeColor = Color.Black;
-            btn.FlatAppearance.MouseOverBackColor = buttonColor;
-            btn.FlatAppearance.MouseDownBackColor = buttonColor;
+            btn.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btn.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
 
             btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
             btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
@@ -604,7 +612,8 @@ namespace dump
             }
 
             UpdateGift();
-            OrderCompositionForm form = new OrderCompositionForm(cartItems, cartGifts);
+            OrderCompositionForm form = new OrderCompositionForm(cartItems, cartGifts, this);
+            form.CartChanged += () => { UpdateGift(); UpdateCartCount(); };
             form.Show();
             this.Hide();
         }
@@ -779,15 +788,18 @@ namespace dump
 
         private List<Menu.CartItem> cartItems;
         private List<Menu.CartGift> cartGifts;
+        private Menu parentMenu;
 
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
         private Color selectionColor = Color.FromArgb(233, 242, 236);
-        private Color buttonColor = Color.DarkSeaGreen;
 
-        public OrderCompositionForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts)
+        public event Action CartChanged;
+
+        public OrderCompositionForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts, Menu menu)
         {
             cartItems = items;
             cartGifts = gifts;
+            parentMenu = menu;
             InitializeComponent();
 
             btnContinue.Click += BtnContinue_Click;
@@ -800,7 +812,8 @@ namespace dump
             this.ControlBox = false;
             this.Text = "";
 
-            this.Load += (s, e) => {
+            this.Load += (s, e) =>
+            {
                 LoadCartData();
                 CalculateTotal();
             };
@@ -818,7 +831,7 @@ namespace dump
             this.Size = new Size(950, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
-            this.Font = new Font("Times New Roman", 12, FontStyle.Regular);
+            this.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             this.FormBorderStyle = FormBorderStyle.None;
             this.ControlBox = false;
@@ -835,13 +848,13 @@ namespace dump
 
             lblDate = new Label();
             lblDate.Text = "Дата:";
-            lblDate.Font = new Font("Times New Roman", 12);
+            lblDate.Font = new Font("Times New Roman", 14);
             lblDate.Location = new Point(50, 70);
-            lblDate.Size = new Size(50, 25);
+            lblDate.Size = new Size(50, 30);
             this.Controls.Add(lblDate);
 
             dtpDate = new DateTimePicker();
-            dtpDate.Font = new Font("Times New Roman", 12);
+            dtpDate.Font = new Font("Times New Roman", 14);
             dtpDate.Location = new Point(110, 67);
             dtpDate.Size = new Size(200, 30);
             dtpDate.Value = DateTime.Now;
@@ -856,40 +869,44 @@ namespace dump
 
             btnIncrease = new Button();
             btnIncrease.Text = "+";
-            btnIncrease.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            btnIncrease.Size = new Size(40, 30);
+            btnIncrease.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            btnIncrease.Size = new Size(50, 35);
             btnIncrease.Location = new Point(10, 5);
+            SetupPanelButtonStyle(btnIncrease);
             panelButtons.Controls.Add(btnIncrease);
 
             btnDecrease = new Button();
             btnDecrease.Text = "-";
-            btnDecrease.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            btnDecrease.Size = new Size(40, 30);
-            btnDecrease.Location = new Point(60, 5);
+            btnDecrease.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            btnDecrease.Size = new Size(50, 35);
+            btnDecrease.Location = new Point(65, 5);
+            SetupPanelButtonStyle(btnDecrease);
             panelButtons.Controls.Add(btnDecrease);
 
             btnDelete = new Button();
             btnDelete.Text = "Удалить";
-            btnDelete.Font = new Font("Times New Roman", 12);
-            btnDelete.Size = new Size(100, 30);
-            btnDelete.Location = new Point(110, 5);
+            btnDelete.Font = new Font("Times New Roman", 14);
+            btnDelete.Size = new Size(120, 35);
+            btnDelete.Location = new Point(120, 5);
+            SetupPanelButtonStyle(btnDelete);
             panelButtons.Controls.Add(btnDelete);
 
             btnRemoveGift = new Button();
             btnRemoveGift.Text = "Удалить подарок";
-            btnRemoveGift.Font = new Font("Times New Roman", 12);
-            btnRemoveGift.Size = new Size(150, 30);
-            btnRemoveGift.Location = new Point(220, 5);
+            btnRemoveGift.Font = new Font("Times New Roman", 14);
+            btnRemoveGift.Size = new Size(180, 35);
+            btnRemoveGift.Location = new Point(245, 5);
             btnRemoveGift.BackColor = Color.Orange;
             btnRemoveGift.ForeColor = Color.Black;
+            SetupPanelButtonStyle(btnRemoveGift);
             panelButtons.Controls.Add(btnRemoveGift);
 
             Label lblSelectHint = new Label();
             lblSelectHint.Text = "Выберите строку для изменения количества или удаления блюда";
-            lblSelectHint.Font = new Font("Times New Roman", 10);
+            lblSelectHint.Font = new Font("Times New Roman", 12);
             lblSelectHint.ForeColor = Color.Gray;
             lblSelectHint.Location = new Point(10, 45);
-            lblSelectHint.Size = new Size(400, 25);
+            lblSelectHint.Size = new Size(450, 25);
             panelButtons.Controls.Add(lblSelectHint);
 
             dgvCart = new DataGridView();
@@ -907,13 +924,13 @@ namespace dump
 
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
-            lblTotal.Font = new Font("Times New Roman", 16, FontStyle.Bold);
+            lblTotal.Font = new Font("Times New Roman", 18, FontStyle.Bold);
             lblTotal.Location = new Point(650, 520);
             lblTotal.Size = new Size(100, 35);
             this.Controls.Add(lblTotal);
 
             lblTotalValue = new Label();
-            lblTotalValue.Font = new Font("Times New Roman", 16, FontStyle.Bold);
+            lblTotalValue.Font = new Font("Times New Roman", 18, FontStyle.Bold);
             lblTotalValue.Location = new Point(750, 520);
             lblTotalValue.Size = new Size(150, 35);
             lblTotalValue.ForeColor = Color.Red;
@@ -921,34 +938,29 @@ namespace dump
 
             btnContinue = new Button();
             btnContinue.Text = "Далее";
-            btnContinue.Font = new Font("Times New Roman", 12);
-            btnContinue.Size = new Size(140, 45);
+            btnContinue.Font = new Font("Times New Roman", 14);
+            btnContinue.Size = new Size(160, 45);
             btnContinue.Location = new Point(650, 570);
+            SetupPanelButtonStyle(btnContinue);
             this.Controls.Add(btnContinue);
 
             btnBack = new Button();
             btnBack.Text = "Назад";
-            btnBack.Font = new Font("Times New Roman", 12);
-            btnBack.Size = new Size(140, 45);
+            btnBack.Font = new Font("Times New Roman", 14);
+            btnBack.Size = new Size(160, 45);
             btnBack.Location = new Point(160, 570);
-            btnBack.Click += (s, e) => {
+            btnBack.Click += (s, e) =>
+            {
                 this.Close();
                 new Menu().Show();
             };
+            SetupPanelButtonStyle(btnBack);
             this.Controls.Add(btnBack);
+
+            InitializeDataGridView();
         }
 
-        private void StyleButtons()
-        {
-            StyleButton(btnContinue);
-            StyleButton(btnBack);
-            StyleButton(btnIncrease);
-            StyleButton(btnDecrease);
-            StyleButton(btnDelete);
-            StyleButton(btnRemoveGift);
-        }
-
-        private void StyleButton(Button btn)
+        private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
 
@@ -959,7 +971,7 @@ namespace dump
             if (btn.Text == "Удалить подарок")
                 btn.BackColor = Color.Orange;
             else
-                btn.BackColor = buttonColor;
+                btn.BackColor = Color.DarkSeaGreen;
 
             btn.ForeColor = Color.Black;
             btn.FlatAppearance.MouseOverBackColor = btn.BackColor;
@@ -985,14 +997,14 @@ namespace dump
             dgvCart.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
             dgvCart.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgvCart.DefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Regular);
+            dgvCart.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvCart.DefaultCellStyle.Padding = new Padding(5);
             dgvCart.DefaultCellStyle.BackColor = Color.White;
             dgvCart.DefaultCellStyle.ForeColor = Color.Black;
             dgvCart.DefaultCellStyle.SelectionBackColor = selectionColor;
             dgvCart.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgvCart.RowTemplate.Height = 35;
+            dgvCart.RowTemplate.Height = 40;
             dgvCart.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvCart.GridColor = Color.Gray;
             dgvCart.BorderStyle = BorderStyle.FixedSingle;
@@ -1076,7 +1088,7 @@ namespace dump
                     {
                         dgvCart.Columns["Сумма"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                         dgvCart.Columns["Сумма"].DefaultCellStyle.ForeColor = Color.DarkGreen;
-                        dgvCart.Columns["Сумма"].DefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+                        dgvCart.Columns["Сумма"].DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                     }
 
                     foreach (DataGridViewRow row in dgvCart.Rows)
@@ -1085,7 +1097,7 @@ namespace dump
                         {
                             row.DefaultCellStyle.BackColor = Color.LightYellow;
                             row.DefaultCellStyle.ForeColor = Color.DarkOrange;
-                            row.DefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+                            row.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         }
                     }
                 }
@@ -1106,6 +1118,7 @@ namespace dump
         {
             LoadCartData();
             CalculateTotal();
+            CartChanged?.Invoke();
         }
 
         private void DgvCart_SelectionChanged(object sender, EventArgs e) { }
@@ -1289,7 +1302,8 @@ namespace dump
         }
     }
 
-    // ========== ФОРМА ДЕТАЛЕЙ ЗАКАЗА ==========
+    // ========== ФОРМА ДЕТАЛЕЙ ЗАКАЗА (С ИСПРАВЛЕННЫМИ ОГРАНИЧЕНИЯМИ) ==========
+    // ========== ФОРМА ДЕТАЛЕЙ ЗАКАЗА (С ИСПРАВЛЕННЫМИ ОГРАНИЧЕНИЯМИ) ==========
     public class OrderDetailsForm : Form
     {
         private Label lblTitle;
@@ -1335,7 +1349,6 @@ namespace dump
 
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
         private Color selectionColor = Color.FromArgb(233, 242, 236);
-        private Color buttonColor = Color.DarkSeaGreen;
         private System.Windows.Forms.Timer updateTimer;
 
         public OrderDetailsForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts)
@@ -1346,9 +1359,6 @@ namespace dump
             InitializeComponent();
             LoadOrderItems();
             CalculateTotal();
-            StyleButtons();
-
-            btnSave.Click += BtnSave_Click;
             SetupTimeRestrictions();
             this.ControlBox = false;
             this.Text = "";
@@ -1357,27 +1367,52 @@ namespace dump
         private void SetupTimeRestrictions()
         {
             DateTime now = DateTime.Now;
-            DateTime minTime = now.AddHours(1);
-            DateTime maxTime = now.Date.AddHours(22);
 
-            if (minTime > maxTime)
+            // ЗАПРЕЩАЕМ ВЫБОР ДАТЫ В ПРОШЛОМ
+            dtpDate.MinDate = DateTime.Now.Date;
+            dtpDate.MaxDate = DateTime.Now.Date.AddDays(7);
+
+            if (dtpDate.Value.Date < DateTime.Now.Date)
             {
-                minTime = now.Date.AddDays(1).AddHours(8);
-                maxTime = minTime.Date.AddHours(22);
-                dtpDate.Value = minTime.Date;
-                dtpDate.MinDate = minTime.Date;
-                dtpDate.MaxDate = minTime.Date.AddDays(7);
-            }
-            else
-            {
-                dtpDate.MinDate = now.Date;
-                dtpDate.MaxDate = now.Date.AddDays(7);
+                dtpDate.Value = DateTime.Now.Date;
             }
 
+            // НАСТРАИВАЕМ ВРЕМЯ
             dtpTime.Format = DateTimePickerFormat.Custom;
             dtpTime.CustomFormat = "HH:mm";
             dtpTime.ShowUpDown = true;
-            dtpTime.Value = minTime;
+
+            // МИНИМАЛЬНОЕ ВРЕМЯ - СЕЙЧАС + 1 ЧАС (НО НЕ РАНЬШЕ 8:00 И НЕ ПОЗЖЕ 22:00)
+            DateTime minTime = now.AddHours(1);
+
+            // ЕСЛИ СЕЙЧАС ПОЗЖЕ 21:00 ИЛИ РАНЬШЕ 8:00 - ПЕРЕНОСИМ НА ЗАВТРА
+            if (now.Hour >= 21 || now.Hour < 8)
+            {
+                dtpDate.Value = now.Date.AddDays(1);
+                dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                MessageBox.Show("Заказы принимаются с 08:00 до 22:00.\n" +
+                              "Будет установлена завтрашняя дата на 08:00.",
+                              "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                // Округляем время до следующего часа
+                DateTime roundedMinTime = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0);
+
+                // Проверяем, что время не выходит за 22:00
+                if (roundedMinTime.Hour >= 22)
+                {
+                    dtpDate.Value = now.Date.AddDays(1);
+                    dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                    MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
+                                  "Будет установлена завтрашняя дата на 08:00.",
+                                  "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    dtpTime.Value = roundedMinTime;
+                }
+            }
 
             updateTimer = new System.Windows.Forms.Timer();
             updateTimer.Interval = 60000;
@@ -1385,6 +1420,7 @@ namespace dump
             updateTimer.Start();
 
             dtpDate.ValueChanged += DtpDate_ValueChanged;
+            dtpTime.ValueChanged += DtpTime_ValueChanged;
         }
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
@@ -1397,7 +1433,51 @@ namespace dump
 
         private void DtpDate_ValueChanged(object sender, EventArgs e)
         {
+            if (dtpDate.Value.Date < DateTime.Now.Date)
+            {
+                MessageBox.Show("Нельзя выбрать дату в прошлом!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpDate.Value = DateTime.Now.Date;
+                return;
+            }
             UpdateTimeRestrictions();
+        }
+
+        private void DtpTime_ValueChanged(object sender, EventArgs e)
+        {
+            TimeSpan time = dtpTime.Value.TimeOfDay;
+
+            // ПРОВЕРКА - НЕ РАНЬШЕ 8:00
+            if (time < new TimeSpan(8, 0, 0))
+            {
+                MessageBox.Show("Заказы принимаются с 08:00!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
+                return;
+            }
+
+            // ПРОВЕРКА - НЕ ПОЗЖЕ 22:00
+            if (time > new TimeSpan(22, 0, 0))
+            {
+                MessageBox.Show("Заказы принимаются до 22:00!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
+                return;
+            }
+
+            // ПРОВЕРКА ДЛЯ СЕГОДНЯШНЕЙ ДАТЫ - НЕ РАНЬШЕ ТЕКУЩЕГО ВРЕМЕНИ + 1 ЧАС
+            if (dtpDate.Value.Date == DateTime.Now.Date)
+            {
+                DateTime minTime = DateTime.Now.AddHours(1);
+                if (dtpTime.Value < minTime)
+                {
+                    MessageBox.Show($"Время не может быть раньше {minTime:HH:mm}!\n" +
+                                  "Минимальное время заказа - через час от текущего времени.",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTime.Value = minTime;
+                    return;
+                }
+            }
         }
 
         private void UpdateTimeRestrictions()
@@ -1405,43 +1485,61 @@ namespace dump
             DateTime selectedDate = dtpDate.Value.Date;
             DateTime now = DateTime.Now;
 
-            if (selectedDate.Date == now.Date)
+            if (selectedDate == now.Date)
             {
-                DateTime minTime = now.AddHours(1);
-                DateTime maxTime = selectedDate.AddHours(22);
-
-                if (minTime > maxTime)
+                // ЕСЛИ СЕГОДНЯ ПОЗЖЕ 21:00 - ПЕРЕНОСИМ НА ЗАВТРА
+                if (now.Hour >= 21)
                 {
-                    MessageBox.Show("Сегодня уже нельзя заказать на выбранное время.\n" +
-                                  "Будет установлена дата на завтра.",
+                    MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
+                                  "Будет установлена завтрашняя дата на 08:00.",
                                   "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
                     dtpDate.Value = now.Date.AddDays(1);
-                    selectedDate = dtpDate.Value.Date;
-                    minTime = selectedDate.AddHours(8);
-                    maxTime = selectedDate.AddHours(22);
+                    dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                    return;
                 }
 
-                if (dtpTime.Value < minTime || dtpTime.Value > maxTime)
-                    dtpTime.Value = minTime;
+                DateTime minTime = now.AddHours(1);
+
+                // ЕСЛИ МИНИМАЛЬНОЕ ВРЕМЯ ВЫХОДИТ ЗА 22:00
+                if (minTime.Hour >= 22)
+                {
+                    MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
+                                  "Будет установлена завтрашняя дата на 08:00.",
+                                  "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    dtpDate.Value = now.Date.AddDays(1);
+                    dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                    return;
+                }
+
+                // ОКРУГЛЯЕМ ДО СЛЕДУЮЩЕГО ЧАСА
+                DateTime roundedMinTime = new DateTime(now.Year, now.Month, now.Day, minTime.Hour, 0, 0);
+
+                if (dtpTime.Value < roundedMinTime)
+                {
+                    dtpTime.Value = roundedMinTime;
+                }
             }
             else
             {
-                DateTime minTime = selectedDate.AddHours(8);
-                DateTime maxTime = selectedDate.AddHours(22);
-
-                if (dtpTime.Value < minTime || dtpTime.Value > maxTime)
-                    dtpTime.Value = minTime;
+                // ДЛЯ БУДУЩИХ ДНЕЙ - ВРЕМЯ ОТ 8:00 ДО 22:00
+                if (dtpTime.Value.TimeOfDay < new TimeSpan(8, 0, 0))
+                {
+                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
+                }
+                else if (dtpTime.Value.TimeOfDay > new TimeSpan(22, 0, 0))
+                {
+                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
+                }
             }
         }
 
         private void InitializeComponent()
         {
             this.Text = "";
-            this.Size = new Size(1000, 830);
+            this.Size = new Size(1000, 800);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
-            this.Font = new Font("Times New Roman", 12, FontStyle.Regular);
+            this.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             this.FormBorderStyle = FormBorderStyle.None;
             this.ControlBox = false;
@@ -1456,16 +1554,15 @@ namespace dump
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
-            // ДАТА И ВРЕМЯ (вместо номера заказа)
             lblDateTime = new Label();
             lblDateTime.Text = "Дата и время:";
-            lblDateTime.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            lblDateTime.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lblDateTime.Location = new Point(50, 80);
-            lblDateTime.Size = new Size(120, 25);
+            lblDateTime.Size = new Size(120, 30);
             this.Controls.Add(lblDateTime);
 
             dtpDate = new DateTimePicker();
-            dtpDate.Font = new Font("Times New Roman", 12);
+            dtpDate.Font = new Font("Times New Roman", 14);
             dtpDate.Location = new Point(180, 77);
             dtpDate.Size = new Size(120, 30);
             dtpDate.Value = DateTime.Now;
@@ -1474,7 +1571,7 @@ namespace dump
             this.Controls.Add(dtpDate);
 
             dtpTime = new DateTimePicker();
-            dtpTime.Font = new Font("Times New Roman", 12);
+            dtpTime.Font = new Font("Times New Roman", 14);
             dtpTime.Location = new Point(310, 77);
             dtpTime.Size = new Size(100, 30);
             dtpTime.Format = DateTimePickerFormat.Custom;
@@ -1484,28 +1581,28 @@ namespace dump
 
             lblPhone = new Label();
             lblPhone.Text = "Телефон:";
-            lblPhone.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            lblPhone.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lblPhone.Location = new Point(50, 130);
-            lblPhone.Size = new Size(80, 25);
+            lblPhone.Size = new Size(80, 30);
             this.Controls.Add(lblPhone);
 
             mtxtPhone = new MaskedTextBox();
             mtxtPhone.Mask = "+7 (999) 000-00-00";
-            mtxtPhone.Font = new Font("Times New Roman", 12);
+            mtxtPhone.Font = new Font("Times New Roman", 14);
             mtxtPhone.Location = new Point(140, 127);
             mtxtPhone.Size = new Size(220, 30);
             this.Controls.Add(mtxtPhone);
 
             lblPersons = new Label();
             lblPersons.Text = "Кол-во персон:";
-            lblPersons.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            lblPersons.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lblPersons.Location = new Point(420, 130);
-            lblPersons.Size = new Size(120, 25);
+            lblPersons.Size = new Size(140, 30);
             this.Controls.Add(lblPersons);
 
             cmbPersons = new ComboBox();
-            cmbPersons.Font = new Font("Times New Roman", 12);
-            cmbPersons.Location = new Point(550, 127);
+            cmbPersons.Font = new Font("Times New Roman", 14);
+            cmbPersons.Location = new Point(570, 127);
             cmbPersons.Size = new Size(80, 30);
             cmbPersons.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPersons.Items.AddRange(new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
@@ -1514,109 +1611,111 @@ namespace dump
 
             grbCertificate = new GroupBox();
             grbCertificate.Text = "Оплата сертификатом";
-            grbCertificate.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            grbCertificate.Size = new Size(900, 120);
+            grbCertificate.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            grbCertificate.Size = new Size(900, 130);
             grbCertificate.Location = new Point(50, 180);
             grbCertificate.BackColor = Color.FromArgb(255, 255, 220);
             this.Controls.Add(grbCertificate);
 
             rbCertificate = new RadioButton();
             rbCertificate.Text = "Оплатить сертификатом";
-            rbCertificate.Font = new Font("Times New Roman", 11);
+            rbCertificate.Font = new Font("Times New Roman", 14);
             rbCertificate.Location = new Point(15, 25);
-            rbCertificate.Size = new Size(180, 25);
+            rbCertificate.Size = new Size(200, 30);
             rbCertificate.CheckedChanged += RbCertificate_CheckedChanged;
             grbCertificate.Controls.Add(rbCertificate);
 
             Label lblCertNum = new Label();
             lblCertNum.Text = "Номер сертификата:";
-            lblCertNum.Font = new Font("Times New Roman", 10);
-            lblCertNum.Location = new Point(15, 55);
-            lblCertNum.Size = new Size(130, 25);
+            lblCertNum.Font = new Font("Times New Roman", 14);
+            lblCertNum.Location = new Point(15, 60);
+            lblCertNum.Size = new Size(160, 30);
             grbCertificate.Controls.Add(lblCertNum);
 
             txtCertificateNumber = new TextBox();
-            txtCertificateNumber.Font = new Font("Times New Roman", 10);
-            txtCertificateNumber.Location = new Point(150, 55);
-            txtCertificateNumber.Size = new Size(120, 25);
+            txtCertificateNumber.Font = new Font("Times New Roman", 14);
+            txtCertificateNumber.Location = new Point(180, 60);
+            txtCertificateNumber.Size = new Size(120, 30);
             txtCertificateNumber.Enabled = false;
             txtCertificateNumber.KeyPress += TxtCertificateNumber_KeyPress;
             grbCertificate.Controls.Add(txtCertificateNumber);
 
             btnCheckCertificate = new Button();
             btnCheckCertificate.Text = "Проверить";
-            btnCheckCertificate.Font = new Font("Times New Roman", 9);
-            btnCheckCertificate.Size = new Size(80, 25);
-            btnCheckCertificate.Location = new Point(280, 55);
+            btnCheckCertificate.Font = new Font("Times New Roman", 14);
+            btnCheckCertificate.Size = new Size(120, 30);
+            btnCheckCertificate.Location = new Point(310, 60);
             btnCheckCertificate.Enabled = false;
             btnCheckCertificate.Click += BtnCheckCertificate_Click;
+            SetupPanelButtonStyle(btnCheckCertificate);
             grbCertificate.Controls.Add(btnCheckCertificate);
 
             btnCancelCertificate = new Button();
             btnCancelCertificate.Text = "Отменить оплату сертификатом";
-            btnCancelCertificate.Font = new Font("Times New Roman", 9);
-            btnCancelCertificate.Size = new Size(200, 25);
-            btnCancelCertificate.Location = new Point(380, 55);
+            btnCancelCertificate.Font = new Font("Times New Roman", 14);
+            btnCancelCertificate.Size = new Size(220, 30);
+            btnCancelCertificate.Location = new Point(440, 60);
             btnCancelCertificate.Enabled = false;
             btnCancelCertificate.BackColor = Color.LightCoral;
             btnCancelCertificate.Click += BtnCancelCertificate_Click;
+            SetupPanelButtonStyle(btnCancelCertificate);
             grbCertificate.Controls.Add(btnCancelCertificate);
 
             lblCertificateAmount = new Label();
             lblCertificateAmount.Text = "";
-            lblCertificateAmount.Font = new Font("Times New Roman", 9);
+            lblCertificateAmount.Font = new Font("Times New Roman", 12);
             lblCertificateAmount.ForeColor = Color.Blue;
-            lblCertificateAmount.Location = new Point(15, 88);
+            lblCertificateAmount.Location = new Point(15, 95);
             lblCertificateAmount.Size = new Size(860, 25);
             grbCertificate.Controls.Add(lblCertificateAmount);
 
             grbDelivery = new GroupBox();
             grbDelivery.Text = "Способ получения";
-            grbDelivery.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            grbDelivery.Size = new Size(900, 100);
-            grbDelivery.Location = new Point(50, 320);
+            grbDelivery.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            grbDelivery.Size = new Size(900, 110);
+            grbDelivery.Location = new Point(50, 330);
             grbDelivery.BackColor = Color.FromArgb(240, 240, 240);
             this.Controls.Add(grbDelivery);
 
             rbDelivery = new RadioButton();
             rbDelivery.Text = "Доставка";
-            rbDelivery.Font = new Font("Times New Roman", 12);
+            rbDelivery.Font = new Font("Times New Roman", 14);
             rbDelivery.Location = new Point(30, 30);
-            rbDelivery.Size = new Size(100, 30);
+            rbDelivery.Size = new Size(120, 30);
             rbDelivery.Checked = true;
             rbDelivery.CheckedChanged += RbDelivery_CheckedChanged;
             grbDelivery.Controls.Add(rbDelivery);
 
             rbPickup = new RadioButton();
             rbPickup.Text = "Самовывоз";
-            rbPickup.Font = new Font("Times New Roman", 12);
-            rbPickup.Location = new Point(160, 30);
-            rbPickup.Size = new Size(110, 30);
+            rbPickup.Font = new Font("Times New Roman", 14);
+            rbPickup.Location = new Point(170, 30);
+            rbPickup.Size = new Size(130, 30);
             grbDelivery.Controls.Add(rbPickup);
 
             lblAddress = new Label();
             lblAddress.Text = "Адрес:";
-            lblAddress.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblAddress.Location = new Point(30, 65);
-            lblAddress.Size = new Size(70, 25);
+            lblAddress.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            lblAddress.Location = new Point(30, 70);
+            lblAddress.Size = new Size(70, 30);
             grbDelivery.Controls.Add(lblAddress);
 
             txtAddress = new TextBox();
-            txtAddress.Font = new Font("Times New Roman", 12);
-            txtAddress.Location = new Point(110, 62);
+            txtAddress.Font = new Font("Times New Roman", 14);
+            txtAddress.Location = new Point(110, 67);
             txtAddress.Size = new Size(700, 30);
             grbDelivery.Controls.Add(txtAddress);
 
             lblPayment = new Label();
             lblPayment.Text = "Выберите способ оплаты для доплаты:";
-            lblPayment.Font = new Font("Times New Roman", 11, FontStyle.Bold);
-            lblPayment.Location = new Point(50, 440);
-            lblPayment.Size = new Size(350, 25);
+            lblPayment.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            lblPayment.Location = new Point(50, 460);
+            lblPayment.Size = new Size(380, 30);
             this.Controls.Add(lblPayment);
 
             cmbPayment = new ComboBox();
-            cmbPayment.Font = new Font("Times New Roman", 11);
-            cmbPayment.Location = new Point(400, 437);
+            cmbPayment.Font = new Font("Times New Roman", 14);
+            cmbPayment.Location = new Point(440, 457);
             cmbPayment.Size = new Size(220, 30);
             cmbPayment.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPayment.Items.AddRange(new string[] { "Наличные", "Карта", "Перевод" });
@@ -1625,20 +1724,20 @@ namespace dump
 
             lblComment = new Label();
             lblComment.Text = "Комментарий:";
-            lblComment.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            lblComment.Location = new Point(50, 490);
-            lblComment.Size = new Size(110, 25);
+            lblComment.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            lblComment.Location = new Point(50, 510);
+            lblComment.Size = new Size(130, 30);
             this.Controls.Add(lblComment);
 
             txtComment = new TextBox();
-            txtComment.Font = new Font("Times New Roman", 12);
-            txtComment.Location = new Point(170, 487);
+            txtComment.Font = new Font("Times New Roman", 14);
+            txtComment.Location = new Point(190, 507);
             txtComment.Size = new Size(700, 30);
             this.Controls.Add(txtComment);
 
             lstOrderItems = new ListBox();
-            lstOrderItems.Font = new Font("Times New Roman", 12);
-            lstOrderItems.Location = new Point(50, 540);
+            lstOrderItems.Font = new Font("Times New Roman", 14);
+            lstOrderItems.Location = new Point(50, 560);
             lstOrderItems.Size = new Size(900, 120);
             lstOrderItems.BackColor = Color.FromArgb(240, 240, 240);
             lstOrderItems.BorderStyle = BorderStyle.FixedSingle;
@@ -1646,36 +1745,61 @@ namespace dump
 
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
-            lblTotal.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            lblTotal.Location = new Point(580, 690);
-            lblTotal.Size = new Size(200, 35);
+            lblTotal.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            lblTotal.Location = new Point(580, 700);
+            lblTotal.Size = new Size(100, 40);
             this.Controls.Add(lblTotal);
 
             lblTotalValue = new Label();
-            lblTotalValue.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            lblTotalValue.Location = new Point(790, 690);
-            lblTotalValue.Size = new Size(150, 35);
+            lblTotalValue.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            lblTotalValue.Location = new Point(700, 700);
+            lblTotalValue.Size = new Size(200, 40);
             lblTotalValue.ForeColor = Color.Red;
             this.Controls.Add(lblTotalValue);
 
             btnBack = new Button();
             btnBack.Text = "Назад";
-            btnBack.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            btnBack.Size = new Size(140, 50);
-            btnBack.Location = new Point(200, 740);
+            btnBack.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            btnBack.Size = new Size(160, 50);
+            btnBack.Location = new Point(150, 750);
+            btnBack.Click += (s, e) =>
+            {
+                this.Close();
+                new Menu().Show();
+            };
+            SetupPanelButtonStyle(btnBack);
             this.Controls.Add(btnBack);
 
             btnSave = new Button();
             btnSave.Text = "Оформить заказ";
-            btnSave.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            btnSave.Size = new Size(180, 50);
-            btnSave.Location = new Point(550, 740);
+            btnSave.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            btnSave.Size = new Size(200, 50);
+            btnSave.Location = new Point(600, 750);
+            btnSave.Click += BtnSave_Click;
+            SetupPanelButtonStyle(btnSave);
             this.Controls.Add(btnSave);
+        }
 
-            btnBack.Click += (s, e) => {
-                this.Close();
-                new OrderCompositionForm(cartItems, cartGifts).Show();
-            };
+        private void SetupPanelButtonStyle(Button btn)
+        {
+            if (btn == null) return;
+
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = Color.Black;
+
+            if (btn.Text == "Отменить оплату сертификатом")
+                btn.BackColor = Color.LightCoral;
+            else
+                btn.BackColor = Color.DarkSeaGreen;
+
+            btn.ForeColor = Color.Black;
+            btn.FlatAppearance.MouseOverBackColor = btn.BackColor;
+            btn.FlatAppearance.MouseDownBackColor = btn.BackColor;
+
+            btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
+            btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
+            btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
         private void RbCertificate_CheckedChanged(object sender, EventArgs e)
@@ -1751,11 +1875,11 @@ namespace dump
             try
             {
                 string query = @"
-            SELECT c.id_certificate, c.last_name, c.first_name, c.middle_name, 
-                   c.price, c.id_status_certificate, sc.name as status_name
-            FROM certificates c
-            LEFT JOIN status_certificates sc ON c.id_status_certificate = sc.id_status_certificate
-            WHERE c.id_certificate = @id";
+                SELECT c.id_certificate, c.last_name, c.first_name, c.middle_name, 
+                       c.price, c.id_status_certificate, sc.name as status_name
+                FROM certificates c
+                LEFT JOIN status_certificates sc ON c.id_status_certificate = sc.id_status_certificate
+                WHERE c.id_certificate = @id";
 
                 using (MySqlConnection conn = SettingsBD.GetConnection())
                 {
@@ -1780,8 +1904,6 @@ namespace dump
                                     return;
                                 }
 
-                                string owner = $"{reader["last_name"]} {reader["first_name"]} {reader["middle_name"]}";
-
                                 if (certificatePrice >= orderTotal)
                                 {
                                     isCertificateValid = true;
@@ -1791,7 +1913,6 @@ namespace dump
                                     remainingToPay = 0;
 
                                     MessageBox.Show($"✅ Сертификат №{certNumber} будет использован ПОЛНОСТЬЮ!\n" +
-                                                  $"Владелец: {owner}\n" +
                                                   $"Сумма сертификата: {certificatePrice:N2} ₽\n" +
                                                   $"Сумма заказа: {orderTotal:N2} ₽",
                                                   "Сертификат найден", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1803,7 +1924,6 @@ namespace dump
                                     DialogResult result = MessageBox.Show(
                                         $"На сертификате недостаточно средств!\n\n" +
                                         $"Сертификат №{certNumber} будет использован ЧАСТИЧНО.\n" +
-                                        $"Владелец: {owner}\n" +
                                         $"Сумма сертификата: {certificatePrice:N2} ₽\n" +
                                         $"Сумма заказа: {orderTotal:N2} ₽\n" +
                                         $"Необходимо доплатить: {(orderTotal - certificatePrice):N2} ₽\n\n" +
@@ -1879,31 +1999,6 @@ namespace dump
             lblTotalValue.ForeColor = Color.Red;
         }
 
-        private void StyleButtons()
-        {
-            StyleButton(btnSave);
-            StyleButton(btnBack);
-            StyleButton(btnCheckCertificate);
-            StyleButton(btnCancelCertificate);
-        }
-
-        private void StyleButton(Button btn)
-        {
-            if (btn == null) return;
-
-            btn.FlatStyle = FlatStyle.Flat;
-            btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.BorderColor = Color.Black;
-            btn.BackColor = buttonColor;
-            btn.ForeColor = Color.Black;
-            btn.FlatAppearance.MouseOverBackColor = buttonColor;
-            btn.FlatAppearance.MouseDownBackColor = buttonColor;
-
-            btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
-            btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
-            btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
-        }
-
         private void RbDelivery_CheckedChanged(object sender, EventArgs e)
         {
             txtAddress.Enabled = rbDelivery.Checked;
@@ -1924,25 +2019,44 @@ namespace dump
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            DateTime selectedDateTime = dtpDate.Value.Date.Add(dtpTime.Value.TimeOfDay);
-            DateTime minAllowedTime = DateTime.Now.AddHours(1);
-            DateTime maxAllowedTime = dtpDate.Value.Date.AddHours(22);
-
-            if (selectedDateTime < minAllowedTime)
+            // ===== ПРОВЕРКА - НЕЛЬЗЯ ВЫБИРАТЬ ДАТУ В ПРОШЛОМ =====
+            if (dtpDate.Value.Date < DateTime.Now.Date)
             {
-                MessageBox.Show($"Время доставки должно быть минимум через час от текущего времени!\n" +
-                              $"Текущее время: {DateTime.Now:HH:mm}\n" +
-                              $"Минимальное время: {minAllowedTime:HH:mm}",
-                              "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Нельзя выбрать дату в прошлом!\nВыберите сегодняшнюю или будущую дату.",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpDate.Focus();
                 return;
             }
 
-            if (selectedDateTime > maxAllowedTime)
+            // ===== ПРОВЕРКА - ВРЕМЯ ОТ 8:00 ДО 22:00 =====
+            TimeSpan time = dtpTime.Value.TimeOfDay;
+            if (time < new TimeSpan(8, 0, 0))
             {
-                MessageBox.Show($"Время доставки не может быть позже 22:00!\n" +
-                              $"Максимальное время: 22:00",
-                              "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Заказы принимаются с 08:00 до 22:00!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpTime.Focus();
                 return;
+            }
+            if (time > new TimeSpan(22, 0, 0))
+            {
+                MessageBox.Show("Заказы принимаются с 08:00 до 22:00!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpTime.Focus();
+                return;
+            }
+
+            // ===== ПРОВЕРКА - НЕЛЬЗЯ ВЫБИРАТЬ ВРЕМЯ В ПРОШЛОМ =====
+            if (dtpDate.Value.Date == DateTime.Now.Date)
+            {
+                DateTime minTime = DateTime.Now.AddHours(1);
+                if (dtpTime.Value < minTime)
+                {
+                    MessageBox.Show($"Время не может быть раньше {minTime:HH:mm}!\n" +
+                                  "Минимальное время заказа - через час от текущего времени.",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTime.Focus();
+                    return;
+                }
             }
 
             if (!mtxtPhone.MaskCompleted)
@@ -2084,11 +2198,11 @@ namespace dump
                         }
 
                         string orderQuery = @"INSERT INTO orders 
-                            (phone_number, address, number_persons, 
-                             delivery_date, delivery_time, comment, payment_method, id_status, total_amount) 
-                            VALUES 
-                            (@phone, @addr, @pers, @date, @time, @comm, @pay, 1, @total);
-                            SELECT LAST_INSERT_ID();";
+                        (phone_number, address, number_persons, 
+                         delivery_date, delivery_time, comment, payment_method, id_status, total_amount) 
+                        VALUES 
+                        (@phone, @addr, @pers, @date, @time, @comm, @pay, 2, @total);
+                        SELECT LAST_INSERT_ID();";
 
                         long orderId;
                         string paymentMethod;
@@ -2131,8 +2245,8 @@ namespace dump
                         foreach (var item in cartItems)
                         {
                             string dishQuery = @"INSERT INTO order_dish 
-                                (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
-                                VALUES (@oid, @did, @qty, @price, FALSE, NULL)";
+                            (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
+                            VALUES (@oid, @did, @qty, @price, FALSE, NULL)";
 
                             using (MySqlCommand dishCmd = new MySqlCommand(dishQuery, conn, transaction))
                             {
@@ -2149,8 +2263,8 @@ namespace dump
                             foreach (var gift in cartGifts)
                             {
                                 string giftQuery = @"INSERT INTO order_dish 
-                                    (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
-                                    VALUES (@oid, 1, @qty, 0, TRUE, @pid)";
+                                (id_order, id_dish, quantity, price_at_order, is_gift, id_present) 
+                                VALUES (@oid, 1, @qty, 0, TRUE, @pid)";
 
                                 using (MySqlCommand giftCmd = new MySqlCommand(giftQuery, conn, transaction))
                                 {

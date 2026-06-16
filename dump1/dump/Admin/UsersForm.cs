@@ -235,6 +235,8 @@ namespace dump
             textBoxFIO.TextChanged += TextBoxFIO_TextChanged;
             textBoxFIO.Leave += TextBoxFIO_Leave;
 
+
+
             textBoxLogin.MaxLength = 50;
             textBoxLogin.KeyPress += TextBoxLogin_KeyPress;
             textBoxLogin.Validating += TextBoxLogin_Validating;
@@ -247,6 +249,7 @@ namespace dump
             textBoxSearch.KeyPress += TextBoxSearch_KeyPress;
             textBoxSearch.TextChanged += TextBoxSearch_TextChanged;
             textBoxSearch.Leave += TextBoxSearch_Leave;
+
         }
 
         private void InitializeSearchAndFilter()
@@ -408,6 +411,7 @@ namespace dump
                 return;
             }
 
+            // Разрешаем дефис
             if (e.KeyChar == '-')
                 return;
 
@@ -435,6 +439,10 @@ namespace dump
                 }
                 return;
             }
+
+            // Разрешаем дефис в поиске
+            if (e.KeyChar == '-')
+                return;
 
             if (IsRussianLetter(e.KeyChar))
                 return;
@@ -502,7 +510,6 @@ namespace dump
         {
             if (string.IsNullOrEmpty(text)) return text;
 
-            text = text.ToLower();
             char[] chars = text.ToCharArray();
 
             if (chars.Length > 0 && IsRussianLetter(chars[0]))
@@ -510,8 +517,10 @@ namespace dump
 
             for (int i = 1; i < chars.Length; i++)
             {
-                if (chars[i - 1] == ' ' && IsRussianLetter(chars[i]))
+                if ((chars[i - 1] == ' ' || chars[i - 1] == '-') && IsRussianLetter(chars[i]))
                     chars[i] = char.ToUpper(chars[i]);
+                else if (IsRussianLetter(chars[i]) && i > 0 && !IsWordSeparator(chars[i - 1]))
+                    chars[i] = char.ToLower(chars[i]);
             }
 
             return new string(chars);
@@ -528,6 +537,7 @@ namespace dump
 
             for (int i = 1; i < chars.Length; i++)
             {
+                // Проверяем, является ли предыдущий символ пробелом ИЛИ дефисом
                 if ((chars[i - 1] == ' ' || chars[i - 1] == '-') && IsRussianLetter(chars[i]))
                     chars[i] = char.ToUpper(chars[i]);
                 else if (IsRussianLetter(chars[i]) && i > 0 && !IsWordSeparator(chars[i - 1]))
@@ -563,6 +573,7 @@ namespace dump
                 return;
             }
 
+            // Разрешаем дефис в регулярном выражении
             if (!string.IsNullOrEmpty(text) && !Regex.IsMatch(text, @"^[а-яА-ЯёЁ\s\-]+$"))
             {
                 MessageBox.Show("ФИО может содержать только русские буквы, пробелы и дефисы!",
@@ -587,13 +598,31 @@ namespace dump
         {
             if (string.IsNullOrWhiteSpace(fio)) return fio;
 
+            // Разделяем по пробелам, но сохраняем дефисы внутри слов
             string[] words = fio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < words.Length; i++)
             {
                 if (words[i].Length > 0)
                 {
-                    words[i] = char.ToUpper(words[i][0]) +
-                              (words[i].Length > 1 ? words[i].Substring(1).ToLower() : "");
+                    // Если слово содержит дефис, форматируем каждую часть отдельно
+                    if (words[i].Contains('-'))
+                    {
+                        string[] parts = words[i].Split('-');
+                        for (int j = 0; j < parts.Length; j++)
+                        {
+                            if (parts[j].Length > 0)
+                            {
+                                parts[j] = char.ToUpper(parts[j][0]) +
+                                          (parts[j].Length > 1 ? parts[j].Substring(1).ToLower() : "");
+                            }
+                        }
+                        words[i] = string.Join("-", parts);
+                    }
+                    else
+                    {
+                        words[i] = char.ToUpper(words[i][0]) +
+                                  (words[i].Length > 1 ? words[i].Substring(1).ToLower() : "");
+                    }
                 }
             }
             return string.Join(" ", words);
@@ -1112,7 +1141,8 @@ namespace dump
             string[] words = fio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (words.Length != 3)
             {
-                MessageBox.Show("ФИО должно содержать ровно три слова!\nФормат: Фамилия Имя Отчество",
+                MessageBox.Show("ФИО должно содержать ровно три слова!\nФормат: Фамилия Имя Отчество\n" +
+                              "Примечание: двойные фамилии через дефис считаются одним словом.",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 textBoxFIO.Focus();
                 return;

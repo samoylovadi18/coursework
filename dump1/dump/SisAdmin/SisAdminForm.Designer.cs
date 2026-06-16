@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SisAdminForm));
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageBD = new System.Windows.Forms.TabPage();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnTestConnection = new System.Windows.Forms.Button();
             this.visible_password = new System.Windows.Forms.Button();
@@ -45,9 +46,6 @@
             this.tabPageImport = new System.Windows.Forms.TabPage();
             this.grpExport = new System.Windows.Forms.GroupBox();
             this.btnExport = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.cmbExportTables = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.grpImport = new System.Windows.Forms.GroupBox();
@@ -57,35 +55,56 @@
             this.lblFile = new System.Windows.Forms.Label();
             this.cmbTables = new System.Windows.Forms.ComboBox();
             this.lblTable = new System.Windows.Forms.Label();
-            this.tabPageCopy = new System.Windows.Forms.TabPage();
-            this.btnRestoreDB = new System.Windows.Forms.Button();
-            this.txtLog = new System.Windows.Forms.RichTextBox();
+            this.tabRecovery = new System.Windows.Forms.TabPage();
+            this.rtbRestoreLog = new System.Windows.Forms.RichTextBox();
+            this.btnBrowseScript = new System.Windows.Forms.Button();
+            this.txtScriptPath = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.btnRestoreFromScript = new System.Windows.Forms.Button();
             this.lblWarning = new System.Windows.Forms.Label();
             this.tabPageSecure = new System.Windows.Forms.TabPage();
             this.btnSaveSecurity = new System.Windows.Forms.Button();
-            this.btnCancelSecurity = new System.Windows.Forms.Button();
             this.chkAutoLock = new System.Windows.Forms.CheckBox();
             this.numInactivityTime = new System.Windows.Forms.NumericUpDown();
             this.lblInactivity = new System.Windows.Forms.Label();
+            this.tabPageCopy = new System.Windows.Forms.TabPage();
+            this.groupBoxManualBackupgroupBoxManualBackup = new System.Windows.Forms.GroupBox();
+            this.lblBackupStatus = new System.Windows.Forms.Label();
+            this.rbDataOnly = new System.Windows.Forms.RadioButton();
+            this.cmbAutoBackupType = new System.Windows.Forms.ComboBox();
+            this.numBackupInterval = new System.Windows.Forms.NumericUpDown();
+            this.rbStructureOnly = new System.Windows.Forms.RadioButton();
+            this.chkAutoBackup = new System.Windows.Forms.CheckBox();
+            this.rbFullBackup = new System.Windows.Forms.RadioButton();
+            this.btnCreateBackup = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.btnBrowseBackupPath = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txtBackupPath = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.lblStatus = new System.Windows.Forms.Label();
             this.tabControl.SuspendLayout();
             this.tabPageBD.SuspendLayout();
             this.tabPageImport.SuspendLayout();
             this.grpExport.SuspendLayout();
             this.grpImport.SuspendLayout();
-            this.tabPageCopy.SuspendLayout();
+            this.tabRecovery.SuspendLayout();
             this.tabPageSecure.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).BeginInit();
+            this.tabPageCopy.SuspendLayout();
+            this.groupBoxManualBackupgroupBoxManualBackup.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numBackupInterval)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl
             // 
             this.tabControl.Controls.Add(this.tabPageBD);
             this.tabControl.Controls.Add(this.tabPageImport);
-            this.tabControl.Controls.Add(this.tabPageCopy);
+            this.tabControl.Controls.Add(this.tabRecovery);
             this.tabControl.Controls.Add(this.tabPageSecure);
+            this.tabControl.Controls.Add(this.tabPageCopy);
             this.tabControl.Location = new System.Drawing.Point(49, 75);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
@@ -113,6 +132,15 @@
             this.tabPageBD.TabIndex = 0;
             this.tabPageBD.Text = "База данных";
             this.tabPageBD.UseVisualStyleBackColor = true;
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblStatus.Location = new System.Drawing.Point(225, 286);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(0, 31);
+            this.lblStatus.TabIndex = 34;
             // 
             // btnSave
             // 
@@ -239,9 +267,6 @@
             // grpExport
             // 
             this.grpExport.Controls.Add(this.btnExport);
-            this.grpExport.Controls.Add(this.button2);
-            this.grpExport.Controls.Add(this.textBox1);
-            this.grpExport.Controls.Add(this.label2);
             this.grpExport.Controls.Add(this.cmbExportTables);
             this.grpExport.Controls.Add(this.label3);
             this.grpExport.Location = new System.Drawing.Point(86, 270);
@@ -255,43 +280,17 @@
             // btnExport
             // 
             this.btnExport.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.btnExport.Location = new System.Drawing.Point(112, 111);
+            this.btnExport.Location = new System.Drawing.Point(112, 114);
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(361, 46);
             this.btnExport.TabIndex = 43;
             this.btnExport.Text = "Экспортировать";
             this.btnExport.UseVisualStyleBackColor = false;
             // 
-            // button2
-            // 
-            this.button2.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.button2.Location = new System.Drawing.Point(479, 65);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(86, 29);
-            this.button2.TabIndex = 43;
-            this.button2.Text = "Обзор";
-            this.button2.UseVisualStyleBackColor = false;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(112, 65);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(361, 29);
-            this.textBox1.TabIndex = 3;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 73);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 21);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Файл:";
-            // 
             // cmbExportTables
             // 
             this.cmbExportTables.FormattingEnabled = true;
-            this.cmbExportTables.Location = new System.Drawing.Point(112, 20);
+            this.cmbExportTables.Location = new System.Drawing.Point(112, 67);
             this.cmbExportTables.Name = "cmbExportTables";
             this.cmbExportTables.Size = new System.Drawing.Size(361, 29);
             this.cmbExportTables.TabIndex = 1;
@@ -299,7 +298,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 28);
+            this.label3.Location = new System.Drawing.Point(9, 75);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 21);
             this.label3.TabIndex = 0;
@@ -374,42 +373,71 @@
             this.lblTable.TabIndex = 0;
             this.lblTable.Text = "Таблица:";
             // 
-            // tabPageCopy
+            // tabRecovery
             // 
-            this.tabPageCopy.Controls.Add(this.btnRestoreDB);
-            this.tabPageCopy.Controls.Add(this.txtLog);
-            this.tabPageCopy.Controls.Add(this.lblWarning);
-            this.tabPageCopy.Location = new System.Drawing.Point(4, 30);
-            this.tabPageCopy.Name = "tabPageCopy";
-            this.tabPageCopy.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageCopy.Size = new System.Drawing.Size(752, 523);
-            this.tabPageCopy.TabIndex = 2;
-            this.tabPageCopy.Text = "Резервное копирование/восстановление";
-            this.tabPageCopy.UseVisualStyleBackColor = true;
-            this.tabPageCopy.Click += new System.EventHandler(this.tabPageCopy_Click);
+            this.tabRecovery.Controls.Add(this.rtbRestoreLog);
+            this.tabRecovery.Controls.Add(this.btnBrowseScript);
+            this.tabRecovery.Controls.Add(this.txtScriptPath);
+            this.tabRecovery.Controls.Add(this.label4);
+            this.tabRecovery.Controls.Add(this.btnRestoreFromScript);
+            this.tabRecovery.Controls.Add(this.lblWarning);
+            this.tabRecovery.Location = new System.Drawing.Point(4, 30);
+            this.tabRecovery.Name = "tabRecovery";
+            this.tabRecovery.Padding = new System.Windows.Forms.Padding(3);
+            this.tabRecovery.Size = new System.Drawing.Size(752, 523);
+            this.tabRecovery.TabIndex = 2;
+            this.tabRecovery.Text = "Восстановление";
+            this.tabRecovery.UseVisualStyleBackColor = true;
+            this.tabRecovery.Click += new System.EventHandler(this.tabPageCopy_Click);
             // 
-            // btnRestoreDB
+            // rtbRestoreLog
             // 
-            this.btnRestoreDB.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.btnRestoreDB.Location = new System.Drawing.Point(194, 142);
-            this.btnRestoreDB.Name = "btnRestoreDB";
-            this.btnRestoreDB.Size = new System.Drawing.Size(361, 46);
-            this.btnRestoreDB.TabIndex = 43;
-            this.btnRestoreDB.Text = " Восстановить структуру БД";
-            this.btnRestoreDB.UseVisualStyleBackColor = false;
+            this.rtbRestoreLog.Location = new System.Drawing.Point(32, 303);
+            this.rtbRestoreLog.Name = "rtbRestoreLog";
+            this.rtbRestoreLog.Size = new System.Drawing.Size(690, 203);
+            this.rtbRestoreLog.TabIndex = 47;
+            this.rtbRestoreLog.Text = "";
             // 
-            // txtLog
+            // btnBrowseScript
             // 
-            this.txtLog.Location = new System.Drawing.Point(20, 288);
-            this.txtLog.Name = "txtLog";
-            this.txtLog.Size = new System.Drawing.Size(710, 193);
-            this.txtLog.TabIndex = 1;
-            this.txtLog.Text = "";
+            this.btnBrowseScript.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnBrowseScript.Location = new System.Drawing.Point(563, 117);
+            this.btnBrowseScript.Name = "btnBrowseScript";
+            this.btnBrowseScript.Size = new System.Drawing.Size(86, 29);
+            this.btnBrowseScript.TabIndex = 46;
+            this.btnBrowseScript.Text = "Обзор";
+            this.btnBrowseScript.UseVisualStyleBackColor = false;
+            // 
+            // txtScriptPath
+            // 
+            this.txtScriptPath.Location = new System.Drawing.Point(196, 117);
+            this.txtScriptPath.Name = "txtScriptPath";
+            this.txtScriptPath.Size = new System.Drawing.Size(361, 29);
+            this.txtScriptPath.TabIndex = 45;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(135, 125);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(55, 21);
+            this.label4.TabIndex = 44;
+            this.label4.Text = "Файл:";
+            // 
+            // btnRestoreFromScript
+            // 
+            this.btnRestoreFromScript.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnRestoreFromScript.Location = new System.Drawing.Point(196, 152);
+            this.btnRestoreFromScript.Name = "btnRestoreFromScript";
+            this.btnRestoreFromScript.Size = new System.Drawing.Size(361, 46);
+            this.btnRestoreFromScript.TabIndex = 43;
+            this.btnRestoreFromScript.Text = " Восстановить структуру БД";
+            this.btnRestoreFromScript.UseVisualStyleBackColor = false;
             // 
             // lblWarning
             // 
             this.lblWarning.AutoSize = true;
-            this.lblWarning.Location = new System.Drawing.Point(199, 104);
+            this.lblWarning.Location = new System.Drawing.Point(201, 79);
             this.lblWarning.Name = "lblWarning";
             this.lblWarning.Size = new System.Drawing.Size(356, 21);
             this.lblWarning.TabIndex = 0;
@@ -418,7 +446,6 @@
             // tabPageSecure
             // 
             this.tabPageSecure.Controls.Add(this.btnSaveSecurity);
-            this.tabPageSecure.Controls.Add(this.btnCancelSecurity);
             this.tabPageSecure.Controls.Add(this.chkAutoLock);
             this.tabPageSecure.Controls.Add(this.numInactivityTime);
             this.tabPageSecure.Controls.Add(this.lblInactivity);
@@ -440,16 +467,6 @@
             this.btnSaveSecurity.TabIndex = 44;
             this.btnSaveSecurity.Text = "Сохранить";
             this.btnSaveSecurity.UseVisualStyleBackColor = false;
-            // 
-            // btnCancelSecurity
-            // 
-            this.btnCancelSecurity.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.btnCancelSecurity.Location = new System.Drawing.Point(453, 345);
-            this.btnCancelSecurity.Name = "btnCancelSecurity";
-            this.btnCancelSecurity.Size = new System.Drawing.Size(170, 44);
-            this.btnCancelSecurity.TabIndex = 43;
-            this.btnCancelSecurity.Text = "Отмена";
-            this.btnCancelSecurity.UseVisualStyleBackColor = false;
             // 
             // chkAutoLock
             // 
@@ -479,6 +496,171 @@
             this.lblInactivity.TabIndex = 26;
             this.lblInactivity.Text = "Время бездействия (секунды):";
             // 
+            // tabPageCopy
+            // 
+            this.tabPageCopy.Controls.Add(this.groupBoxManualBackupgroupBoxManualBackup);
+            this.tabPageCopy.Location = new System.Drawing.Point(4, 30);
+            this.tabPageCopy.Name = "tabPageCopy";
+            this.tabPageCopy.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageCopy.Size = new System.Drawing.Size(752, 523);
+            this.tabPageCopy.TabIndex = 4;
+            this.tabPageCopy.Text = "Резервное копирование";
+            this.tabPageCopy.UseVisualStyleBackColor = true;
+            // 
+            // groupBoxManualBackupgroupBoxManualBackup
+            // 
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.lblBackupStatus);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.rbDataOnly);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.cmbAutoBackupType);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.numBackupInterval);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.rbStructureOnly);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.chkAutoBackup);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.rbFullBackup);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.btnCreateBackup);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.label2);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.btnBrowseBackupPath);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.label5);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.txtBackupPath);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.label7);
+            this.groupBoxManualBackupgroupBoxManualBackup.Controls.Add(this.label8);
+            this.groupBoxManualBackupgroupBoxManualBackup.Location = new System.Drawing.Point(39, 30);
+            this.groupBoxManualBackupgroupBoxManualBackup.Margin = new System.Windows.Forms.Padding(5);
+            this.groupBoxManualBackupgroupBoxManualBackup.Name = "groupBoxManualBackupgroupBoxManualBackup";
+            this.groupBoxManualBackupgroupBoxManualBackup.Padding = new System.Windows.Forms.Padding(5);
+            this.groupBoxManualBackupgroupBoxManualBackup.Size = new System.Drawing.Size(685, 472);
+            this.groupBoxManualBackupgroupBoxManualBackup.TabIndex = 45;
+            this.groupBoxManualBackupgroupBoxManualBackup.TabStop = false;
+            // 
+            // lblBackupStatus
+            // 
+            this.lblBackupStatus.AutoSize = true;
+            this.lblBackupStatus.Location = new System.Drawing.Point(177, 352);
+            this.lblBackupStatus.Name = "lblBackupStatus";
+            this.lblBackupStatus.Size = new System.Drawing.Size(119, 21);
+            this.lblBackupStatus.TabIndex = 47;
+            this.lblBackupStatus.Text = "Статус: готов";
+            // 
+            // rbDataOnly
+            // 
+            this.rbDataOnly.AutoSize = true;
+            this.rbDataOnly.Location = new System.Drawing.Point(490, 137);
+            this.rbDataOnly.Name = "rbDataOnly";
+            this.rbDataOnly.Size = new System.Drawing.Size(149, 25);
+            this.rbDataOnly.TabIndex = 46;
+            this.rbDataOnly.TabStop = true;
+            this.rbDataOnly.Text = "Только данные";
+            this.rbDataOnly.UseVisualStyleBackColor = true;
+            // 
+            // cmbAutoBackupType
+            // 
+            this.cmbAutoBackupType.FormattingEnabled = true;
+            this.cmbAutoBackupType.Location = new System.Drawing.Point(412, 243);
+            this.cmbAutoBackupType.Name = "cmbAutoBackupType";
+            this.cmbAutoBackupType.Size = new System.Drawing.Size(252, 29);
+            this.cmbAutoBackupType.TabIndex = 46;
+            // 
+            // numBackupInterval
+            // 
+            this.numBackupInterval.Location = new System.Drawing.Point(176, 244);
+            this.numBackupInterval.Name = "numBackupInterval";
+            this.numBackupInterval.Size = new System.Drawing.Size(120, 29);
+            this.numBackupInterval.TabIndex = 45;
+            // 
+            // rbStructureOnly
+            // 
+            this.rbStructureOnly.AutoSize = true;
+            this.rbStructureOnly.Location = new System.Drawing.Point(287, 137);
+            this.rbStructureOnly.Name = "rbStructureOnly";
+            this.rbStructureOnly.Size = new System.Drawing.Size(170, 25);
+            this.rbStructureOnly.TabIndex = 45;
+            this.rbStructureOnly.TabStop = true;
+            this.rbStructureOnly.Text = "Только структура";
+            this.rbStructureOnly.UseVisualStyleBackColor = true;
+            // 
+            // chkAutoBackup
+            // 
+            this.chkAutoBackup.AutoSize = true;
+            this.chkAutoBackup.Location = new System.Drawing.Point(23, 213);
+            this.chkAutoBackup.Name = "chkAutoBackup";
+            this.chkAutoBackup.Size = new System.Drawing.Size(434, 25);
+            this.chkAutoBackup.TabIndex = 44;
+            this.chkAutoBackup.Text = "Включить автоматическое резервное копирование";
+            this.chkAutoBackup.UseVisualStyleBackColor = true;
+            // 
+            // rbFullBackup
+            // 
+            this.rbFullBackup.AutoSize = true;
+            this.rbFullBackup.Location = new System.Drawing.Point(176, 137);
+            this.rbFullBackup.Name = "rbFullBackup";
+            this.rbFullBackup.Size = new System.Drawing.Size(87, 25);
+            this.rbFullBackup.TabIndex = 44;
+            this.rbFullBackup.TabStop = true;
+            this.rbFullBackup.Text = "Полная";
+            this.rbFullBackup.UseVisualStyleBackColor = true;
+            // 
+            // btnCreateBackup
+            // 
+            this.btnCreateBackup.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnCreateBackup.Location = new System.Drawing.Point(176, 376);
+            this.btnCreateBackup.Name = "btnCreateBackup";
+            this.btnCreateBackup.Size = new System.Drawing.Size(361, 46);
+            this.btnCreateBackup.TabIndex = 43;
+            this.btnCreateBackup.Text = "Создать резервную копию";
+            this.btnCreateBackup.UseVisualStyleBackColor = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(302, 252);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(104, 21);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Тип бэкапа:";
+            // 
+            // btnBrowseBackupPath
+            // 
+            this.btnBrowseBackupPath.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.btnBrowseBackupPath.Location = new System.Drawing.Point(553, 87);
+            this.btnBrowseBackupPath.Name = "btnBrowseBackupPath";
+            this.btnBrowseBackupPath.Size = new System.Drawing.Size(86, 29);
+            this.btnBrowseBackupPath.TabIndex = 43;
+            this.btnBrowseBackupPath.Text = "Обзор";
+            this.btnBrowseBackupPath.UseVisualStyleBackColor = false;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(18, 252);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(146, 21);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "Интервал (часы):";
+            // 
+            // txtBackupPath
+            // 
+            this.txtBackupPath.Location = new System.Drawing.Point(176, 88);
+            this.txtBackupPath.Name = "txtBackupPath";
+            this.txtBackupPath.Size = new System.Drawing.Size(361, 29);
+            this.txtBackupPath.TabIndex = 3;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(19, 141);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(99, 21);
+            this.label7.TabIndex = 2;
+            this.label7.Text = "Тип копии:";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(19, 96);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(151, 21);
+            this.label8.TabIndex = 0;
+            this.label8.Text = "Путь сохранения:";
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -490,19 +672,11 @@
             this.label1.TabIndex = 28;
             this.label1.Text = "Настройки";
             // 
-            // lblStatus
-            // 
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblStatus.Location = new System.Drawing.Point(225, 286);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(0, 31);
-            this.lblStatus.TabIndex = 34;
-            // 
             // SisAdminForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(854, 659);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tabControl);
@@ -523,11 +697,15 @@
             this.grpExport.PerformLayout();
             this.grpImport.ResumeLayout(false);
             this.grpImport.PerformLayout();
-            this.tabPageCopy.ResumeLayout(false);
-            this.tabPageCopy.PerformLayout();
+            this.tabRecovery.ResumeLayout(false);
+            this.tabRecovery.PerformLayout();
             this.tabPageSecure.ResumeLayout(false);
             this.tabPageSecure.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numInactivityTime)).EndInit();
+            this.tabPageCopy.ResumeLayout(false);
+            this.groupBoxManualBackupgroupBoxManualBackup.ResumeLayout(false);
+            this.groupBoxManualBackupgroupBoxManualBackup.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numBackupInterval)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -538,7 +716,7 @@
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage tabPageBD;
         private System.Windows.Forms.TabPage tabPageImport;
-        private System.Windows.Forms.TabPage tabPageCopy;
+        private System.Windows.Forms.TabPage tabRecovery;
         private System.Windows.Forms.TabPage tabPageSecure;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnTestConnection;
@@ -556,15 +734,10 @@
         private System.Windows.Forms.NumericUpDown numInactivityTime;
         private System.Windows.Forms.Label lblInactivity;
         private System.Windows.Forms.Button btnSaveSecurity;
-        private System.Windows.Forms.Button btnCancelSecurity;
-        private System.Windows.Forms.Button btnRestoreDB;
+        private System.Windows.Forms.Button btnRestoreFromScript;
         private System.Windows.Forms.Label lblWarning;
-        private System.Windows.Forms.RichTextBox txtLog;
         private System.Windows.Forms.GroupBox grpExport;
         private System.Windows.Forms.Button btnExport;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cmbExportTables;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox grpImport;
@@ -576,5 +749,25 @@
         private System.Windows.Forms.Label lblTable;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Button btnBrowseScript;
+        private System.Windows.Forms.TextBox txtScriptPath;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.RichTextBox rtbRestoreLog;
+        private System.Windows.Forms.TabPage tabPageCopy;
+        private System.Windows.Forms.GroupBox groupBoxManualBackupgroupBoxManualBackup;
+        private System.Windows.Forms.Button btnCreateBackup;
+        private System.Windows.Forms.Button btnBrowseBackupPath;
+        private System.Windows.Forms.TextBox txtBackupPath;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.RadioButton rbDataOnly;
+        private System.Windows.Forms.RadioButton rbStructureOnly;
+        private System.Windows.Forms.RadioButton rbFullBackup;
+        private System.Windows.Forms.CheckBox chkAutoBackup;
+        private System.Windows.Forms.ComboBox cmbAutoBackupType;
+        private System.Windows.Forms.NumericUpDown numBackupInterval;
+        private System.Windows.Forms.Label lblBackupStatus;
     }
 }

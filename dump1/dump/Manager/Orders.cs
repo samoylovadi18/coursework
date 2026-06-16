@@ -18,6 +18,8 @@ namespace dump
         private BindingSource bindingSource;
         private MySqlDataAdapter dataAdapter;
         private bool isFormatting = false;
+        private bool isUpdatingText = false;
+        private int prevTextLength = 0;
 
         // Словарь для хранения статусов (id, name)
         private Dictionary<int, string> statusDictionary = new Dictionary<int, string>();
@@ -37,14 +39,183 @@ namespace dump
         }
         private SearchType currentSearchType = SearchType.ByOrderNumber;
 
+        // ===================== ПЕРЕМЕННЫЕ ДЛЯ МАСШТАБИРОВАНИЯ =====================
+        private float currentScale = 1.0f;
+        private Dictionary<Control, Font> originalFonts = new Dictionary<Control, Font>();
+        private Dictionary<Control, Size> originalSizes = new Dictionary<Control, Size>();
+        private Dictionary<Control, Point> originalLocations = new Dictionary<Control, Point>();
+        private Size originalFormSize;
+        private Dictionary<string, int> originalColumnWidths = new Dictionary<string, int>();
+
         public Orders()
         {
             InitializeComponent();
+
+            // Сохраняем оригинальный размер формы
+            originalFormSize = this.Size;
+
+            // Сохраняем оригинальные параметры всех элементов управления
+            SaveOriginalControlProperties(this);
+
             InitializeComponents();
             this.FormClosing += OrderDetailsForm_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
+
+            // Подписываемся на событие изменения размера формы
+            this.Resize += Orders_Resize;
+            this.ResizeEnd += Orders_ResizeEnd;
         }
+
+        // ===================== МЕТОДЫ МАСШТАБИРОВАНИЯ =====================
+
+        private void SaveOriginalControlProperties(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control.Font != null && !originalFonts.ContainsKey(control))
+                {
+                    originalFonts[control] = new Font(control.Font.FontFamily, control.Font.Size, control.Font.Style, control.Font.Unit);
+                }
+                if (!originalSizes.ContainsKey(control))
+                {
+                    originalSizes[control] = control.Size;
+                }
+                if (!originalLocations.ContainsKey(control))
+                {
+                    originalLocations[control] = control.Location;
+                }
+                if (control.HasChildren)
+                {
+                    SaveOriginalControlProperties(control);
+                }
+            }
+        }
+
+        private void Orders_Resize(object sender, EventArgs e)
+        {
+            UpdateScale();
+        }
+
+        private void Orders_ResizeEnd(object sender, EventArgs e)
+        {
+            UpdateScale();
+            // После масштабирования обновляем отображение данных
+            RefreshOrdersData();
+        }
+
+        private void UpdateScale()
+        {
+            if (this.WindowState == FormWindowState.Minimized) return;
+
+            // Вычисляем новый масштаб
+            float scaleX = (float)this.ClientSize.Width / (float)originalFormSize.Width;
+            float scaleY = (float)this.ClientSize.Height / (float)originalFormSize.Height;
+            float newScale = Math.Min(scaleX, scaleY);
+
+            // Ограничиваем масштаб (от 0.6 до 1.5)
+            newScale = Math.Max(0.6f, Math.Min(1.5f, newScale));
+
+            if (Math.Abs(newScale - currentScale) < 0.01f) return;
+
+            currentScale = newScale;
+
+            // Масштабируем все элементы
+            ScaleControls(this);
+
+            // Масштабируем колонки DataGridView
+            ScaleDataGridViewColumns();
+        }
+
+        private void ScaleControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // Масштабируем размер
+                if (originalSizes.ContainsKey(control))
+                {
+                    control.Size = new Size(
+                        (int)(originalSizes[control].Width * currentScale),
+                        (int)(originalSizes[control].Height * currentScale)
+                    );
+                }
+
+                // Масштабируем позицию
+                if (originalLocations.ContainsKey(control))
+                {
+                    control.Location = new Point(
+                        (int)(originalLocations[control].X * currentScale),
+                        (int)(originalLocations[control].Y * currentScale)
+                    );
+                }
+
+                // Масштабируем шрифт
+                if (originalFonts.ContainsKey(control))
+                {
+                    float newFontSize = originalFonts[control].Size * currentScale;
+                    newFontSize = Math.Max(8, Math.Min(24, newFontSize));
+
+                    control.Font = new Font(
+                        originalFonts[control].FontFamily,
+                        newFontSize,
+                        originalFonts[control].Style,
+                        originalFonts[control].Unit
+                    );
+                }
+
+                if (control.HasChildren)
+                {
+                    ScaleControls(control);
+                }
+            }
+        }
+
+        private void ScaleDataGridViewColumns()
+        {
+            if (dataGridView1 == null || dataGridView1.Columns.Count == 0) return;
+
+            // Сохраняем оригинальные ширины колонок при первом вызове
+            if (originalColumnWidths.Count == 0)
+            {
+                foreach (DataGridViewColumn col in dataGridView1.Columns)
+                {
+                    originalColumnWidths[col.Name] = col.Width;
+                }
+            }
+
+            // Применяем масштабирование к колонкам
+            foreach (DataGridViewColumn col in dataGridView1.Columns)
+            {
+                if (originalColumnWidths.ContainsKey(col.Name))
+                {
+                    int newWidth = (int)(originalColumnWidths[col.Name] * currentScale);
+                    newWidth = Math.Max(40, Math.Min(500, newWidth));
+                    col.Width = newWidth;
+                }
+            }
+
+            // Масштабируем высоту строк
+            int newRowHeight = (int)(40 * currentScale);
+            newRowHeight = Math.Max(30, Math.Min(70, newRowHeight));
+            dataGridView1.RowTemplate.Height = newRowHeight;
+            dataGridView1.RowTemplate.MinimumHeight = newRowHeight;
+
+            // Масштабируем высоту заголовков
+            int newHeaderHeight = (int)(45 * currentScale);
+            newHeaderHeight = Math.Max(35, Math.Min(70, newHeaderHeight));
+            dataGridView1.ColumnHeadersHeight = newHeaderHeight;
+
+            // Масштабируем шрифты в заголовках
+            int newHeaderFontSize = (int)(12 * currentScale);
+            newHeaderFontSize = Math.Max(9, Math.Min(16, newHeaderFontSize));
+            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", newHeaderFontSize, FontStyle.Bold);
+
+            // Масштабируем шрифты в ячейках
+            int newCellFontSize = (int)(10 * currentScale);
+            newCellFontSize = Math.Max(8, Math.Min(14, newCellFontSize));
+            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", newCellFontSize, FontStyle.Regular);
+        }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -194,6 +365,20 @@ namespace dump
                 comboBoxSearchType.Items.Add("Поиск по номеру телефона");
                 comboBoxSearchType.SelectedIndex = 0;
                 comboBoxSearchType.SelectedIndexChanged += ComboBoxSearchType_SelectedIndexChanged;
+
+                // Сохраняем оригинальные параметры для комбобокса
+                if (!originalFonts.ContainsKey(comboBoxSearchType))
+                {
+                    originalFonts[comboBoxSearchType] = new Font(comboBoxSearchType.Font.FontFamily, comboBoxSearchType.Font.Size, comboBoxSearchType.Font.Style, comboBoxSearchType.Font.Unit);
+                }
+                if (!originalSizes.ContainsKey(comboBoxSearchType))
+                {
+                    originalSizes[comboBoxSearchType] = comboBoxSearchType.Size;
+                }
+                if (!originalLocations.ContainsKey(comboBoxSearchType))
+                {
+                    originalLocations[comboBoxSearchType] = comboBoxSearchType.Location;
+                }
             }
 
             // Настройка textBoxSearch
@@ -202,39 +387,87 @@ namespace dump
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
             textBoxSearch.Click += TextBoxSearch_Click;
 
+            // Сохраняем оригинальные параметры для textBoxSearch
+            if (!originalFonts.ContainsKey(textBoxSearch))
+            {
+                originalFonts[textBoxSearch] = new Font(textBoxSearch.Font.FontFamily, textBoxSearch.Font.Size, textBoxSearch.Font.Style, textBoxSearch.Font.Unit);
+            }
+            if (!originalSizes.ContainsKey(textBoxSearch))
+            {
+                originalSizes[textBoxSearch] = textBoxSearch.Size;
+            }
+            if (!originalLocations.ContainsKey(textBoxSearch))
+            {
+                originalLocations[textBoxSearch] = textBoxSearch.Location;
+            }
+
             comboBoxOrderStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxOrderStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
 
-            buttonReset.Click += buttonReset_Click;
-            buttonReset.FlatStyle = FlatStyle.Flat;
-            buttonReset.FlatAppearance.BorderSize = 1;
-            buttonReset.FlatAppearance.BorderColor = Color.Black;
-            buttonReset.BackColor = Color.DarkSeaGreen;
-            buttonReset.ForeColor = Color.Black;
-            buttonReset.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonReset.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            // Сохраняем оригинальные параметры для comboBoxOrderStatus
+            if (!originalFonts.ContainsKey(comboBoxOrderStatus))
+            {
+                originalFonts[comboBoxOrderStatus] = new Font(comboBoxOrderStatus.Font.FontFamily, comboBoxOrderStatus.Font.Size, comboBoxOrderStatus.Font.Style, comboBoxOrderStatus.Font.Unit);
+            }
+            if (!originalSizes.ContainsKey(comboBoxOrderStatus))
+            {
+                originalSizes[comboBoxOrderStatus] = comboBoxOrderStatus.Size;
+            }
+            if (!originalLocations.ContainsKey(comboBoxOrderStatus))
+            {
+                originalLocations[comboBoxOrderStatus] = comboBoxOrderStatus.Location;
+            }
 
-            buttonReset.MouseDown += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonReset.MouseUp += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
-            buttonReset.MouseLeave += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
+            buttonReset.Click += buttonReset_Click;
+            StyleButton(buttonReset);
 
             buttonDetail.Click += ButtonDetail_Click;
-            buttonDetail.FlatStyle = FlatStyle.Flat;
-            buttonDetail.FlatAppearance.BorderSize = 1;
-            buttonDetail.FlatAppearance.BorderColor = Color.Black;
-            buttonDetail.BackColor = Color.DarkSeaGreen;
-            buttonDetail.ForeColor = Color.Black;
-            buttonDetail.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonDetail.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonDetail.MouseDown += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonDetail.MouseUp += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
-            buttonDetail.MouseLeave += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
+            StyleButton(buttonDetail);
 
             dataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
 
+            // Сохраняем оригинальные ширины колонок DataGridView
+            foreach (DataGridViewColumn col in dataGridView1.Columns)
+            {
+                if (!originalColumnWidths.ContainsKey(col.Name))
+                {
+                    originalColumnWidths[col.Name] = col.Width;
+                }
+            }
+
             LoadStatusesToComboBox();
             LoadOrders();
+        }
+
+        private void StyleButton(Button btn)
+        {
+            if (btn == null) return;
+
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = Color.Black;
+            btn.BackColor = Color.DarkSeaGreen;
+            btn.ForeColor = Color.Black;
+            btn.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btn.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+
+            btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
+            btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
+            btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
+
+            // Сохраняем оригинальные параметры для кнопки
+            if (!originalFonts.ContainsKey(btn))
+            {
+                originalFonts[btn] = new Font(btn.Font.FontFamily, btn.Font.Size, btn.Font.Style, btn.Font.Unit);
+            }
+            if (!originalSizes.ContainsKey(btn))
+            {
+                originalSizes[btn] = btn.Size;
+            }
+            if (!originalLocations.ContainsKey(btn))
+            {
+                originalLocations[btn] = btn.Location;
+            }
         }
 
         private void SetupSearchPlaceholder()
@@ -247,10 +480,9 @@ namespace dump
             }
             else
             {
-                textBoxSearch.Text = "";
+                textBoxSearch.Text = "Введите номер телефона...";
                 textBoxSearch.ForeColor = Color.Gray;
                 textBoxSearch.MaxLength = 18;
-                textBoxSearch.Text = "Введите номер телефона...";
             }
         }
 
@@ -261,6 +493,7 @@ namespace dump
             else
                 currentSearchType = SearchType.ByPhone;
 
+            textBoxSearch.Text = "";
             SetupSearchPlaceholder();
             LoadOrders();
         }
@@ -288,7 +521,6 @@ namespace dump
                 return;
             }
 
-            // Разрешаем BackSpace, Delete и другие управляющие символы
             if (char.IsControl(e.KeyChar))
             {
                 e.Handled = false;
@@ -307,14 +539,17 @@ namespace dump
             if (textBoxSearch.ForeColor == Color.Gray)
                 return;
 
-            if (isFormatting) return;
+            if (isFormatting || isUpdatingText) return;
             isFormatting = true;
 
             string inputText = textBoxSearch.Text;
+            int cursorPos = textBoxSearch.SelectionStart;
+            int oldLength = prevTextLength;
+            prevTextLength = inputText.Length;
 
             if (currentSearchType == SearchType.ByOrderNumber)
             {
-                // ===== ПОИСК ПО НОМЕРУ ЗАКАЗА - ТОЛЬКО ЦИФРЫ, МАКСИМУМ 10 =====
+                // Поиск по номеру заказа - только цифры
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > 10)
@@ -322,14 +557,12 @@ namespace dump
                     digits = digits.Substring(0, 10);
                 }
 
-                // Форматируем номер заказа (без маски, просто цифры)
-                string formatted = digits;
-
-                if (formatted != inputText)
+                if (digits != inputText)
                 {
-                    int cursorPos = textBoxSearch.SelectionStart;
-                    textBoxSearch.Text = formatted;
-                    textBoxSearch.SelectionStart = Math.Min(cursorPos, formatted.Length);
+                    isUpdatingText = true;
+                    textBoxSearch.Text = digits;
+                    textBoxSearch.SelectionStart = Math.Min(cursorPos, digits.Length);
+                    isUpdatingText = false;
                 }
 
                 if (digits.Length > 0)
@@ -339,33 +572,28 @@ namespace dump
             }
             else
             {
-                // ===== ПОИСК ПО ТЕЛЕФОНУ С МАСКОЙ =====
+                // Поиск по телефону с маской
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > 11)
                     digits = digits.Substring(0, 11);
 
-                // Сохраняем позицию курсора до форматирования
-                int cursorPos = textBoxSearch.SelectionStart;
-                int selectionLength = textBoxSearch.SelectionLength;
+                int digitsBeforeCursor = 0;
+                for (int i = 0; i < cursorPos && i < inputText.Length; i++)
+                {
+                    if (char.IsDigit(inputText[i]))
+                        digitsBeforeCursor++;
+                }
 
-                string formatted = FormatPhoneNumber(digits);
+                string formatted = FormatPhoneNumberForInput(digits);
 
-                // Обновляем текст только если он изменился и не пустой
                 if (formatted != inputText)
                 {
+                    isUpdatingText = true;
                     textBoxSearch.Text = formatted;
-
-                    // Восстанавливаем позицию курсора
-                    if (cursorPos <= textBoxSearch.Text.Length)
-                    {
-                        textBoxSearch.SelectionStart = cursorPos;
-                        textBoxSearch.SelectionLength = selectionLength;
-                    }
-                    else
-                    {
-                        textBoxSearch.SelectionStart = textBoxSearch.Text.Length;
-                    }
+                    int newCursorPos = GetCursorPosByDigitCount(formatted, digitsBeforeCursor);
+                    textBoxSearch.SelectionStart = Math.Min(newCursorPos, formatted.Length);
+                    isUpdatingText = false;
                 }
 
                 if (digits.Length >= 3)
@@ -377,48 +605,44 @@ namespace dump
             isFormatting = false;
         }
 
-        private string FormatPhoneNumber(string digits)
+        private string FormatPhoneNumberForInput(string digits)
         {
             if (string.IsNullOrEmpty(digits))
                 return "";
 
-            // Если это начало ввода или удаление до пустоты
             if (digits.Length == 0)
                 return "";
 
-            // Если первая цифра не 7, добавляем 7 автоматически
-            string normalizedDigits = digits;
-            if (normalizedDigits.Length > 0 && normalizedDigits[0] != '7')
+            string result = "";
+
+            if (digits.Length >= 1)
             {
-                normalizedDigits = "7" + normalizedDigits;
-                if (normalizedDigits.Length > 11)
-                    normalizedDigits = normalizedDigits.Substring(0, 11);
+                result = "+7";
             }
 
-            // Если цифр меньше 2, возвращаем только то, что есть
-            if (normalizedDigits.Length < 2)
-                return normalizedDigits;
-
-            // Форматируем номер
-            string result = "+7";
-
-            if (normalizedDigits.Length >= 2)
+            if (digits.Length >= 2)
             {
-                // Код оператора (3 цифры)
-                int operatorLength = Math.Min(3, normalizedDigits.Length - 1);
-                result += " (" + normalizedDigits.Substring(1, operatorLength);
+                result += " (";
+                int codeLength = Math.Min(3, digits.Length - 1);
+                result += digits.Substring(1, codeLength);
 
-                if (normalizedDigits.Length > 4)
+                if (digits.Length > 4)
                 {
-                    result += ") " + normalizedDigits.Substring(4, Math.Min(3, normalizedDigits.Length - 4));
+                    result += ") ";
+                    int numLength = Math.Min(3, digits.Length - 4);
+                    result += digits.Substring(4, numLength);
 
-                    if (normalizedDigits.Length > 7)
+                    if (digits.Length > 7)
                     {
-                        result += "-" + normalizedDigits.Substring(7, Math.Min(2, normalizedDigits.Length - 7));
+                        result += "-";
+                        int num2Length = Math.Min(2, digits.Length - 7);
+                        result += digits.Substring(7, num2Length);
 
-                        if (normalizedDigits.Length > 9)
+                        if (digits.Length > 9)
                         {
-                            result += "-" + normalizedDigits.Substring(9, Math.Min(2, normalizedDigits.Length - 9));
+                            result += "-";
+                            int num3Length = Math.Min(2, digits.Length - 9);
+                            result += digits.Substring(9, num3Length);
                         }
                     }
                 }
@@ -427,6 +651,46 @@ namespace dump
                     result += ")";
                 }
             }
+
+            return result;
+        }
+
+        private int GetCursorPosByDigitCount(string formattedText, int digitsCount)
+        {
+            if (digitsCount <= 0) return 0;
+
+            int foundDigits = 0;
+            for (int i = 0; i < formattedText.Length; i++)
+            {
+                if (char.IsDigit(formattedText[i]))
+                {
+                    foundDigits++;
+                    if (foundDigits >= digitsCount)
+                    {
+                        return i + 1;
+                    }
+                }
+            }
+            return formattedText.Length;
+        }
+
+        private string FormatPhoneNumberForDisplay(string digits)
+        {
+            if (string.IsNullOrEmpty(digits) || digits.Length < 2)
+                return digits;
+
+            string result = "+7 (" + digits.Substring(1, Math.Min(3, digits.Length - 1));
+
+            if (digits.Length > 4)
+                result += ") " + digits.Substring(4, Math.Min(3, digits.Length - 4));
+            else
+                result += ")";
+
+            if (digits.Length > 7)
+                result += "-" + digits.Substring(7, Math.Min(2, digits.Length - 7));
+
+            if (digits.Length > 9)
+                result += "-" + digits.Substring(9, Math.Min(2, digits.Length - 9));
 
             return result;
         }
@@ -509,12 +773,15 @@ namespace dump
                 detailForm.Text = $"Детали заказа №{orderId}";
                 detailForm.Size = new Size(820, 720);
                 detailForm.StartPosition = FormStartPosition.CenterParent;
-                detailForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                detailForm.MaximizeBox = false;
-                detailForm.MinimizeBox = false;
+                detailForm.FormBorderStyle = FormBorderStyle.Sizable;
+                detailForm.MaximizeBox = true;
+                detailForm.MinimizeBox = true;
                 detailForm.BackColor = Color.White;
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
+
+                // Сохраняем оригинальные параметры для формы деталей
+                float detailScale = currentScale;
 
                 Panel infoPanel = CreateInfoPanel(orderId, phoneNumber, address, persons, orderDate, paymentMethod);
                 Panel statusPanel = CreateStatusPanel(currentStatusId, currentStatus, statusState);
@@ -544,6 +811,32 @@ namespace dump
                 Panel totalPanel = CreateTotalPanel(totalSum);
                 totalPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(totalPanel);
+
+                // Применяем масштабирование к форме деталей
+                if (detailScale != 1.0f)
+                {
+                    foreach (Control ctrl in detailForm.Controls)
+                    {
+                        ctrl.Size = new Size(
+                            (int)(ctrl.Size.Width * detailScale),
+                            (int)(ctrl.Size.Height * detailScale)
+                        );
+                        ctrl.Location = new Point(
+                            (int)(ctrl.Location.X * detailScale),
+                            (int)(ctrl.Location.Y * detailScale)
+                        );
+                        if (ctrl.Font != null)
+                        {
+                            float newFontSize = ctrl.Font.Size * detailScale;
+                            newFontSize = Math.Max(8, Math.Min(24, newFontSize));
+                            ctrl.Font = new Font(ctrl.Font.FontFamily, newFontSize, ctrl.Font.Style);
+                        }
+                    }
+                    detailForm.Size = new Size(
+                        (int)(detailForm.Size.Width * detailScale),
+                        (int)(detailForm.Size.Height * detailScale)
+                    );
+                }
 
                 detailForm.FormClosing += (s, args) =>
                 {
@@ -587,9 +880,11 @@ namespace dump
             panel.BorderStyle = BorderStyle.FixedSingle;
             panel.BackColor = Color.FromArgb(255, 255, 220);
 
+            string maskedPhone = MaskPhone(phoneNumber);
+
             Label lblInfo = new Label();
             lblInfo.Text = $"ЗАКАЗ №{orderId}\n" +
-                          $"Телефон: {phoneNumber}\n" +
+                          $"Телефон: {maskedPhone}\n" +
                           $"Адрес: {address}\n" +
                           $"Количество персон: {persons} | Дата доставки: {orderDate:dd.MM.yyyy}\n" +
                           $"Способ оплаты: {paymentMethod}";
@@ -832,7 +1127,6 @@ namespace dump
             dgv.Font = new Font("Times New Roman", 10, FontStyle.Regular);
             dgv.AllowUserToDeleteRows = false;
             dgv.AllowUserToResizeRows = false;
-            dgv.AllowUserToResizeColumns = false;
             dgv.MultiSelect = false;
             dgv.EditMode = DataGridViewEditMode.EditProgrammatically;
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -986,6 +1280,7 @@ namespace dump
         private void RefreshOrdersData()
         {
             string searchText = textBoxSearch.Text;
+
             if (string.IsNullOrWhiteSpace(searchText) || textBoxSearch.ForeColor == Color.Gray)
             {
                 LoadOrdersWithFilter("", false);
@@ -1343,6 +1638,9 @@ namespace dump
 
                     SetupColumnStyles();
                     AdjustDataGridViewAfterLoad();
+
+                    // Применяем масштабирование колонок после загрузки данных
+                    ScaleDataGridViewColumns();
                 }
             }
             catch (Exception ex)

@@ -694,5 +694,10 @@ namespace dump
             if (this.Owner != null && !this.Owner.IsDisposed)
                 this.Owner.Show();
         }
+
+        private void buttonExportPdf_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

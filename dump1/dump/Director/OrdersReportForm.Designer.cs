@@ -87,7 +87,7 @@
             this.btnExportProfit.Name = "btnExportProfit";
             this.btnExportProfit.Size = new System.Drawing.Size(192, 47);
             this.btnExportProfit.TabIndex = 7;
-            this.btnExportProfit.Text = "Отчёт по прибыли\t";
+            this.btnExportProfit.Text = "Отчёт по выручке";
             this.btnExportProfit.UseVisualStyleBackColor = false;
             // 
             // labelStartDate
@@ -166,7 +166,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1029, 763);
+            this.ClientSize = new System.Drawing.Size(1029, 740);
             this.Controls.Add(this.chkFilterByPeriod);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.labelEndDate);

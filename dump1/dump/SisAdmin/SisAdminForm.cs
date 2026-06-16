@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
+using System.IO.Compression;
+
 
 namespace dump
 {
@@ -19,9 +21,35 @@ namespace dump
         // Поля для пароля (если есть на форме)
         private TextBox txtPasswordField;
 
+        // Диалог выбора SQL файла
+        private OpenFileDialog openFileDialogScript;
+
+        // ===================== ПОЛЯ ДЛЯ РЕЗЕРВНОГО КОПИРОВАНИЯ =====================
+        private System.Windows.Forms.Timer autoBackupTimer;
+        private string backupFolder;
+
+        // Настройки (храним в переменных, не в Properties)
+        private bool autoBackupEnabled = false;
+        private int backupIntervalHours = 24;
+
+        // Храним текущие настройки подключения
+        private string currentServer = "";
+        private string currentDatabase = "";
+        private string currentUsername = "";
+        private string currentPassword = "";
+
         public SisAdminForm()
         {
             InitializeComponent();
+
+            // Инициализируем папку для бэкапов
+            backupFolder = Path.Combine(Application.StartupPath, "Backups");
+
+            // Создаем папку для бэкапов если её нет
+            if (!Directory.Exists(backupFolder))
+            {
+                Directory.CreateDirectory(backupFolder);
+            }
 
             // Инициализируем элементы для пароля
             InitializePasswordField();
@@ -29,6 +57,10 @@ namespace dump
             InitializeRestoreFeature();
             InitializeImportExportFeature();
             InitializeSecurityFeature();
+            InitializeScriptRestore();
+
+            // Инициализируем резервное копирование
+            InitializeBackupFeature();
 
             // Стилизуем ВСЕ кнопки
             StyleAllButtons();
@@ -40,23 +72,163 @@ namespace dump
             this.FormClosing += SisAdminForm_FormClosing;
         }
 
+        // ===================== ПОЛУЧЕНИЕ РАБОЧЕГО ПОДКЛЮЧЕНИЯ =====================
+
+        private MySqlConnection GetWorkingConnection()
+        {
+            // Пытаемся получить настройки из SettingsBD
+            try
+            {
+                var config = SettingsBD.GetCurrentConfig();
+                currentServer = config.Server;
+                currentDatabase = config.Database;
+                currentUsername = config.Username;
+                currentPassword = config.Password;
+
+                string connString = $"server={currentServer};userid={currentUsername};password={currentPassword};database={currentDatabase};charset=utf8mb4;";
+                MySqlConnection conn = new MySqlConnection(connString);
+                conn.Open();
+                LogBackupMessage($"Подключение успешно: {currentServer}/{currentDatabase}");
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"Ошибка получения настроек из SettingsBD: {ex.Message}");
+            }
+
+            // Если не получилось, пробуем получить из текстовых полей на форме
+            try
+            {
+                TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
+                TextBox txtDatabase = this.Controls.Find("txtDatabase", true).FirstOrDefault() as TextBox;
+                TextBox txtUsername = this.Controls.Find("txtUsername", true).FirstOrDefault() as TextBox;
+
+                currentServer = txtServer?.Text.Trim() ?? "localhost";
+                currentDatabase = txtDatabase?.Text.Trim() ?? "da";
+                currentUsername = txtUsername?.Text.Trim() ?? "root";
+                currentPassword = txtPasswordField?.Text ?? "";
+
+                string connString = $"server={currentServer};userid={currentUsername};password={currentPassword};database={currentDatabase};charset=utf8mb4;";
+                MySqlConnection conn = new MySqlConnection(connString);
+                conn.Open();
+                LogBackupMessage($"Подключение из полей формы успешно: {currentServer}/{currentDatabase}");
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"Ошибка подключения из полей формы: {ex.Message}");
+                throw new Exception($"Не удалось подключиться к базе данных. Проверьте настройки подключения.\n\nОшибка: {ex.Message}");
+            }
+        }
+
+        // ===================== ВОССТАНОВЛЕНИЕ ИЗ SQL ФАЙЛА =====================
+
+        private void InitializeScriptRestore()
+        {
+            // Создаем диалог выбора файла
+            openFileDialogScript = new OpenFileDialog();
+            openFileDialogScript.Title = "Выберите SQL файл для восстановления";
+            openFileDialogScript.Filter = "SQL файлы (*.sql)|*.sql|Все файлы (*.*)|*.*";
+            openFileDialogScript.FilterIndex = 1;
+            openFileDialogScript.RestoreDirectory = true;
+
+            // Подписываемся на события кнопок
+            if (btnBrowseScript != null)
+            {
+                btnBrowseScript.Click += BtnBrowseScript_Click;
+            }
+
+            if (btnRestoreFromScript != null)
+            {
+                btnRestoreFromScript.Click += BtnRestoreFromScript_Click;
+            }
+        }
+
+        private void BtnBrowseScript_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogScript.ShowDialog() == DialogResult.OK)
+            {
+                txtScriptPath.Text = openFileDialogScript.FileName;
+            }
+        }
+
+        private void BtnRestoreFromScript_Click(object sender, EventArgs e)
+        {
+            // Проверяем, выбран ли файл
+            if (string.IsNullOrEmpty(txtScriptPath.Text) || !File.Exists(txtScriptPath.Text))
+            {
+                MessageBox.Show("Выберите SQL файл для восстановления!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Подтверждение
+            DialogResult result = MessageBox.Show(
+                "ВНИМАНИЕ! Выполнение SQL скрипта может изменить структуру базы данных и данные.\n\n" +
+                "Вы уверены, что хотите продолжить?",
+                "Подтверждение восстановления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    LogMessage($"Начало выполнения скрипта: {txtScriptPath.Text}");
+
+                    // Читаем SQL скрипт из файла
+                    string sqlScript = File.ReadAllText(txtScriptPath.Text, Encoding.UTF8);
+
+                    using (MySqlConnection conn = GetWorkingConnection())
+                    {
+                        LogMessage("Подключение к БД успешно");
+
+                        // Отключаем проверку внешних ключей
+                        using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                            LogMessage("Отключена проверка внешних ключей");
+                        }
+
+                        // Выполняем скрипт
+                        LogMessage("Выполнение SQL скрипта...");
+                        using (MySqlCommand cmd = new MySqlCommand(sqlScript, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Включаем проверку внешних ключей
+                        using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                            LogMessage("Включена проверка внешних ключей");
+                        }
+                    }
+
+                    LogMessage("Скрипт успешно выполнен!");
+                    MessageBox.Show("SQL скрипт успешно выполнен!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Перезагружаем списки таблиц
+                    LoadTableLists();
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"ОШИБКА: {ex.Message}");
+                    MessageBox.Show($"Ошибка при выполнении скрипта:\n{ex.Message}", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
         // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
 
-        /// <summary>
-        /// Обработчик закрытия формы - при нажатии на крестик переходим на LoginForm
-        /// </summary>
         private void SisAdminForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // Открываем форму входа
                 LoginForm login = new LoginForm();
                 login.Show();
             }
@@ -64,16 +236,12 @@ namespace dump
 
         // ===================== НАСТРОЙКИ ПОДКЛЮЧЕНИЯ =====================
 
-        /// <summary>
-        /// Загрузка текущих настроек подключения в поля
-        /// </summary>
         private void LoadCurrentSettings()
         {
             try
             {
                 var config = SettingsBD.GetCurrentConfig();
 
-                // Ищем текстовые поля на форме
                 TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
                 TextBox txtDatabase = this.Controls.Find("txtDatabase", true).FirstOrDefault() as TextBox;
                 TextBox txtUsername = this.Controls.Find("txtUsername", true).FirstOrDefault() as TextBox;
@@ -87,7 +255,11 @@ namespace dump
                     txtPasswordField.UseSystemPasswordChar = true;
                 }
 
-                LogMessage("Настройки подключения загружены");
+                // Сохраняем текущие настройки
+                currentServer = config.Server;
+                currentDatabase = config.Database;
+                currentUsername = config.Username;
+                currentPassword = config.Password;
             }
             catch (Exception ex)
             {
@@ -95,9 +267,83 @@ namespace dump
             }
         }
 
-        /// <summary>
-        /// Сохранение настроек подключения
-        /// </summary>
+        // МЕТОД ДЛЯ ПРОВЕРКИ ПОДКЛЮЧЕНИЯ С ПОНЯТНЫМИ ОШИБКАМИ
+        private bool TestConnectionBeforeSave(string server, string database, string username, string password)
+        {
+            try
+            {
+                string connectionString = $"server={server};userid={username};password={password};database={database};charset=utf8mb4;";
+
+                using (var conn = new MySqlConnection(connectionString))
+                {
+                    conn.Open();
+                    return true;
+                }
+            }
+            catch (MySqlException ex)
+            {
+                string userMessage = "";
+
+                switch (ex.Number)
+                {
+                    case 1042:
+                        userMessage = "Не удалось найти указанный сервер.\n\n" +
+                                     "Проверьте:\n" +
+                                     "• Правильно ли указан адрес сервера\n" +
+                                     "• Запущен ли сервер базы данных\n" +
+                                     "• Нет ли проблем с сетью";
+                        break;
+                    case 1045:
+                        userMessage = "Ошибка авторизации!\n\n" +
+                                     "Проверьте:\n" +
+                                     "• Правильно ли указано имя пользователя\n" +
+                                     "• Правильно ли указан пароль\n" +
+                                     "• Есть ли у пользователя доступ к этой базе данных";
+                        break;
+                    case 1049:
+                        userMessage = "Указанная база данных не существует!\n\n" +
+                                     "Проверьте:\n" +
+                                     "• Правильно ли указано имя базы данных\n" +
+                                     "• Создана ли база данных на сервере";
+                        break;
+                    case 1044:
+                    case 1046:
+                        userMessage = "Нет доступа к указанной базе данных!\n\n" +
+                                     "Проверьте:\n" +
+                                     "• Есть ли у пользователя права на эту базу данных\n" +
+                                     "• Правильно ли указано имя базы данных";
+                        break;
+                    case 0:
+                        userMessage = "Не удалось подключиться к серверу!\n\n" +
+                                     "Проверьте:\n" +
+                                     "• Запущен ли сервер базы данных\n" +
+                                     "• Правильно ли указан порт подключения\n" +
+                                     "• Не блокирует ли подключение брандмауэр";
+                        break;
+                    default:
+                        userMessage = $"Ошибка подключения к базе данных:\n\n{ex.Message}\n\n" +
+                                     "Проверьте правильность введенных данных и повторите попытку.";
+                        break;
+                }
+
+                MessageBox.Show(userMessage, "Ошибка подключения",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LogMessage($"Ошибка подключения (код {ex.Number}): {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось подключиться к базе данных!\n\n" +
+                             $"Ошибка: {ex.Message}\n\n" +
+                             $"Проверьте настройки подключения и повторите попытку.",
+                             "Ошибка подключения",
+                             MessageBoxButtons.OK,
+                             MessageBoxIcon.Error);
+                LogMessage($"Ошибка подключения: {ex.Message}");
+                return false;
+            }
+        }
+
         private void SaveConnectionSettings()
         {
             try
@@ -111,6 +357,32 @@ namespace dump
                 string username = txtUsername?.Text.Trim() ?? "root";
                 string password = txtPasswordField?.Text ?? "";
 
+                if (string.IsNullOrEmpty(server))
+                {
+                    MessageBox.Show("Заполните поле 'Сервер'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(database))
+                {
+                    MessageBox.Show("Заполните поле 'База данных'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(username))
+                {
+                    MessageBox.Show("Заполните поле 'Имя пользователя'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!TestConnectionBeforeSave(server, database, username, password))
+                {
+                    return;
+                }
+
                 var newConfig = new SettingsBD.ConnectionConfig
                 {
                     Server = server,
@@ -120,21 +392,26 @@ namespace dump
                 };
 
                 SettingsBD.UpdateConfig(newConfig);
+
+                // Сохраняем в локальные переменные
+                currentServer = server;
+                currentDatabase = database;
+                currentUsername = username;
+                currentPassword = password;
+
                 LogMessage("Настройки подключения сохранены");
-                MessageBox.Show("Настройки подключения успешно сохранены!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Настройки подключения успешно сохранены!\n\n" +
+                              "Подключение к базе данных работает корректно.",
+                              "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 LogMessage($"Ошибка сохранения настроек: {ex.Message}");
-                MessageBox.Show($"Ошибка сохранения настроек: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка при сохранении настроек:\n{ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Проверка подключения к базе данных
-        /// </summary>
         private void TestConnection()
         {
             try
@@ -148,32 +425,77 @@ namespace dump
                 string username = txtUsername?.Text.Trim() ?? "root";
                 string password = txtPasswordField?.Text ?? "";
 
-                string connectionString = $"server={server};username={username};password={password};database={database};Charset=utf8mb4;";
+                if (string.IsNullOrEmpty(server))
+                {
+                    MessageBox.Show("Заполните поле 'Сервер'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(database))
+                {
+                    MessageBox.Show("Заполните поле 'База данных'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(username))
+                {
+                    MessageBox.Show("Заполните поле 'Имя пользователя'!", "Внимание",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string connectionString = $"server={server};userid={username};password={password};database={database};charset=utf8mb4;";
 
                 using (var conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
-                    MessageBox.Show("Подключение к базе данных успешно установлено!", "Успех",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LogMessage("Проверка подключения: успешно");
+                    MessageBox.Show("Подключение к базе данных успешно установлено!\n\n" +
+                                 "Все настройки верны, можно сохранять подключение.",
+                                 "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+            }
+            catch (MySqlException ex)
+            {
+                string userMessage = "";
+
+                switch (ex.Number)
+                {
+                    case 1042:
+                        userMessage = "Сервер не найден!\n\nПроверьте адрес сервера и повторите попытку.";
+                        break;
+                    case 1045:
+                        userMessage = "Ошибка авторизации!\n\nПроверьте имя пользователя и пароль.";
+                        break;
+                    case 1049:
+                        userMessage = "База данных не найдена!\n\nПроверьте имя базы данных.";
+                        break;
+                    case 1044:
+                    case 1046:
+                        userMessage = "Нет доступа к базе данных!\n\nПроверьте права пользователя.";
+                        break;
+                    default:
+                        userMessage = $"Ошибка подключения!\n\n{ex.Message}";
+                        break;
+                }
+
+                MessageBox.Show(userMessage, "Ошибка подключения",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LogMessage($"Ошибка подключения: {ex.Message}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка подключения: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка подключения!\n\n{ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                LogMessage($"Проверка подключения: ошибка - {ex.Message}");
+                LogMessage($"Ошибка подключения: {ex.Message}");
             }
         }
 
         // ===================== ВИДИМОСТЬ ПАРОЛЯ =====================
 
-        /// <summary>
-        /// Инициализация поля для пароля и кнопки видимости
-        /// </summary>
         private void InitializePasswordField()
         {
-            // Ищем поле для пароля на форме
             txtPasswordField = this.Controls.Find("txtPassword", true).FirstOrDefault() as TextBox;
 
             if (txtPasswordField != null)
@@ -181,7 +503,6 @@ namespace dump
                 isPasswordVisible = false;
                 txtPasswordField.UseSystemPasswordChar = true;
 
-                // Загружаем иконку закрытого глаза
                 try
                 {
                     if (visible_password != null)
@@ -201,9 +522,6 @@ namespace dump
             }
         }
 
-        /// <summary>
-        /// Обработчик клика по иконке глаза
-        /// </summary>
         private void Visible_password_Click(object sender, EventArgs e)
         {
             if (txtPasswordField == null) return;
@@ -244,9 +562,6 @@ namespace dump
             txtPasswordField.Focus();
         }
 
-        /// <summary>
-        /// Создание простой иконки глаза
-        /// </summary>
         private Image CreateSimpleEyeIcon(bool open)
         {
             Bitmap bmp = new Bitmap(24, 24);
@@ -271,31 +586,26 @@ namespace dump
             return bmp;
         }
 
-        /// <summary>
-        /// Стилизация всех кнопок на форме
-        /// </summary>
         private void StyleAllButtons()
         {
-            // Стилизуем кнопки по именам
             StyleButton(btnTestConnection);
             StyleButton(btnSave);
-            StyleButton(btnRestoreDB);
+
             StyleButton(btnBrowseImport);
             StyleButton(btnImport);
             StyleButton(btnExport);
-
-            // Стилизуем кнопки безопасности
             StyleButton(btnSaveSecurity);
-            StyleButton(btnCancelSecurity);
+            StyleButton(btnBrowseScript);
+            StyleButton(btnRestoreFromScript);
+            StyleButton(btnCreateBackup);
+            StyleButton(btnBrowseBackupPath);
 
-            // Стилизуем кнопку видимости пароля
             if (visible_password != null)
             {
                 visible_password.Cursor = Cursors.Hand;
                 visible_password.BackColor = Color.Transparent;
             }
 
-            // Находим все кнопки на форме
             foreach (Control control in this.Controls)
             {
                 if (control is Button btn)
@@ -327,9 +637,6 @@ namespace dump
             }
         }
 
-        /// <summary>
-        /// Универсальный метод для стилизации кнопки
-        /// </summary>
         private void StyleButton(Button btn)
         {
             if (btn == null) return;
@@ -367,15 +674,9 @@ namespace dump
                 numInactivityTime.ValueChanged += NumInactivityTime_ValueChanged;
             }
 
-            // Подписываемся на события кнопок безопасности
             if (btnSaveSecurity != null)
             {
                 btnSaveSecurity.Click += BtnSaveSecurity_Click;
-            }
-
-            if (btnCancelSecurity != null)
-            {
-                btnCancelSecurity.Click += BtnCancelSecurity_Click;
             }
         }
 
@@ -402,9 +703,6 @@ namespace dump
             }
         }
 
-        /// <summary>
-        /// Сохранение настроек безопасности
-        /// </summary>
         private void BtnSaveSecurity_Click(object sender, EventArgs e)
         {
             try
@@ -416,7 +714,6 @@ namespace dump
 
                 LogMessage($"Настройки безопасности сохранены: блокировка {(isEnabled ? "включена" : "выключена")}, время {seconds} сек.");
 
-                // Формируем сообщение в зависимости от состояния блокировки
                 string message;
                 if (isEnabled)
                 {
@@ -440,69 +737,34 @@ namespace dump
             }
         }
 
-        /// <summary>
-        /// Отмена изменений - загрузка сохраненных настроек
-        /// </summary>
-        private void BtnCancelSecurity_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                bool savedEnabled = InactivityManager.GetAutoLockEnabled();
-                int savedSeconds = InactivityManager.GetInactivityTime();
-
-                if (chkAutoLock != null)
-                {
-                    chkAutoLock.Checked = savedEnabled;
-                }
-
-                if (numInactivityTime != null)
-                {
-                    numInactivityTime.Value = savedSeconds;
-                    numInactivityTime.Enabled = savedEnabled;
-                }
-
-                LogMessage("Настройки безопасности сброшены до сохраненных");
-
-                // Формируем сообщение в зависимости от состояния блокировки
-                string message;
-                if (savedEnabled)
-                {
-                    message = $"Настройки безопасности сброшены до последних сохраненных значений.\n\n" +
-                             $"Блокировка: Включена\n" +
-                             $"Время бездействия: {savedSeconds} сек.";
-                }
-                else
-                {
-                    message = $"Настройки безопасности сброшены до последних сохраненных значений.\n\n" +
-                             $"Блокировка: Выключена";
-                }
-
-                MessageBox.Show(message, "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                LogMessage($"Ошибка при отмене изменений: {ex.Message}");
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // ===================== ВОССТАНОВЛЕНИЕ =====================
+        // ===================== ВОССТАНОВЛЕНИЕ (ВСТРОЕННОЕ) =====================
 
         private void InitializeRestoreFeature()
         {
-            if (btnRestoreDB != null)
+            if (rtbRestoreLog != null)
             {
-                btnRestoreDB.Text = "Восстановить структуру БД";
-                btnRestoreDB.Click += BtnRestoreDB_Click;
+                rtbRestoreLog.Clear();
+                rtbRestoreLog.ReadOnly = true;
+                rtbRestoreLog.BackColor = Color.WhiteSmoke;
+
+                LogMessage("=== СИСТЕМА ВОССТАНОВЛЕНИЯ БД ГОТОВА ===");
+                LogMessage("Нажмите кнопку 'Восстановить структуру БД' для начала");
+                LogMessage("");
+            }
+        }
+
+        private void LogMessage(string message)
+        {
+            if (rtbRestoreLog == null) return;
+
+            if (rtbRestoreLog.InvokeRequired)
+            {
+                rtbRestoreLog.Invoke(new Action(() => LogMessage(message)));
+                return;
             }
 
-            if (txtLog != null)
-            {
-                txtLog.Clear();
-                txtLog.ReadOnly = true;
-                txtLog.BackColor = Color.WhiteSmoke;
-            }
+            rtbRestoreLog.AppendText($"{DateTime.Now:HH:mm:ss} - {message}{Environment.NewLine}");
+            rtbRestoreLog.ScrollToCaret();
         }
 
         private void BtnRestoreDB_Click(object sender, EventArgs e)
@@ -527,31 +789,41 @@ namespace dump
         {
             try
             {
-                LogMessage("Начало восстановления структуры БД...");
+                LogMessage("");
+                LogMessage("===========================================");
+                LogMessage("НАЧАЛО ВОССТАНОВЛЕНИЯ СТРУКТУРЫ БД");
+                LogMessage("===========================================");
 
-                using (MySqlConnection conn = SettingsBD.GetConnection())
+                using (MySqlConnection conn = GetWorkingConnection())
                 {
-                    conn.Open();
-                    LogMessage("Подключение успешно.");
+                    LogMessage("Подключение к БД установлено");
 
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
                         cmd.ExecuteNonQuery();
+                        LogMessage("Отключена проверка внешних ключей");
                     }
 
                     LogMessage("Удаление таблиц...");
                     DropAllTables(conn);
+                    LogMessage("Таблицы удалены");
 
                     LogMessage("Создание таблиц...");
                     CreateAllTables(conn);
+                    LogMessage("Таблицы созданы");
 
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                     {
                         cmd.ExecuteNonQuery();
+                        LogMessage("Включена проверка внешних ключей");
                     }
                 }
 
-                LogMessage("Восстановление успешно завершено!");
+                LogMessage("===========================================");
+                LogMessage("ВОССТАНОВЛЕНИЕ УСПЕШНО ЗАВЕРШЕНО!");
+                LogMessage("===========================================");
+                LogMessage("");
+
                 LoadTableLists();
                 MessageBox.Show("Структура БД восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -569,6 +841,7 @@ namespace dump
                 "users", "present", "categories", "order_statuses", "status_certificates", "roles"
             };
 
+            int droppedCount = 0;
             foreach (string table in tables)
             {
                 try
@@ -576,13 +849,16 @@ namespace dump
                     using (MySqlCommand cmd = new MySqlCommand($"DROP TABLE IF EXISTS `{table}`;", conn))
                     {
                         cmd.ExecuteNonQuery();
+                        droppedCount++;
+                        LogMessage($"  Удалена: {table}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Ошибка при удалении {table}: {ex.Message}");
+                    LogMessage($"  Ошибка при удалении {table}: {ex.Message}");
                 }
             }
+            LogMessage($"  Всего удалено: {droppedCount}");
         }
 
         private void CreateAllTables(MySqlConnection conn)
@@ -597,6 +873,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: roles");
             }
 
             using (MySqlCommand cmd = new MySqlCommand(@"
@@ -604,6 +881,7 @@ namespace dump
                 (1, 'manager'), (2, 'director'), (3, 'admin');", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Данные: roles");
             }
 
             // users
@@ -621,6 +899,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: users");
             }
 
             // order_statuses
@@ -632,6 +911,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: order_statuses");
             }
 
             using (MySqlCommand cmd = new MySqlCommand(@"
@@ -640,6 +920,7 @@ namespace dump
                 (4, 'Готов'), (5, 'В пути'), (6, 'Доставлен'), (7, 'Отменён');", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Данные: order_statuses");
             }
 
             // categories
@@ -651,6 +932,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: categories");
             }
 
             // dishes
@@ -670,6 +952,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: dishes");
             }
 
             // status_certificates
@@ -681,6 +964,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: status_certificates");
             }
 
             using (MySqlCommand cmd = new MySqlCommand(@"
@@ -688,6 +972,7 @@ namespace dump
                 (1, 'Активен'), (2, 'Использован'), (3, 'Возвращён');", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Данные: status_certificates");
             }
 
             // certificates
@@ -707,6 +992,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: certificates");
             }
 
             // present
@@ -719,13 +1005,13 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: present");
             }
 
             // orders
             using (MySqlCommand cmd = new MySqlCommand(@"
                 CREATE TABLE IF NOT EXISTS `orders` (
                     `id_order` INT NOT NULL AUTO_INCREMENT,
-                    `order_number` VARCHAR(20) NOT NULL,
                     `name_client` VARCHAR(255) NOT NULL,
                     `phone_number` VARCHAR(20) NOT NULL,
                     `address` VARCHAR(255) NOT NULL,
@@ -738,12 +1024,12 @@ namespace dump
                     `total_amount` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
                     `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (`id_order`),
-                    UNIQUE KEY `order_number` (`order_number`),
                     KEY `id_status` (`id_status`),
                     CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: orders");
             }
 
             // order_dish
@@ -766,6 +1052,7 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
+                LogMessage("  Создана: order_dish");
             }
 
             // other_orders
@@ -781,24 +1068,15 @@ namespace dump
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
             {
                 cmd.ExecuteNonQuery();
-            }
-        }
-
-        private void LogMessage(string message)
-        {
-            if (txtLog == null) return;
-
-            if (txtLog.InvokeRequired)
-            {
-                txtLog.Invoke(new Action(() => LogMessage(message)));
-                return;
+                LogMessage("  Создана: other_orders");
             }
 
-            txtLog.AppendText($"{DateTime.Now:HH:mm:ss} - {message}{Environment.NewLine}");
-            txtLog.ScrollToCaret();
+            LogMessage("  Все таблицы созданы!");
         }
 
         // ===================== ИМПОРТ/ЭКСПОРТ =====================
+
+        private readonly string[] excludedTables = new string[] { "roles" };
 
         private void InitializeImportExportFeature()
         {
@@ -851,9 +1129,8 @@ namespace dump
         {
             try
             {
-                using (MySqlConnection conn = SettingsBD.GetConnection())
+                using (MySqlConnection conn = GetWorkingConnection())
                 {
-                    conn.Open();
                     DataTable schema = conn.GetSchema("Tables");
 
                     if (cmbTables != null) cmbTables.Items.Clear();
@@ -862,7 +1139,9 @@ namespace dump
                     foreach (DataRow row in schema.Rows)
                     {
                         string tableName = row["TABLE_NAME"].ToString();
-                        if (!tableName.StartsWith("mysql") && !tableName.StartsWith("information_schema"))
+                        if (!tableName.StartsWith("mysql") &&
+                            !tableName.StartsWith("information_schema") &&
+                            !excludedTables.Contains(tableName))
                         {
                             if (cmbTables != null) cmbTables.Items.Add(tableName);
                             if (cmbExportTables != null) cmbExportTables.Items.Add(tableName);
@@ -878,7 +1157,7 @@ namespace dump
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка: {ex.Message}");
+                MessageBox.Show($"Ошибка загрузки списка таблиц: {ex.Message}\n\nПроверьте настройки подключения!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -925,10 +1204,8 @@ namespace dump
                     return;
                 }
 
-                using (MySqlConnection conn = SettingsBD.GetConnection())
+                using (MySqlConnection conn = GetWorkingConnection())
                 {
-                    conn.Open();
-
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
                         cmd.ExecuteNonQuery();
@@ -1025,10 +1302,8 @@ namespace dump
 
         private void ExportToCSV(string tableName, string filePath)
         {
-            using (MySqlConnection conn = SettingsBD.GetConnection())
+            using (MySqlConnection conn = GetWorkingConnection())
             {
-                conn.Open();
-
                 using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
                 {
                     cmd.ExecuteNonQuery();
@@ -1109,6 +1384,641 @@ namespace dump
         private void btnSave_Click(object sender, EventArgs e)
         {
             SaveConnectionSettings();
+        }
+
+        // ===================== РЕЗЕРВНОЕ КОПИРОВАНИЕ =====================
+
+        private void InitializeBackupFeature()
+        {
+            // Находим все элементы на форме по имени
+            txtBackupPath = this.Controls.Find("txtBackupPath", true).FirstOrDefault() as TextBox;
+            btnBrowseBackupPath = this.Controls.Find("btnBrowseBackupPath", true).FirstOrDefault() as Button;
+            rbFullBackup = this.Controls.Find("rbFullBackup", true).FirstOrDefault() as RadioButton;
+            rbStructureOnly = this.Controls.Find("rbStructureOnly", true).FirstOrDefault() as RadioButton;
+            rbDataOnly = this.Controls.Find("rbDataOnly", true).FirstOrDefault() as RadioButton;
+            btnCreateBackup = this.Controls.Find("btnCreateBackup", true).FirstOrDefault() as Button;
+            chkAutoBackup = this.Controls.Find("chkAutoBackup", true).FirstOrDefault() as CheckBox;
+            numBackupInterval = this.Controls.Find("numBackupInterval", true).FirstOrDefault() as NumericUpDown;
+            cmbAutoBackupType = this.Controls.Find("cmbAutoBackupType", true).FirstOrDefault() as ComboBox;
+            lblBackupStatus = this.Controls.Find("lblBackupStatus", true).FirstOrDefault() as Label;
+
+            // Настройка ComboBox
+            if (cmbAutoBackupType != null)
+            {
+                cmbAutoBackupType.Items.Clear();
+                cmbAutoBackupType.Items.Add("Полный бэкап");
+                cmbAutoBackupType.Items.Add("Только данные");
+                cmbAutoBackupType.SelectedIndex = 0;
+                cmbAutoBackupType.Enabled = false;
+            }
+
+            // Настройка NumericUpDown
+            if (numBackupInterval != null)
+            {
+                numBackupInterval.Minimum = 1;
+                numBackupInterval.Maximum = 720;
+                numBackupInterval.Value = backupIntervalHours;
+                numBackupInterval.Enabled = false;
+            }
+
+            // Устанавливаем путь
+            if (txtBackupPath != null)
+            {
+                txtBackupPath.Text = backupFolder;
+                txtBackupPath.ReadOnly = true;
+            }
+
+            // Создаем таймер
+            autoBackupTimer = new System.Windows.Forms.Timer();
+            autoBackupTimer.Tick += AutoBackupTimer_Tick;
+
+            // Подписываем события
+            if (btnBrowseBackupPath != null)
+            {
+                btnBrowseBackupPath.Click += BtnBrowseBackupPath_Click;
+            }
+
+            if (btnCreateBackup != null)
+            {
+                btnCreateBackup.Click += BtnCreateBackup_Click;
+            }
+
+            if (chkAutoBackup != null)
+            {
+                chkAutoBackup.CheckedChanged += ChkAutoBackup_CheckedChanged;
+            }
+
+            if (numBackupInterval != null)
+            {
+                numBackupInterval.ValueChanged += NumBackupInterval_ValueChanged;
+            }
+
+            // Загружаем настройки из файла
+            LoadBackupSettingsFromFile();
+
+            LogBackupMessage("Система резервного копирования готова");
+        }
+
+        private void LoadBackupSettingsFromFile()
+        {
+            string settingsFile = Path.Combine(Application.StartupPath, "backup_settings.txt");
+
+            try
+            {
+                if (File.Exists(settingsFile))
+                {
+                    string[] lines = File.ReadAllLines(settingsFile);
+                    foreach (string line in lines)
+                    {
+                        if (line.StartsWith("AutoBackup="))
+                        {
+                            string value = line.Substring(11);
+                            autoBackupEnabled = (value == "True");
+                        }
+                        else if (line.StartsWith("Interval="))
+                        {
+                            string value = line.Substring(9);
+                            int.TryParse(value, out backupIntervalHours);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"Ошибка загрузки настроек: {ex.Message}");
+            }
+
+            if (chkAutoBackup != null)
+            {
+                chkAutoBackup.Checked = autoBackupEnabled;
+            }
+
+            if (numBackupInterval != null)
+            {
+                numBackupInterval.Value = backupIntervalHours;
+            }
+
+            if (autoBackupEnabled)
+            {
+                if (numBackupInterval != null)
+                {
+                    numBackupInterval.Enabled = true;
+                }
+                if (cmbAutoBackupType != null)
+                {
+                    cmbAutoBackupType.Enabled = true;
+                }
+                autoBackupTimer.Interval = backupIntervalHours * 60 * 60 * 1000;
+                autoBackupTimer.Start();
+                LogBackupMessage($"Автоматическое резервное копирование включено (интервал: {backupIntervalHours} часов)");
+            }
+            else
+            {
+                if (numBackupInterval != null)
+                {
+                    numBackupInterval.Enabled = false;
+                }
+                if (cmbAutoBackupType != null)
+                {
+                    cmbAutoBackupType.Enabled = false;
+                }
+            }
+        }
+
+        private void SaveBackupSettingsToFile()
+        {
+            string settingsFile = Path.Combine(Application.StartupPath, "backup_settings.txt");
+
+            try
+            {
+                List<string> lines = new List<string>();
+                lines.Add($"AutoBackup={autoBackupEnabled}");
+                lines.Add($"Interval={backupIntervalHours}");
+                File.WriteAllLines(settingsFile, lines);
+                LogBackupMessage("Настройки резервного копирования сохранены");
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"Ошибка сохранения настроек: {ex.Message}");
+            }
+        }
+
+        private void ChkAutoBackup_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkAutoBackup != null)
+            {
+                autoBackupEnabled = chkAutoBackup.Checked;
+            }
+
+            if (numBackupInterval != null)
+            {
+                numBackupInterval.Enabled = autoBackupEnabled;
+            }
+
+            if (cmbAutoBackupType != null)
+            {
+                cmbAutoBackupType.Enabled = autoBackupEnabled;
+            }
+
+            if (autoBackupEnabled)
+            {
+                autoBackupTimer.Interval = backupIntervalHours * 60 * 60 * 1000;
+                autoBackupTimer.Start();
+                LogBackupMessage($"Автоматическое резервное копирование включено (интервал: {backupIntervalHours} часов)");
+            }
+            else
+            {
+                autoBackupTimer.Stop();
+                LogBackupMessage("Автоматическое резервное копирование выключено");
+            }
+
+            SaveBackupSettingsToFile();
+        }
+
+        private void NumBackupInterval_ValueChanged(object sender, EventArgs e)
+        {
+            if (numBackupInterval != null)
+            {
+                backupIntervalHours = (int)numBackupInterval.Value;
+            }
+
+            if (autoBackupEnabled)
+            {
+                autoBackupTimer.Interval = backupIntervalHours * 60 * 60 * 1000;
+                LogBackupMessage($"Интервал автоматического резервного копирования изменен на {backupIntervalHours} часов");
+            }
+
+            SaveBackupSettingsToFile();
+        }
+
+        private void AutoBackupTimer_Tick(object sender, EventArgs e)
+        {
+            string backupType = "full";
+            if (cmbAutoBackupType != null && cmbAutoBackupType.SelectedIndex == 1)
+            {
+                backupType = "data";
+            }
+            System.Threading.Tasks.Task.Run(() => CreateBackup(backupType, true));
+        }
+
+        private void BtnCreateBackup_Click(object sender, EventArgs e)
+        {
+            string backupType = "full";
+
+            if (rbStructureOnly != null && rbStructureOnly.Checked)
+            {
+                backupType = "structure";
+            }
+            else if (rbDataOnly != null && rbDataOnly.Checked)
+            {
+                backupType = "data";
+            }
+
+            CreateBackup(backupType, false);
+        }
+
+        private void BtnBrowseBackupPath_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Выберите папку для сохранения резервных копий";
+                fbd.SelectedPath = backupFolder;
+                fbd.ShowNewFolderButton = true;
+
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    backupFolder = fbd.SelectedPath;
+                    if (txtBackupPath != null)
+                    {
+                        txtBackupPath.Text = backupFolder;
+                    }
+
+                    if (!Directory.Exists(backupFolder))
+                    {
+                        Directory.CreateDirectory(backupFolder);
+                    }
+
+                    LogBackupMessage($"Папка для резервных копий изменена: {backupFolder}");
+                }
+            }
+        }
+
+        private void CreateBackup(string backupType, bool isAuto)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => CreateBackup(backupType, isAuto)));
+                return;
+            }
+
+            try
+            {
+                if (lblBackupStatus != null)
+                {
+                    lblBackupStatus.Text = "Проверка подключения к БД...";
+                    lblBackupStatus.ForeColor = Color.Blue;
+                }
+                Application.DoEvents();
+
+                string targetFolder = backupFolder;
+                if (!isAuto && txtBackupPath != null && !string.IsNullOrEmpty(txtBackupPath.Text))
+                {
+                    targetFolder = txtBackupPath.Text;
+                }
+
+                if (!Directory.Exists(targetFolder))
+                {
+                    Directory.CreateDirectory(targetFolder);
+                }
+
+                string backupFileName = $"{GetBackupPrefix(backupType)}_backup_{DateTime.Now:yyyyMMdd_HHmmss}.sql";
+                string fullPath = Path.Combine(targetFolder, backupFileName);
+
+                LogBackupMessage($"Начало создания {GetBackupTypeName(backupType)} резервной копии...");
+                LogBackupMessage($"Папка сохранения: {targetFolder}");
+                LogBackupMessage($"Имя файла: {backupFileName}");
+
+                // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД ДЛЯ ПОДКЛЮЧЕНИЯ
+                using (MySqlConnection conn = GetWorkingConnection())
+                {
+                    LogBackupMessage("Подключение к базе данных установлено успешно");
+
+                    // Отключаем проверку внешних ключей
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                        LogBackupMessage("Отключена проверка внешних ключей");
+                    }
+
+                    StringBuilder sqlScript = new StringBuilder();
+
+                    // Добавляем заголовок
+                    sqlScript.AppendLine($"-- Резервная копия создана: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    sqlScript.AppendLine($"-- Тип резервной копии: {GetBackupTypeName(backupType)}");
+                    sqlScript.AppendLine($"-- Сервер: {conn.DataSource}");
+                    sqlScript.AppendLine($"-- База данных: {conn.Database}");
+                    sqlScript.AppendLine("SET FOREIGN_KEY_CHECKS = 0;");
+                    sqlScript.AppendLine("SET AUTOCOMMIT = 0;");
+                    sqlScript.AppendLine("");
+
+                    // Получаем список таблиц
+                    List<string> tables = GetTableList(conn);
+                    int totalTables = tables.Count;
+                    int currentTable = 0;
+
+                    LogBackupMessage($"Найдено таблиц для обработки: {totalTables}");
+
+                    foreach (string table in tables)
+                    {
+                        currentTable++;
+
+                        if (lblBackupStatus != null)
+                        {
+                            lblBackupStatus.Text = $"Обработка таблицы {currentTable} из {totalTables}: {table}";
+                            Application.DoEvents();
+                        }
+
+                        LogBackupMessage($"  Обработка таблицы {currentTable}/{totalTables}: {table}");
+
+                        // Сохраняем структуру таблицы
+                        if (backupType == "structure" || backupType == "full")
+                        {
+                            string createTableScript = GetTableStructure(conn, table);
+                            if (!string.IsNullOrEmpty(createTableScript))
+                            {
+                                sqlScript.AppendLine(createTableScript);
+                                sqlScript.AppendLine("");
+                                LogBackupMessage($"    Структура таблицы {table} сохранена");
+                            }
+                        }
+
+                        // Сохраняем данные таблицы
+                        if ((backupType == "data" || backupType == "full"))
+                        {
+                            string dataScript = GetTableData(conn, table);
+                            if (!string.IsNullOrEmpty(dataScript))
+                            {
+                                sqlScript.AppendLine(dataScript);
+                                sqlScript.AppendLine("");
+                                LogBackupMessage($"    Данные таблицы {table} сохранены");
+                            }
+                            else
+                            {
+                                LogBackupMessage($"    Таблица {table} не содержит данных");
+                            }
+                        }
+                    }
+
+                    sqlScript.AppendLine("COMMIT;");
+                    sqlScript.AppendLine("SET FOREIGN_KEY_CHECKS = 1;");
+                    sqlScript.AppendLine("-- Конец резервной копии");
+
+                    // Сохраняем SQL файл
+                    File.WriteAllText(fullPath, sqlScript.ToString(), Encoding.UTF8);
+                    LogBackupMessage($"SQL скрипт сохранен: {backupFileName}");
+                    LogBackupMessage($"Размер SQL файла: {new FileInfo(fullPath).Length / 1024.0:F2} KB");
+
+                    // Включаем проверку внешних ключей
+                    using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                        LogBackupMessage("Включена проверка внешних ключей");
+                    }
+                }
+
+                // Сжимаем файл в ZIP
+                if (lblBackupStatus != null)
+                {
+                    lblBackupStatus.Text = "Сжатие файла...";
+                    Application.DoEvents();
+                }
+
+                string zipPath = CompressToZip(fullPath);
+                FileInfo zipFileInfo = new FileInfo(zipPath);
+
+                LogBackupMessage($"Резервная копия сжата: {Path.GetFileName(zipPath)}");
+                LogBackupMessage($"Размер ZIP файла: {zipFileInfo.Length / 1024.0:F2} KB");
+
+                if (lblBackupStatus != null)
+                {
+                    lblBackupStatus.Text = "Готово!";
+                    lblBackupStatus.ForeColor = Color.Green;
+                }
+
+                LogBackupMessage($"Резервная копия успешно создана: {Path.GetFileName(zipPath)}");
+
+                if (!isAuto)
+                {
+                    string size = zipFileInfo.Length > 1048576 ? $"{zipFileInfo.Length / 1048576.0:F2} MB" : $"{zipFileInfo.Length / 1024.0:F2} KB";
+                    MessageBox.Show($"Резервная копия успешно создана!\n\n" +
+                                  $"Файл: {zipFileInfo.Name}\n" +
+                                  $"Размер: {size}\n" +
+                                  $"Путь: {zipFileInfo.DirectoryName}\n\n" +
+                                  $"Тип копии: {GetBackupTypeName(backupType)}\n" +
+                                  $"Дата создания: {DateTime.Now:dd.MM.yyyy HH:mm:ss}",
+                                  "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                // Очищаем старые бэкапы
+                int deletedCount = CleanupOldBackups(10);
+                if (deletedCount > 0)
+                {
+                    LogBackupMessage($"Удалено старых резервных копий: {deletedCount}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"ОШИБКА при создании резервной копии: {ex.Message}");
+                LogBackupMessage($"Детали ошибки: {ex.StackTrace}");
+
+                if (lblBackupStatus != null)
+                {
+                    lblBackupStatus.Text = $"Ошибка: {ex.Message}";
+                    lblBackupStatus.ForeColor = Color.Red;
+                }
+
+                if (!isAuto)
+                {
+                    MessageBox.Show($"Ошибка при создании резервной копии:\n\n{ex.Message}\n\nПроверьте настройки подключения к базе данных!",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private string GetBackupPrefix(string backupType)
+        {
+            switch (backupType)
+            {
+                case "structure":
+                    return "struct";
+                case "data":
+                    return "data";
+                case "full":
+                    return "full";
+                default:
+                    return "backup";
+            }
+        }
+
+        private string GetBackupTypeName(string backupType)
+        {
+            switch (backupType)
+            {
+                case "structure":
+                    return "структуры";
+                case "data":
+                    return "данных";
+                case "full":
+                    return "полной";
+                default:
+                    return "резервной";
+            }
+        }
+
+        private List<string> GetTableList(MySqlConnection conn)
+        {
+            List<string> tables = new List<string>();
+            DataTable schema = conn.GetSchema("Tables");
+
+            foreach (DataRow row in schema.Rows)
+            {
+                string tableName = row["TABLE_NAME"].ToString();
+
+                // Исключаем системные таблицы
+                if (!tableName.StartsWith("mysql") &&
+                    !tableName.StartsWith("information_schema") &&
+                    !tableName.StartsWith("performance_schema") &&
+                    !tableName.StartsWith("sys"))
+                {
+                    tables.Add(tableName);
+                }
+            }
+
+            return tables;
+        }
+
+        private string GetTableStructure(MySqlConnection conn, string tableName)
+        {
+            using (MySqlCommand cmd = new MySqlCommand($"SHOW CREATE TABLE `{tableName}`", conn))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetString(1) + ";";
+                    }
+                }
+            }
+            return "";
+        }
+
+        private string GetTableData(MySqlConnection conn, string tableName)
+        {
+            StringBuilder dataScript = new StringBuilder();
+
+            using (MySqlCommand cmd = new MySqlCommand($"SELECT * FROM `{tableName}`", conn))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        return "";
+                    }
+
+                    // Получаем имена колонок
+                    var columns = new List<string>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        columns.Add(reader.GetName(i));
+                    }
+
+                    while (reader.Read())
+                    {
+                        dataScript.Append($"INSERT INTO `{tableName}` (`{string.Join("`, `", columns)}`) VALUES (");
+
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            object value = reader.GetValue(i);
+                            dataScript.Append(FormatSQLValue(value));
+
+                            if (i < reader.FieldCount - 1)
+                            {
+                                dataScript.Append(", ");
+                            }
+                        }
+
+                        dataScript.AppendLine(");");
+                    }
+                }
+            }
+
+            return dataScript.ToString();
+        }
+
+        private string FormatSQLValue(object value)
+        {
+            if (value == null || value == DBNull.Value)
+            {
+                return "NULL";
+            }
+
+            if (value is DateTime dt)
+            {
+                return $"'{dt:yyyy-MM-dd HH:mm:ss}'";
+            }
+
+            if (value is bool b)
+            {
+                return b ? "1" : "0";
+            }
+
+            if (value is string || value is char)
+            {
+                string str = value.ToString().Replace("'", "''");
+                return $"'{str}'";
+            }
+
+            if (value is byte[] bytes)
+            {
+                return $"0x{BitConverter.ToString(bytes).Replace("-", "")}";
+            }
+
+            if (value is decimal || value is float || value is double)
+            {
+                return value.ToString().Replace(',', '.');
+            }
+
+            if (value is int || value is long || value is short || value is byte)
+            {
+                return value.ToString();
+            }
+
+            return $"'{value.ToString().Replace("'", "''")}'";
+        }
+
+        private string CompressToZip(string filePath)
+        {
+            return filePath;
+        }
+
+        private int CleanupOldBackups(int keepCount)
+        {
+            try
+            {
+                var backupFiles = Directory.GetFiles(backupFolder, "*.zip")
+                                          .OrderByDescending(f => File.GetCreationTime(f))
+                                          .ToList();
+
+                int deleted = 0;
+
+                for (int i = keepCount; i < backupFiles.Count; i++)
+                {
+                    File.Delete(backupFiles[i]);
+                    deleted++;
+                    LogBackupMessage($"Удален старый бэкап: {Path.GetFileName(backupFiles[i])}");
+                }
+
+                return deleted;
+            }
+            catch (Exception ex)
+            {
+                LogBackupMessage($"Ошибка при очистке старых бэкапов: {ex.Message}");
+                return 0;
+            }
+        }
+
+        private void LogBackupMessage(string message)
+        {
+            if (rtbRestoreLog != null)
+            {
+                if (rtbRestoreLog.InvokeRequired)
+                {
+                    rtbRestoreLog.Invoke(new Action(() => LogBackupMessage(message)));
+                    return;
+                }
+                rtbRestoreLog.AppendText($"{DateTime.Now:HH:mm:ss} - {message}{Environment.NewLine}");
+                rtbRestoreLog.ScrollToCaret();
+            }
         }
 
         // ===================== ЗАГЛУШКИ ДЛЯ ДРУГИХ СОБЫТИЙ =====================

@@ -18,7 +18,7 @@ namespace dump
     public partial class OrdersReportForm : Form
     {
         private DataTable ordersData;
-        private DataTable profitData;
+        private DataTable revenueData;
         private DateTime minDate = new DateTime(2024, 1, 1);
         private DateTime maxDate = new DateTime(2040, 12, 31);
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
@@ -40,7 +40,7 @@ namespace dump
         {
             InitializeComponent();
             ordersData = new DataTable();
-            profitData = new DataTable();
+            revenueData = new DataTable();
             toolTip1 = new System.Windows.Forms.ToolTip();
 
             // Настройка кнопки экспорта заказов
@@ -55,16 +55,16 @@ namespace dump
                 btnExportOrders.Click += BtnExportOrders_Click;
             }
 
-            // Настройка кнопки экспорта прибыли
+            // Настройка кнопки экспорта выручки
             if (btnExportProfit != null)
             {
-                btnExportProfit.Text = "Отчёт по прибыли";
+                btnExportProfit.Text = "Отчёт по выручке";
                 btnExportProfit.FlatStyle = FlatStyle.Flat;
                 btnExportProfit.FlatAppearance.BorderSize = 1;
                 btnExportProfit.FlatAppearance.BorderColor = Color.Black;
                 btnExportProfit.BackColor = Color.DarkSeaGreen;
                 btnExportProfit.ForeColor = Color.Black;
-                btnExportProfit.Click += BtnExportProfit_Click;
+                btnExportProfit.Click += BtnExportRevenue_Click;
             }
 
             // Настройка CheckBox для фильтрации по периоду
@@ -78,6 +78,12 @@ namespace dump
             // Настройка кнопки деталей заказа
             if (buttonDetail != null)
             {
+                buttonDetail.Text = "Детали заказа";
+                buttonDetail.FlatStyle = FlatStyle.Flat;
+                buttonDetail.FlatAppearance.BorderSize = 1;
+                buttonDetail.FlatAppearance.BorderColor = Color.Black;
+                buttonDetail.BackColor = Color.DarkSeaGreen;
+                buttonDetail.ForeColor = Color.Black;
                 buttonDetail.Click += ButtonDetail_Click;
             }
 
@@ -104,23 +110,33 @@ namespace dump
             this.FormClosing += OrdersReportForm_FormClosing;
         }
 
+        // ===== МАСКИРОВАНИЕ НОМЕРА ТЕЛЕФОНА (ЗАЩИТА ПЕРСОНАЛЬНЫХ ДАННЫХ) =====
+        private string MaskPhone(string phone)
+        {
+            if (string.IsNullOrEmpty(phone)) return "";
+            try
+            {
+                string digits = new string(phone.Where(char.IsDigit).ToArray());
+                if (digits.Length >= 11)
+                {
+                    return $"+7 ({digits.Substring(1, 3)}) ****-{digits.Substring(8, 2)}-{digits.Substring(10, 1)}";
+                }
+                return phone;
+            }
+            catch
+            {
+                return phone;
+            }
+        }
+
         // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
 
-        /// <summary>
-        /// Обработчик закрытия формы - при нажатии на крестик переходим на DirectorForm
-        /// </summary>
         private void OrdersReportForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // Открываем форму директора
                 DirectorForm director = new DirectorForm();
                 director.Show();
             }
@@ -132,13 +148,11 @@ namespace dump
             dtpStartDate.Enabled = filterByPeriod;
             dtpEndDate.Enabled = filterByPeriod;
 
-            // Загружаем заказы при изменении фильтра
             LoadOrders();
         }
 
         private void DatePicker_ValueChanged(object sender, EventArgs e)
         {
-            // Загружаем заказы при изменении дат (только если фильтр включен)
             if (filterByPeriod)
             {
                 LoadOrders();
@@ -161,7 +175,6 @@ namespace dump
             labelStartDate.Text = "Период с:";
             labelEndDate.Text = "по:";
 
-            // Загружаем все заказы при загрузке формы
             LoadOrders();
         }
 
@@ -234,15 +247,7 @@ namespace dump
             colOrderNumber.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvOrders.Columns.Add(colOrderNumber);
 
-            // Клиент
-            DataGridViewTextBoxColumn colClient = new DataGridViewTextBoxColumn();
-            colClient.Name = "client";
-            colClient.HeaderText = "Клиент";
-            colClient.DataPropertyName = "client";
-            colClient.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dgvOrders.Columns.Add(colClient);
-
-            // Телефон
+            // Телефон (маскированный)
             DataGridViewTextBoxColumn colPhone = new DataGridViewTextBoxColumn();
             colPhone.Name = "phone";
             colPhone.HeaderText = "Телефон";
@@ -283,6 +288,23 @@ namespace dump
             colStatus.DataPropertyName = "status";
             colStatus.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvOrders.Columns.Add(colStatus);
+
+            // Форматирование ячеек (маскирование телефона)
+            dgvOrders.CellFormatting += DgvOrders_CellFormatting;
+        }
+
+        // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК (МАСКИРОВАНИЕ ТЕЛЕФОНА) =====
+        private void DgvOrders_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.Value != null)
+            {
+                string columnName = dgvOrders.Columns[e.ColumnIndex].Name;
+                if (columnName == "phone")
+                {
+                    e.Value = MaskPhone(e.Value.ToString());
+                    e.FormattingApplied = true;
+                }
+            }
         }
 
         private void LoadOrders()
@@ -302,7 +324,6 @@ namespace dump
                 ordersData = LoadOrdersFromDB(startDate, endDate);
                 dgvOrders.DataSource = ordersData;
 
-                // Обновляем статистику
                 UpdateStatistics();
             }
             catch (Exception ex)
@@ -321,7 +342,6 @@ namespace dump
                     o.id_order,
                     DATE_FORMAT(o.created_at, '%d.%m.%Y %H:%i') as date_time,
                     CONCAT('#', o.id_order) as order_number,
-                    o.name_client as client,
                     o.phone_number as phone,
                     o.address,
                     COALESCE(SUM(od.quantity * od.price_at_order), 0) as total_amount,
@@ -372,18 +392,11 @@ namespace dump
                     totalRevenue += Convert.ToDecimal(row["total_amount"]);
                     totalDishes += Convert.ToInt32(row["dishes_count"]);
                 }
-
-                // Можно обновить лейблы если они есть
-                // labelTotalOrders.Text = $"Всего заказов: {totalOrders}";
-                // labelTotalRevenue.Text = $"Общая выручка: {totalRevenue:N2} ₽";
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
-        // ===================== ДЕТАЛИ ЗАКАЗА =====================
+        // ===================== ДЕТАЛИ ЗАКАЗА (С МАСКИРОВАНИЕМ ТЕЛЕФОНА) =====================
 
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
@@ -468,79 +481,98 @@ namespace dump
 
                 DataGridViewRow selectedRow = dgvOrders.SelectedRows[0];
                 int orderId = Convert.ToInt32(selectedRow.Cells["id_order"].Value);
-                string clientName = selectedRow.Cells["client"].Value?.ToString() ?? "";
+                string phoneNumber = selectedRow.Cells["phone"].Value?.ToString() ?? "";
+                string address = selectedRow.Cells["address"].Value?.ToString() ?? "";
                 string orderDate = selectedRow.Cells["date_time"].Value?.ToString() ?? "";
+                decimal totalAmount = selectedRow.Cells["total_amount"].Value != null ?
+                    Convert.ToDecimal(selectedRow.Cells["total_amount"].Value) : 0;
 
                 Form detailForm = new Form();
-                detailForm.Text = $"Детали заказа №{orderId}";
-                detailForm.Size = new Size(900, 680);
+                detailForm.Text = $"Просмотр заказа №{orderId}";
+                detailForm.Size = new Size(820, 680);
                 detailForm.StartPosition = FormStartPosition.CenterParent;
                 detailForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 detailForm.MaximizeBox = false;
                 detailForm.MinimizeBox = false;
                 detailForm.BackColor = Color.White;
+                detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
+                // ===== ПАНЕЛЬ ИНФОРМАЦИИ (С МАСКИРОВАННЫМ ТЕЛЕФОНОМ) =====
                 Panel infoPanel = new Panel();
-                infoPanel.Location = new Point(10, 10);
-                infoPanel.Size = new Size(865, 100);
+                infoPanel.Size = new Size(765, 110);
                 infoPanel.BorderStyle = BorderStyle.FixedSingle;
                 infoPanel.BackColor = Color.FromArgb(240, 240, 240);
 
-                Label lblOrderInfo = new Label();
-                lblOrderInfo.Text = $"Заказ №{orderId}\nКлиент: {clientName}\nДата: {orderDate}";
-                lblOrderInfo.Location = new Point(10, 10);
-                lblOrderInfo.Size = new Size(845, 80);
-                lblOrderInfo.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-                lblOrderInfo.TextAlign = ContentAlignment.MiddleLeft;
-                infoPanel.Controls.Add(lblOrderInfo);
+                string maskedPhone = MaskPhone(phoneNumber);
 
-                DataGridView dgvOrderDetails = CreateOrderDetailsDataGridView();
-                dgvOrderDetails.Location = new Point(10, 120);
-                dgvOrderDetails.Size = new Size(865, 400);
+                Label lblInfo = new Label();
+                lblInfo.Text = $"ЗАКАЗ №{orderId}\n" +
+                              $"Телефон: {maskedPhone}\n" +
+                              $"Адрес: {address}\n" +
+                              $"Дата доставки: {orderDate}\n";
+                lblInfo.Location = new Point(10, 10);
+                lblInfo.Size = new Size(740, 90);
+                lblInfo.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+                lblInfo.TextAlign = ContentAlignment.TopLeft;
 
+                infoPanel.Controls.Add(lblInfo);
+
+                // ===== СПИСОК БЛЮД =====
                 List<OrderDetailItem> orderDetails = LoadOrderDetails(orderId);
-                DataTable dt = new DataTable();
-                dt.Columns.Add("dish_name", typeof(string));
-                dt.Columns.Add("quantity", typeof(int));
-                dt.Columns.Add("price", typeof(decimal));
-                dt.Columns.Add("total_price", typeof(decimal));
-                dt.Columns.Add("is_gift", typeof(bool));
-
-                foreach (var item in orderDetails)
-                {
-                    DataRow row = dt.NewRow();
-                    row["dish_name"] = item.DisplayName;
-                    row["quantity"] = item.Quantity;
-                    row["price"] = item.Price;
-                    row["total_price"] = item.TotalPrice;
-                    row["is_gift"] = item.IsGift;
-                    dt.Rows.Add(row);
-                }
-
+                DataGridView dgvOrderDetails = CreateOrderDetailsDataGridView();
+                DataTable dt = CreateOrderDetailsDataTable(orderDetails);
                 dgvOrderDetails.DataSource = dt;
 
+                // ===== ПАНЕЛЬ ИТОГО =====
                 Panel totalPanel = new Panel();
-                totalPanel.Location = new Point(10, 530);
-                totalPanel.Size = new Size(865, 40);
-                totalPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+                totalPanel.Size = new Size(765, 50);
                 totalPanel.BorderStyle = BorderStyle.FixedSingle;
-                totalPanel.BackColor = Color.FromArgb(240, 240, 240);
+                totalPanel.BackColor = Color.FromArgb(230, 255, 230);
 
-                Label lblTotal = new Label();
-                decimal totalAmount = selectedRow.Cells["total_amount"].Value != null ?
-                    Convert.ToDecimal(selectedRow.Cells["total_amount"].Value) : 0;
-                lblTotal.Text = $"ИТОГО: {totalAmount:N2} ₽";
-                lblTotal.Location = new Point(10, 10);
-                lblTotal.Size = new Size(845, 20);
-                lblTotal.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-                lblTotal.ForeColor = Color.DarkRed;
-                lblTotal.TextAlign = ContentAlignment.MiddleRight;
-                totalPanel.Controls.Add(lblTotal);
+                Label lblTotalTitle = new Label();
+                lblTotalTitle.Text = "ИТОГО:";
+                lblTotalTitle.Location = new Point(10, 12);
+                lblTotalTitle.Size = new Size(80, 25);
+                lblTotalTitle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+                lblTotalTitle.ForeColor = Color.DarkGreen;
+                lblTotalTitle.TextAlign = ContentAlignment.MiddleLeft;
 
+                Label lblTotalSum = new Label();
+                lblTotalSum.Text = $"{totalAmount.ToString("N2", russianCulture)} ₽";
+                lblTotalSum.Location = new Point(100, 12);
+                lblTotalSum.Size = new Size(200, 25);
+                lblTotalSum.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+                lblTotalSum.ForeColor = Color.DarkRed;
+                lblTotalSum.TextAlign = ContentAlignment.MiddleLeft;
+
+                totalPanel.Controls.Add(lblTotalTitle);
+                totalPanel.Controls.Add(lblTotalSum);
+
+                // ===== РАСПОЛОЖЕНИЕ =====
+                int currentY = 15;
+                infoPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(infoPanel);
+                currentY += infoPanel.Height + 15;
+                dgvOrderDetails.Location = new Point(15, currentY);
+                dgvOrderDetails.Size = new Size(765, 380);
                 detailForm.Controls.Add(dgvOrderDetails);
+                currentY += dgvOrderDetails.Height + 10;
+                totalPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(totalPanel);
+
+                // ===== КНОПКА ЗАКРЫТЬ =====
+                Button btnClose = new Button();
+                btnClose.Text = "Закрыть";
+                btnClose.Size = new Size(120, 35);
+                btnClose.Location = new Point(660, currentY + 60);
+                btnClose.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+                btnClose.BackColor = Color.DarkSeaGreen;
+                btnClose.FlatStyle = FlatStyle.Flat;
+                btnClose.FlatAppearance.BorderSize = 1;
+                btnClose.FlatAppearance.BorderColor = Color.Black;
+                btnClose.Click += (s, e) => detailForm.Close();
+                detailForm.Controls.Add(btnClose);
 
                 detailForm.ShowDialog(this);
             }
@@ -549,6 +581,29 @@ namespace dump
                 MessageBox.Show($"Ошибка при загрузке деталей заказа: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private DataTable CreateOrderDetailsDataTable(List<OrderDetailItem> items)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("dish_name", typeof(string));
+            dt.Columns.Add("quantity", typeof(int));
+            dt.Columns.Add("price", typeof(decimal));
+            dt.Columns.Add("total_price", typeof(decimal));
+            dt.Columns.Add("is_gift", typeof(bool));
+
+            foreach (var item in items)
+            {
+                DataRow row = dt.NewRow();
+                row["dish_name"] = item.DisplayName;
+                row["quantity"] = item.Quantity;
+                row["price"] = item.Price;
+                row["total_price"] = item.TotalPrice;
+                row["is_gift"] = item.IsGift;
+                dt.Rows.Add(row);
+            }
+
+            return dt;
         }
 
         private DataGridView CreateOrderDetailsDataGridView()
@@ -576,7 +631,7 @@ namespace dump
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgv.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgv.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dgv.ColumnHeadersHeight = 45;
+            dgv.ColumnHeadersHeight = 40;
 
             dgv.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
             dgv.DefaultCellStyle.Padding = new Padding(5);
@@ -595,6 +650,7 @@ namespace dump
             colDishName.HeaderText = "Наименование";
             colDishName.DataPropertyName = "dish_name";
             colDishName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colDishName.FillWeight = 50;
             dgv.Columns.Add(colDishName);
 
             DataGridViewTextBoxColumn colQuantity = new DataGridViewTextBoxColumn();
@@ -602,6 +658,7 @@ namespace dump
             colQuantity.HeaderText = "Кол-во";
             colQuantity.DataPropertyName = "quantity";
             colQuantity.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colQuantity.FillWeight = 15;
             dgv.Columns.Add(colQuantity);
 
             DataGridViewTextBoxColumn colPrice = new DataGridViewTextBoxColumn();
@@ -609,6 +666,7 @@ namespace dump
             colPrice.HeaderText = "Цена";
             colPrice.DataPropertyName = "price";
             colPrice.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colPrice.FillWeight = 15;
             dgv.Columns.Add(colPrice);
 
             DataGridViewTextBoxColumn colTotal = new DataGridViewTextBoxColumn();
@@ -616,6 +674,7 @@ namespace dump
             colTotal.HeaderText = "Сумма";
             colTotal.DataPropertyName = "total_price";
             colTotal.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colTotal.FillWeight = 20;
             dgv.Columns.Add(colTotal);
 
             DataGridViewCheckBoxColumn colIsGift = new DataGridViewCheckBoxColumn();
@@ -624,6 +683,8 @@ namespace dump
             colIsGift.Visible = false;
             dgv.Columns.Add(colIsGift);
 
+            dgv.DataError += (s, e) => e.ThrowException = false;
+
             dgv.CellFormatting += (s, e) =>
             {
                 if (e.ColumnIndex == dgv.Columns["price"].Index && e.RowIndex >= 0 && e.Value != null)
@@ -631,7 +692,7 @@ namespace dump
                     if (e.Value is decimal || e.Value is int || e.Value is double)
                     {
                         decimal price = Convert.ToDecimal(e.Value);
-                        e.Value = price.ToString("N2") + " ₽";
+                        e.Value = price.ToString("N2", russianCulture) + " ₽";
                         e.FormattingApplied = true;
                     }
                 }
@@ -640,7 +701,7 @@ namespace dump
                     if (e.Value is decimal || e.Value is int || e.Value is double)
                     {
                         decimal total = Convert.ToDecimal(e.Value);
-                        e.Value = total.ToString("N2") + " ₽";
+                        e.Value = total.ToString("N2", russianCulture) + " ₽";
                         e.FormattingApplied = true;
                     }
                 }
@@ -662,7 +723,7 @@ namespace dump
             return dgv;
         }
 
-        // ===================== ЭКСПОРТ ЗАКАЗОВ =====================
+        // ===================== ЭКСПОРТ ЗАКАЗОВ (С МАСКИРОВАННЫМ ТЕЛЕФОНОМ) =====================
 
         private void BtnExportOrders_Click(object sender, EventArgs e)
         {
@@ -757,12 +818,12 @@ namespace dump
                 }
                 worksheet.Cells[1, 1].Font.Bold = true;
                 worksheet.Cells[1, 1].Font.Size = 14;
-                Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 8]];
+                Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 7]];
                 titleRange.Merge();
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
-                // Заголовки колонок
-                string[] headers = { "Дата", "Номер заказа", "Клиент", "Телефон", "Адрес", "Сумма", "Кол-во блюд", "Статус" };
+                // Заголовки колонок (БЕЗ КЛИЕНТА, телефон маскируем)
+                string[] headers = { "Дата", "Номер заказа", "Телефон", "Адрес", "Сумма", "Кол-во блюд", "Статус" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     Excel.Range headerCell = worksheet.Cells[3, i + 1];
@@ -773,24 +834,24 @@ namespace dump
                     headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 }
 
-                // Данные
+                // Данные (маскируем телефон)
                 for (int row = 0; row < data.Rows.Count; row++)
                 {
                     worksheet.Cells[row + 4, 1] = data.Rows[row]["date_time"].ToString();
                     worksheet.Cells[row + 4, 2] = data.Rows[row]["order_number"].ToString();
-                    worksheet.Cells[row + 4, 3] = data.Rows[row]["client"].ToString();
-                    worksheet.Cells[row + 4, 4] = data.Rows[row]["phone"].ToString();
-                    worksheet.Cells[row + 4, 5] = data.Rows[row]["address"].ToString();
+                    // МАСКИРУЕМ ТЕЛЕФОН В ЭКСПОРТЕ
+                    worksheet.Cells[row + 4, 3] = MaskPhone(data.Rows[row]["phone"].ToString());
+                    worksheet.Cells[row + 4, 4] = data.Rows[row]["address"].ToString();
 
-                    Excel.Range amountCell = worksheet.Cells[row + 4, 6];
+                    Excel.Range amountCell = worksheet.Cells[row + 4, 5];
                     amountCell.Value = Convert.ToDouble(data.Rows[row]["total_amount"]);
                     amountCell.NumberFormat = "#,##0.00";
                     amountCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
 
-                    worksheet.Cells[row + 4, 7] = data.Rows[row]["dishes_count"].ToString();
-                    worksheet.Cells[row + 4, 8] = data.Rows[row]["status"].ToString();
+                    worksheet.Cells[row + 4, 6] = data.Rows[row]["dishes_count"].ToString();
+                    worksheet.Cells[row + 4, 7] = data.Rows[row]["status"].ToString();
 
-                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 8]];
+                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 7]];
                     dataRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                 }
 
@@ -858,9 +919,9 @@ namespace dump
             }
         }
 
-        // ===================== ЭКСПОРТ ПРИБЫЛИ =====================
+        // ===================== ЭКСПОРТ ВЫРУЧКИ =====================
 
-        private void BtnExportProfit_Click(object sender, EventArgs e)
+        private void BtnExportRevenue_Click(object sender, EventArgs e)
         {
             try
             {
@@ -876,7 +937,7 @@ namespace dump
 
                 Cursor = Cursors.WaitCursor;
 
-                DataTable exportData = LoadProfitFromDB(startDate, endDate);
+                DataTable exportData = LoadRevenueFromDB(startDate, endDate);
 
                 if (exportData == null || exportData.Rows.Count == 0)
                 {
@@ -891,16 +952,16 @@ namespace dump
 
                 if (filterByPeriod)
                 {
-                    saveDialog.FileName = $"Прибыль_{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";
+                    saveDialog.FileName = $"Выручка_{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";
                 }
                 else
                 {
-                    saveDialog.FileName = $"Прибыль_все_{DateTime.Now:yyyyMMdd_HHmmss}";
+                    saveDialog.FileName = $"Выручка_все_{DateTime.Now:yyyyMMdd_HHmmss}";
                 }
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
-                    ExportProfitToExcel(saveDialog.FileName, exportData, startDate, endDate);
+                    ExportRevenueToExcel(saveDialog.FileName, exportData, startDate, endDate);
 
                     DialogResult result = MessageBox.Show($"✅ Файл успешно сохранен!\n{saveDialog.FileName}\n\nОткрыть файл?",
                         "Готово", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -926,7 +987,7 @@ namespace dump
             }
         }
 
-        private DataTable LoadProfitFromDB(DateTime startDate, DateTime endDate)
+        private DataTable LoadRevenueFromDB(DateTime startDate, DateTime endDate)
         {
             DataTable dt = new DataTable();
 
@@ -934,8 +995,8 @@ namespace dump
                 SELECT 
                     DATE(o.created_at) as date,
                     COALESCE(SUM(od.quantity * od.price_at_order), 0) as revenue,
-                    COALESCE(SUM(od.quantity * d.cost), 0) as total_cost,
-                    COUNT(DISTINCT o.id_order) as orders_count
+                    COUNT(DISTINCT o.id_order) as orders_count,
+                    COALESCE(COUNT(od.id_order_dish), 0) as dishes_count
                 FROM orders o
                 LEFT JOIN order_dish od ON o.id_order = od.id_order
                 LEFT JOIN dishes d ON od.id_dish = d.id_dish
@@ -966,33 +1027,15 @@ namespace dump
                 }
             }
 
-            // Добавляем колонки для прибыли и маржи
-            dt.Columns.Add("profit", typeof(decimal));
-            dt.Columns.Add("margin", typeof(decimal));
-
-            foreach (DataRow row in dt.Rows)
-            {
-                decimal revenue = Convert.ToDecimal(row["revenue"]);
-                decimal cost = Convert.ToDecimal(row["total_cost"]);
-                decimal profit = revenue - cost;
-                decimal margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-
-                row["profit"] = profit;
-                row["margin"] = margin;
-            }
-
-            // Переименовываем колонки
             dt.Columns["date"].ColumnName = "Дата";
             dt.Columns["revenue"].ColumnName = "Выручка";
-            dt.Columns["total_cost"].ColumnName = "Себестоимость";
             dt.Columns["orders_count"].ColumnName = "Кол-во заказов";
-            dt.Columns["profit"].ColumnName = "Прибыль";
-            dt.Columns["margin"].ColumnName = "Маржа %";
+            dt.Columns["dishes_count"].ColumnName = "Кол-во блюд";
 
             return dt;
         }
 
-        private void ExportProfitToExcel(string filePath, DataTable data, DateTime startDate, DateTime endDate)
+        private void ExportRevenueToExcel(string filePath, DataTable data, DateTime startDate, DateTime endDate)
         {
             Excel.Application excelApp = null;
             Excel.Workbook workbook = null;
@@ -1006,25 +1049,24 @@ namespace dump
 
                 workbook = excelApp.Workbooks.Add();
                 worksheet = workbook.Worksheets[1];
-                worksheet.Name = "Прибыль";
+                worksheet.Name = "Выручка";
 
-                // Заголовок
                 if (filterByPeriod)
                 {
-                    worksheet.Cells[1, 1] = $"Отчет по прибыли за период с {startDate:dd.MM.yyyy} по {endDate:dd.MM.yyyy}";
+                    worksheet.Cells[1, 1] = $"Отчет по выручке за период с {startDate:dd.MM.yyyy} по {endDate:dd.MM.yyyy}";
                 }
                 else
                 {
-                    worksheet.Cells[1, 1] = "Отчет по прибыли за ВСЕ время";
+                    worksheet.Cells[1, 1] = "Отчет по выручке за ВСЕ время";
                 }
                 worksheet.Cells[1, 1].Font.Bold = true;
                 worksheet.Cells[1, 1].Font.Size = 14;
-                Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 6]];
+                Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 4]];
                 titleRange.Merge();
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
                 // Заголовки колонок
-                string[] headers = { "Дата", "Выручка (₽)", "Себестоимость (₽)", "Прибыль (₽)", "Кол-во заказов", "Маржа %" };
+                string[] headers = { "Дата", "Выручка (₽)", "Кол-во заказов", "Кол-во блюд" };
                 for (int i = 0; i < headers.Length; i++)
                 {
                     Excel.Range headerCell = worksheet.Cells[3, i + 1];
@@ -1044,43 +1086,31 @@ namespace dump
                     revenueCell.Value = Convert.ToDouble(data.Rows[row]["Выручка"]);
                     revenueCell.NumberFormat = "#,##0.00";
                     revenueCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    revenueCell.Font.Bold = true;
+                    revenueCell.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
-                    Excel.Range costCell = worksheet.Cells[row + 4, 3];
-                    costCell.Value = Convert.ToDouble(data.Rows[row]["Себестоимость"]);
-                    costCell.NumberFormat = "#,##0.00";
-                    costCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    worksheet.Cells[row + 4, 3] = data.Rows[row]["Кол-во заказов"].ToString();
+                    worksheet.Cells[row + 4, 3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
-                    Excel.Range profitCell = worksheet.Cells[row + 4, 4];
-                    profitCell.Value = Convert.ToDouble(data.Rows[row]["Прибыль"]);
-                    profitCell.NumberFormat = "#,##0.00";
-                    profitCell.Font.Bold = true;
-                    profitCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    worksheet.Cells[row + 4, 4] = data.Rows[row]["Кол-во блюд"].ToString();
+                    worksheet.Cells[row + 4, 4].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
-                    worksheet.Cells[row + 4, 5] = data.Rows[row]["Кол-во заказов"].ToString();
-
-                    Excel.Range marginCell = worksheet.Cells[row + 4, 6];
-                    marginCell.Value = Convert.ToDouble(data.Rows[row]["Маржа %"]);
-                    marginCell.NumberFormat = "0.0";
-                    marginCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-
-                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 6]];
+                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 4]];
                     dataRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                 }
 
                 // Итоги
                 int lastRow = data.Rows.Count + 5;
-                decimal totalRevenue = 0, totalCost = 0;
+                decimal totalRevenue = 0;
                 int totalOrders = 0;
+                int totalDishes = 0;
 
                 foreach (DataRow row in data.Rows)
                 {
                     totalRevenue += Convert.ToDecimal(row["Выручка"]);
-                    totalCost += Convert.ToDecimal(row["Себестоимость"]);
                     totalOrders += Convert.ToInt32(row["Кол-во заказов"]);
+                    totalDishes += Convert.ToInt32(row["Кол-во блюд"]);
                 }
-
-                decimal totalProfit = totalRevenue - totalCost;
-                decimal avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
                 Excel.Range totalTitleCell = worksheet.Cells[lastRow, 1];
                 totalTitleCell.Value = "ИТОГИ:";
@@ -1095,34 +1125,25 @@ namespace dump
                 revenueCell2.Value = Convert.ToDouble(totalRevenue);
                 revenueCell2.NumberFormat = "#,##0.00";
                 revenueCell2.Font.Bold = true;
+                revenueCell2.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
-                worksheet.Cells[lastRow + 2, 1] = "Общая себестоимость:";
+                worksheet.Cells[lastRow + 2, 1] = "Всего заказов:";
                 worksheet.Cells[lastRow + 2, 1].Font.Bold = true;
-                Excel.Range costCell2 = worksheet.Cells[lastRow + 2, 2];
-                costCell2.Value = Convert.ToDouble(totalCost);
-                costCell2.NumberFormat = "#,##0.00";
-                costCell2.Font.Bold = true;
+                worksheet.Cells[lastRow + 2, 2] = totalOrders;
 
-                worksheet.Cells[lastRow + 3, 1] = "Общая прибыль:";
+                worksheet.Cells[lastRow + 3, 1] = "Всего блюд:";
                 worksheet.Cells[lastRow + 3, 1].Font.Bold = true;
-                Excel.Range profitCell2 = worksheet.Cells[lastRow + 3, 2];
-                profitCell2.Value = Convert.ToDouble(totalProfit);
-                profitCell2.NumberFormat = "#,##0.00";
-                profitCell2.Font.Bold = true;
-                profitCell2.Font.Color = totalProfit >= 0 ?
-                    System.Drawing.ColorTranslator.ToOle(Color.DarkGreen) :
-                    System.Drawing.ColorTranslator.ToOle(Color.Red);
+                worksheet.Cells[lastRow + 3, 2] = totalDishes;
 
-                worksheet.Cells[lastRow + 4, 1] = "Всего заказов:";
-                worksheet.Cells[lastRow + 4, 1].Font.Bold = true;
-                worksheet.Cells[lastRow + 4, 2] = totalOrders;
-
-                worksheet.Cells[lastRow + 5, 1] = "Средняя маржа:";
-                worksheet.Cells[lastRow + 5, 1].Font.Bold = true;
-                Excel.Range avgCell = worksheet.Cells[lastRow + 5, 2];
-                avgCell.Value = Convert.ToDouble(avgMargin);
-                avgCell.NumberFormat = "0.0";
-                avgCell.Font.Bold = true;
+                if (totalOrders > 0)
+                {
+                    worksheet.Cells[lastRow + 4, 1] = "Средний чек:";
+                    worksheet.Cells[lastRow + 4, 1].Font.Bold = true;
+                    Excel.Range avgCell = worksheet.Cells[lastRow + 4, 2];
+                    avgCell.Value = Convert.ToDouble(totalRevenue / totalOrders);
+                    avgCell.NumberFormat = "#,##0.00";
+                    avgCell.Font.Bold = true;
+                }
 
                 worksheet.Columns.AutoFit();
                 workbook.SaveAs(filePath);

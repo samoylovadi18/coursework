@@ -60,7 +60,7 @@
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(192, 47);
             this.btnExport.TabIndex = 7;
-            this.btnExport.Text = "Экспорт в Excel";
+            this.btnExport.Text = "Экспорт в PDF";
             this.btnExport.UseVisualStyleBackColor = false;
             // 
             // label1
