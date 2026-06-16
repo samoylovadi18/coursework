@@ -307,9 +307,7 @@ namespace dump
 
         private void button5_Click(object sender, EventArgs e)
         {
-            this.Visible = false;
-            ImportRestoreForm import = new ImportRestoreForm();
-            import.Show();
+            
         }
     }
 }

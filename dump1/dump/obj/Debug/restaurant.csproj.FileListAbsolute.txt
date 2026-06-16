@@ -111,7 +111,6 @@ C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\du
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\restaurant.csproj.ResolveComReference.cache
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.AdminForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.CertificateStatisticsForm.resources
-C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.ImportRestoreForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.Menu.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.OrdersForm.resources
 C:\Users\karta\OneDrive\Рабочий стол\ДИПЛОМ\coursework\dump1\dump\obj\Debug\dump.UsersForm.resources

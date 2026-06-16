@@ -204,10 +204,12 @@ namespace dump
                 comboBoxSearchType.Items.Add("Поиск по номеру телефона");
                 comboBoxSearchType.SelectedIndex = 0;
                 comboBoxSearchType.SelectedIndexChanged += ComboBoxSearchType_SelectedIndexChanged;
+                comboBoxSearchType.Font = new Font("Times New Roman", 14);
             }
 
             // Настройка textBoxSearch
             SetupSearchPlaceholder();
+            textBoxSearch.Font = new Font("Times New Roman", 14);
             textBoxSearch.TextChanged += textBoxSearch_TextChanged;
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
             textBoxSearch.Click += TextBoxSearch_Click;
@@ -215,34 +217,15 @@ namespace dump
             // Настройка comboBoxStatus
             comboBoxStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
+            comboBoxStatus.Font = new Font("Times New Roman", 14);
 
             // Настройка кнопок
             buttonReset.Click += buttonReset_Click;
-            buttonReset.FlatStyle = FlatStyle.Flat;
-            buttonReset.FlatAppearance.BorderSize = 1;
-            buttonReset.FlatAppearance.BorderColor = Color.Black;
-            buttonReset.BackColor = Color.DarkSeaGreen;
-            buttonReset.ForeColor = Color.Black;
-            buttonReset.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonReset.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonReset.MouseDown += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonReset.MouseUp += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
-            buttonReset.MouseLeave += (s, e) => buttonReset.FlatAppearance.BorderColor = Color.Black;
+            SetupPanelButtonStyle(buttonReset);
 
             // Настройка кнопки деталей заказа
             buttonDetail.Click += ButtonDetail_Click;
-            buttonDetail.FlatStyle = FlatStyle.Flat;
-            buttonDetail.FlatAppearance.BorderSize = 1;
-            buttonDetail.FlatAppearance.BorderColor = Color.Black;
-            buttonDetail.BackColor = Color.DarkSeaGreen;
-            buttonDetail.ForeColor = Color.Black;
-            buttonDetail.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonDetail.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-
-            buttonDetail.MouseDown += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonDetail.MouseUp += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
-            buttonDetail.MouseLeave += (s, e) => buttonDetail.FlatAppearance.BorderColor = Color.Black;
+            SetupPanelButtonStyle(buttonDetail);
 
             // Двойной клик по строке
             dgvOrders.CellDoubleClick += DgvOrders_CellDoubleClick;
@@ -250,6 +233,24 @@ namespace dump
             // Загрузка данных
             LoadStatusesToComboBox();
             LoadOrders();
+        }
+
+        private void SetupPanelButtonStyle(Button btn)
+        {
+            if (btn == null) return;
+
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = Color.Black;
+            btn.BackColor = Color.DarkSeaGreen;
+            btn.ForeColor = Color.Black;
+            btn.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            btn.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            btn.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+
+            btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
+            btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
+            btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
         // ===== МАСКИРОВАНИЕ НОМЕРА ТЕЛЕФОНА =====
@@ -857,16 +858,18 @@ namespace dump
             dgv.EnableHeadersVisualStyles = false;
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(97, 173, 123);
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.ColumnHeadersHeight = 40;
+            dgv.ColumnHeadersHeight = 45;
 
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
             dgv.RowsDefaultCellStyle.ForeColor = Color.Black;
             dgv.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dgv.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
-            dgv.RowTemplate.Height = 35;
+            dgv.RowTemplate.Height = 40;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+            dgv.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             DataGridViewTextBoxColumn colDishName = new DataGridViewTextBoxColumn();
             colDishName.Name = "dish_name";
@@ -939,13 +942,13 @@ namespace dump
                     {
                         row.DefaultCellStyle.BackColor = Color.LightYellow;
                         row.DefaultCellStyle.ForeColor = Color.DarkOrange;
-                        row.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                        row.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
 
                         foreach (DataGridViewCell cell in row.Cells)
                         {
                             cell.Style.BackColor = Color.LightYellow;
                             cell.Style.ForeColor = Color.DarkOrange;
-                            cell.Style.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                            cell.Style.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         }
                     }
                 }
@@ -1029,7 +1032,7 @@ namespace dump
             }
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (БЕЗ КОЛОНКИ "Клиент" И С МАСКИРОВАНИЕМ ТЕЛЕФОНА) =====
+        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (С TIMES NEW ROMAN 14PT) =====
         private void InitializeDataGridView()
         {
             dgvOrders.ShowCellToolTips = false;
@@ -1043,25 +1046,27 @@ namespace dump
             dgvOrders.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dgvOrders.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvOrders.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dgvOrders.RowTemplate.Height = 40;
-            dgvOrders.RowTemplate.MinimumHeight = 40;
+            dgvOrders.RowTemplate.Height = 45;
+            dgvOrders.RowTemplate.MinimumHeight = 45;
             dgvOrders.RowHeadersVisible = false;
             dgvOrders.EnableHeadersVisualStyles = false;
-            dgvOrders.ColumnHeadersHeight = 45;
+            dgvOrders.ColumnHeadersHeight = 50;
             dgvOrders.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
             Color headerBackColor = Color.FromArgb(97, 173, 123);
 
+            // ===== ШАПКА - TIMES NEW ROMAN 14PT BOLD =====
             dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgvOrders.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvOrders.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvOrders.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
             dgvOrders.ColumnHeadersDefaultCellStyle.SelectionBackColor = headerBackColor;
             dgvOrders.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgvOrders.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            // ===== ЯЧЕЙКИ - TIMES NEW ROMAN 14PT REGULAR =====
+            dgvOrders.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvOrders.DefaultCellStyle.Padding = new Padding(0, 2, 0, 2);
             dgvOrders.DefaultCellStyle.BackColor = Color.White;
             dgvOrders.DefaultCellStyle.ForeColor = Color.Black;
@@ -1084,10 +1089,11 @@ namespace dump
             colId.Name = "id_order";
             colId.HeaderText = "№";
             colId.DataPropertyName = "id_order";
-            colId.Width = 60;
+            colId.Width = 70;
             colId.MinimumWidth = 60;
             colId.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colId.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            colId.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colId.Resizable = DataGridViewTriState.True;
             colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colId);
@@ -1097,11 +1103,11 @@ namespace dump
             colPhone.Name = "phone_number";
             colPhone.HeaderText = "Телефон";
             colPhone.DataPropertyName = "phone_number";
-            colPhone.Width = 130;
+            colPhone.Width = 150;
             colPhone.MinimumWidth = 130;
             colPhone.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             colPhone.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPhone.Resizable = DataGridViewTriState.True;
             colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colPhone);
@@ -1111,11 +1117,11 @@ namespace dump
             colAddress.Name = "address";
             colAddress.HeaderText = "Адрес";
             colAddress.DataPropertyName = "address";
-            colAddress.Width = 320;
+            colAddress.Width = 350;
             colAddress.MinimumWidth = 250;
             colAddress.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colAddress.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colAddress.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colAddress.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colAddress.Resizable = DataGridViewTriState.True;
             colAddress.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colAddress);
@@ -1125,11 +1131,11 @@ namespace dump
             colPersons.Name = "number_persons";
             colPersons.HeaderText = "Персон";
             colPersons.DataPropertyName = "number_persons";
-            colPersons.Width = 75;
+            colPersons.Width = 85;
             colPersons.MinimumWidth = 75;
-            colPersons.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colPersons.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            colPersons.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPersons.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colPersons.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPersons.Resizable = DataGridViewTriState.True;
             colPersons.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colPersons);
@@ -1139,12 +1145,12 @@ namespace dump
             colDate.Name = "delivery_date";
             colDate.HeaderText = "Дата";
             colDate.DataPropertyName = "delivery_date";
-            colDate.Width = 90;
+            colDate.Width = 110;
             colDate.MinimumWidth = 90;
             colDate.DefaultCellStyle.Format = "dd.MM.yyyy";
             colDate.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colDate.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            colDate.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colDate.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colDate.Resizable = DataGridViewTriState.True;
             colDate.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colDate);
@@ -1154,11 +1160,11 @@ namespace dump
             colComment.Name = "comment";
             colComment.HeaderText = "Комментарий";
             colComment.DataPropertyName = "comment";
-            colComment.Width = 200;
+            colComment.Width = 220;
             colComment.MinimumWidth = 150;
             colComment.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colComment.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colComment.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colComment.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colComment.Resizable = DataGridViewTriState.True;
             colComment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colComment);
@@ -1168,11 +1174,11 @@ namespace dump
             colPayment.Name = "payment_method";
             colPayment.HeaderText = "Оплата";
             colPayment.DataPropertyName = "payment_method";
-            colPayment.Width = 100;
+            colPayment.Width = 110;
             colPayment.MinimumWidth = 100;
             colPayment.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             colPayment.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colPayment.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPayment.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPayment.Resizable = DataGridViewTriState.True;
             colPayment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colPayment);
@@ -1192,11 +1198,11 @@ namespace dump
             colStatusName.Name = "status_name";
             colStatusName.HeaderText = "Статус";
             colStatusName.DataPropertyName = "status_name";
-            colStatusName.Width = 120;
+            colStatusName.Width = 140;
             colStatusName.MinimumWidth = 120;
             colStatusName.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colStatusName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colStatusName.Resizable = DataGridViewTriState.True;
             colStatusName.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colStatusName);

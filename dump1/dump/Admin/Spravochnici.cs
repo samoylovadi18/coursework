@@ -12,11 +12,14 @@ namespace dump
 {
     public partial class Spravochnici : Form
     {
-        // Переменная для отслеживания режима редактирования
         private bool isEditMode = false;
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
-        private bool isFormatting = false; // Флаг для предотвращения рекурсии при форматировании
+        private bool isFormatting = false;
         private bool isLockDialogOpen = false;
+
+        // Цвет шапки как на других формах
+        private Color headerBackColor = Color.FromArgb(97, 173, 123);
+
         public Spravochnici()
         {
             InitializeComponent();
@@ -35,15 +38,17 @@ namespace dump
             AddButton.Click += AddButton_Click;
             AddButton.Visible = true;
             AddButton.Text = "Добавить";
+            AddButton.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
-            // КНОПКА СОХРАНИТЬ (НОВАЯ)
+            // КНОПКА СОХРАНИТЬ
             buttonSave.FlatStyle = FlatStyle.Flat;
             buttonSave.FlatAppearance.BorderSize = 1;
             buttonSave.FlatAppearance.BorderColor = Color.Black;
             buttonSave.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             buttonSave.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
             buttonSave.Click += ButtonSave_Click;
-            buttonSave.Visible = false; // Скрыта по умолчанию
+            buttonSave.Visible = false;
+            buttonSave.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             // КНОПКА РЕДАКТИРОВАТЬ
             buttonEdit.FlatStyle = FlatStyle.Flat;
@@ -52,6 +57,7 @@ namespace dump
             buttonEdit.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             buttonEdit.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
             buttonEdit.Click += ButtonEdit_Click;
+            buttonEdit.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             // КНОПКА УДАЛИТЬ
             buttonDelete.FlatStyle = FlatStyle.Flat;
@@ -60,6 +66,11 @@ namespace dump
             buttonDelete.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             buttonDelete.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
             buttonDelete.Click += DeleteButton_Click;
+            buttonDelete.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+
+         
+            // Настройка DataGridView
+            InitializeDataGridViews();
 
             SetupRussianOnlyTextBox(textBoxStatusName);
             SetupRussianOnlyTextBox(textBoxCategoryName);
@@ -79,11 +90,132 @@ namespace dump
 
             SetupDataGridViewRowSelection();
 
-            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
             this.FormClosing += Spravochnici_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
+        // ===================== НАСТРОЙКА DATA GRID VIEW =====================
+
+        private void InitializeDataGridViews()
+        {
+            // Настраиваем каждый DataGridView
+            SetupDataGridViewStyle(dataGridViewStatus);
+            SetupDataGridViewStyle(dataGridViewCategories);
+            SetupDataGridViewStyleForPresents(dataGridViewPresents);
+        }
+
+        private void SetupDataGridViewStyle(DataGridView dgv)
+        {
+            if (dgv == null) return;
+
+            dgv.AutoGenerateColumns = true;
+            dgv.AllowUserToAddRows = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgv.ReadOnly = true;
+            dgv.MultiSelect = false;
+            dgv.RowHeadersVisible = false;
+            dgv.EnableHeadersVisualStyles = false;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // ===== ЗЕЛЕНАЯ ШАПКА =====
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgv.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgv.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
+            dgv.ColumnHeadersHeight = 50;
+            dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            // ===== ЯЧЕЙКИ =====
+            dgv.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgv.DefaultCellStyle.Padding = new Padding(5);
+            dgv.DefaultCellStyle.BackColor = Color.White;
+            dgv.DefaultCellStyle.ForeColor = Color.Black;
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
+            dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgv.RowsDefaultCellStyle.BackColor = Color.White;
+            dgv.RowsDefaultCellStyle.ForeColor = Color.Black;
+            dgv.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
+            dgv.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgv.RowTemplate.Height = 40;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+            dgv.GridColor = Color.Gray;
+            dgv.BorderStyle = BorderStyle.Fixed3D;
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+        }
+
+        private void SetupDataGridViewStyleForPresents(DataGridView dgv)
+        {
+            if (dgv == null) return;
+
+            dgv.AutoGenerateColumns = true;
+            dgv.AllowUserToAddRows = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgv.ReadOnly = true;
+            dgv.MultiSelect = false;
+            dgv.RowHeadersVisible = false;
+            dgv.EnableHeadersVisualStyles = false;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // ===== ЗЕЛЕНАЯ ШАПКА =====
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgv.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgv.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
+            dgv.ColumnHeadersHeight = 50;
+            dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            // ===== ЯЧЕЙКИ =====
+            dgv.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgv.DefaultCellStyle.Padding = new Padding(5);
+            dgv.DefaultCellStyle.BackColor = Color.White;
+            dgv.DefaultCellStyle.ForeColor = Color.Black;
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
+            dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgv.RowsDefaultCellStyle.BackColor = Color.White;
+            dgv.RowsDefaultCellStyle.ForeColor = Color.Black;
+            dgv.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
+            dgv.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgv.RowTemplate.Height = 40;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+            dgv.GridColor = Color.Gray;
+            dgv.BorderStyle = BorderStyle.Fixed3D;
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+
+            // Для подарков настроим форматирование цены
+            dgv.DataBindingComplete += (s, e) =>
+            {
+                if (dgv.Columns.Contains("from_price"))
+                {
+                    dgv.Columns["from_price"].HeaderText = "От какой суммы";
+                    dgv.Columns["from_price"].DefaultCellStyle.Format = "N2";
+                    dgv.Columns["from_price"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+                if (dgv.Columns.Contains("name"))
+                {
+                    dgv.Columns["name"].HeaderText = "Название подарка";
+                }
+                if (dgv.Columns.Contains("id_present"))
+                {
+                    dgv.Columns["id_present"].Visible = false;
+                }
+            };
+        }
+
+        // ===================== БЛОКИРОВКА =====================
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -122,6 +254,7 @@ namespace dump
                 btnUnlock.Text = "Разблокировать";
                 btnUnlock.Location = new Point(130, 145);
                 btnUnlock.Size = new Size(100, 30);
+                btnUnlock.Font = new Font("Times New Roman", 12, FontStyle.Bold);
 
                 btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
                 txtPassword.KeyPress += (s, e) =>
@@ -209,7 +342,6 @@ namespace dump
             base.OnFormClosed(e);
         }
 
-        // ОБРАБОТЧИК - при нажатии на крестик
         private void Spravochnici_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -221,7 +353,8 @@ namespace dump
             }
         }
 
-        // ОБРАБОТЧИК - клик по ячейке DataGridView для выделения строки
+        // ===================== ОБРАБОТЧИКИ =====================
+
         private void DataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -235,7 +368,6 @@ namespace dump
             }
         }
 
-        // ОБРАБОТЧИК - кнопка Редактировать
         private void ButtonEdit_Click(object sender, EventArgs e)
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -250,7 +382,6 @@ namespace dump
             PrepareForEdit();
         }
 
-        // ОБРАБОТЧИК - кнопка Сохранить
         private void ButtonSave_Click(object sender, EventArgs e)
         {
             SaveChanges();
@@ -274,6 +405,12 @@ namespace dump
             textBoxCategoryName.MaxLength = 255;
             textBoxPresentName.MaxLength = 255;
             textBoxFromPrice.MaxLength = 20;
+
+            // Шрифты для текстовых полей
+            textBoxStatusName.Font = new Font("Times New Roman", 14);
+            textBoxCategoryName.Font = new Font("Times New Roman", 14);
+            textBoxPresentName.Font = new Font("Times New Roman", 14);
+            textBoxFromPrice.Font = new Font("Times New Roman", 14);
         }
 
         private void SetupPriceTextBox(TextBox textBox)
@@ -499,7 +636,6 @@ namespace dump
             ClearInputFields(tabConrol1.SelectedTab?.Name);
             ClearTags(tabConrol1.SelectedTab?.Name);
 
-            // Показываем кнопку "Добавить", скрываем "Сохранить"
             AddButton.Visible = true;
             buttonSave.Visible = false;
             AddButton.Text = "Добавить";
@@ -523,16 +659,16 @@ namespace dump
                     switch (selectedTab)
                     {
                         case "tabRole":
-                            query = "SELECT id_role, role_name as 'Название роли' FROM roles";
+                            query = "SELECT id_role, role_name FROM roles";
                             break;
                         case "tabStatus":
-                            query = "SELECT id_status, status_name as 'Название статуса' FROM order_statuses";
+                            query = "SELECT id_status, status_name FROM order_statuses";
                             break;
                         case "tabCategories":
-                            query = "SELECT id_category, category_name as 'Название категории' FROM categories";
+                            query = "SELECT id_category, category_name FROM categories";
                             break;
                         case "tabPresent":
-                            query = "SELECT id_present, name as 'Название подарка', from_price as 'От какой суммы' FROM present";
+                            query = "SELECT id_present, name, from_price FROM present";
                             break;
                         default:
                             return;
@@ -543,28 +679,50 @@ namespace dump
                         adapter.Fill(dataTable);
                     }
 
-                    switch (selectedTab)
+                    // ПЕРЕИМЕНОВЫВАЕМ КОЛОНКИ ДЛЯ ОТОБРАЖЕНИЯ
+                    if (selectedTab == "tabStatus")
                     {
-                        case "tabStatus":
-                            dataGridViewStatus.DataSource = dataTable;
-                            if (dataGridViewStatus.Columns.Contains("id_status"))
-                                dataGridViewStatus.Columns["id_status"].Visible = false;
-                            break;
-                        case "tabCategories":
-                            dataGridViewCategories.DataSource = dataTable;
-                            if (dataGridViewCategories.Columns.Contains("id_category"))
-                                dataGridViewCategories.Columns["id_category"].Visible = false;
-                            break;
-                        case "tabPresent":
-                            dataGridViewPresents.DataSource = dataTable;
-                            if (dataGridViewPresents.Columns.Contains("id_present"))
-                                dataGridViewPresents.Columns["id_present"].Visible = false;
-                            if (dataGridViewPresents.Columns.Contains("От какой суммы"))
-                            {
-                                dataGridViewPresents.Columns["От какой суммы"].DefaultCellStyle.Format = "N2";
-                                dataGridViewPresents.Columns["От какой суммы"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                            }
-                            break;
+                        if (dataTable.Columns.Contains("status_name"))
+                            dataTable.Columns["status_name"].ColumnName = "Название статуса";
+                        if (dataTable.Columns.Contains("id_status"))
+                            dataTable.Columns["id_status"].ColumnName = "id_status";
+                        dataGridViewStatus.DataSource = dataTable;
+                        if (dataGridViewStatus.Columns.Contains("id_status"))
+                            dataGridViewStatus.Columns["id_status"].Visible = false;
+                    }
+                    else if (selectedTab == "tabCategories")
+                    {
+                        if (dataTable.Columns.Contains("category_name"))
+                            dataTable.Columns["category_name"].ColumnName = "Название категории";
+                        if (dataTable.Columns.Contains("id_category"))
+                            dataTable.Columns["id_category"].ColumnName = "id_category";
+                        dataGridViewCategories.DataSource = dataTable;
+                        if (dataGridViewCategories.Columns.Contains("id_category"))
+                            dataGridViewCategories.Columns["id_category"].Visible = false;
+                    }
+                    else if (selectedTab == "tabPresent")
+                    {
+                        if (dataTable.Columns.Contains("name"))
+                            dataTable.Columns["name"].ColumnName = "Название подарка";
+                        if (dataTable.Columns.Contains("from_price"))
+                            dataTable.Columns["from_price"].ColumnName = "От какой суммы";
+                        dataGridViewPresents.DataSource = dataTable;
+                        if (dataGridViewPresents.Columns.Contains("id_present"))
+                            dataGridViewPresents.Columns["id_present"].Visible = false;
+                        if (dataGridViewPresents.Columns.Contains("От какой суммы"))
+                        {
+                            dataGridViewPresents.Columns["От какой суммы"].DefaultCellStyle.Format = "N2";
+                            dataGridViewPresents.Columns["От какой суммы"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        }
+                    }
+                    else if (selectedTab == "tabRole")
+                    {
+                        if (dataTable.Columns.Contains("role_name"))
+                            dataTable.Columns["role_name"].ColumnName = "Название роли";
+                        if (dataTable.Columns.Contains("id_role"))
+                            dataTable.Columns["id_role"].ColumnName = "id_role";
+                        // Если есть DataGridView для ролей - добавьте его
+                        // dataGridViewRoles.DataSource = dataTable;
                     }
                 }
             }
@@ -1331,7 +1489,6 @@ namespace dump
 
             isEditMode = true;
 
-            // Скрываем кнопку "Добавить", показываем "Сохранить"
             AddButton.Visible = false;
             buttonSave.Visible = true;
 

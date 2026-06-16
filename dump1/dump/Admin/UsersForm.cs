@@ -62,7 +62,6 @@ namespace dump
 
             this.FormClosing += UsersForm_FormClosing;
 
-            // Регистрация в менеджере бездействия
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
@@ -230,26 +229,30 @@ namespace dump
         private void InitializeInputValidation()
         {
             textBoxFIO.MaxLength = 100;
+            textBoxFIO.Font = new Font("Times New Roman", 14);
             textBoxFIO.KeyPress += TextBoxFIO_KeyPress;
             textBoxFIO.Validating += TextBoxFIO_Validating;
             textBoxFIO.TextChanged += TextBoxFIO_TextChanged;
             textBoxFIO.Leave += TextBoxFIO_Leave;
 
-
-
             textBoxLogin.MaxLength = 50;
+            textBoxLogin.Font = new Font("Times New Roman", 14);
             textBoxLogin.KeyPress += TextBoxLogin_KeyPress;
             textBoxLogin.Validating += TextBoxLogin_Validating;
 
             textBoxPassword.MaxLength = 50;
+            textBoxPassword.Font = new Font("Times New Roman", 14);
             textBoxPassword.KeyPress += TextBoxPassword_KeyPress;
             textBoxPassword.Validating += TextBoxPassword_Validating;
 
             textBoxSearch.MaxLength = 100;
+            textBoxSearch.Font = new Font("Times New Roman", 14);
             textBoxSearch.KeyPress += TextBoxSearch_KeyPress;
             textBoxSearch.TextChanged += TextBoxSearch_TextChanged;
             textBoxSearch.Leave += TextBoxSearch_Leave;
 
+            comboBoxRole.Font = new Font("Times New Roman", 14);
+            comboBoxRoleSort.Font = new Font("Times New Roman", 14);
         }
 
         private void InitializeSearchAndFilter()
@@ -260,47 +263,29 @@ namespace dump
 
         private void InitializeButtons()
         {
-            buttonAdd.FlatStyle = FlatStyle.Flat;
-            buttonAdd.FlatAppearance.BorderSize = 1;
-            buttonAdd.FlatAppearance.BorderColor = Color.Black;
-            buttonAdd.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonAdd.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-            buttonAdd.MouseDown += (s, e) => buttonAdd.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonAdd.MouseUp += (s, e) => buttonAdd.FlatAppearance.BorderColor = Color.Black;
-            buttonAdd.MouseLeave += (s, e) => buttonAdd.FlatAppearance.BorderColor = Color.Black;
+            SetupButtonStyle(buttonAdd);
+            SetupButtonStyle(buttonSave);
+            SetupButtonStyle(buttonEdit);
+            SetupButtonStyle(buttonDelete);
+            SetupButtonStyle(btnResetFilter);
+        }
 
-            buttonSave.FlatStyle = FlatStyle.Flat;
-            buttonSave.FlatAppearance.BorderSize = 1;
-            buttonSave.FlatAppearance.BorderColor = Color.Black;
-            buttonSave.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonSave.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+        private void SetupButtonStyle(Button button)
+        {
+            if (button == null) return;
 
-            buttonEdit.FlatStyle = FlatStyle.Flat;
-            buttonEdit.FlatAppearance.BorderSize = 1;
-            buttonEdit.FlatAppearance.BorderColor = Color.Black;
-            buttonEdit.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonEdit.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-            buttonEdit.MouseDown += (s, e) => buttonEdit.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonEdit.MouseUp += (s, e) => buttonEdit.FlatAppearance.BorderColor = Color.Black;
-            buttonEdit.MouseLeave += (s, e) => buttonEdit.FlatAppearance.BorderColor = Color.Black;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 1;
+            button.FlatAppearance.BorderColor = Color.Black;
+            button.BackColor = Color.DarkSeaGreen;
+            button.ForeColor = Color.Black;
+            button.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
+            button.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            button.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
-            buttonDelete.FlatStyle = FlatStyle.Flat;
-            buttonDelete.FlatAppearance.BorderSize = 1;
-            buttonDelete.FlatAppearance.BorderColor = Color.Black;
-            buttonDelete.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            buttonDelete.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-            buttonDelete.MouseDown += (s, e) => buttonDelete.FlatAppearance.BorderColor = Color.DarkBlue;
-            buttonDelete.MouseUp += (s, e) => buttonDelete.FlatAppearance.BorderColor = Color.Black;
-            buttonDelete.MouseLeave += (s, e) => buttonDelete.FlatAppearance.BorderColor = Color.Black;
-
-            btnResetFilter.FlatStyle = FlatStyle.Flat;
-            btnResetFilter.FlatAppearance.BorderSize = 1;
-            btnResetFilter.FlatAppearance.BorderColor = Color.Black;
-            btnResetFilter.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
-            btnResetFilter.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
-            btnResetFilter.MouseDown += (s, e) => btnResetFilter.FlatAppearance.BorderColor = Color.DarkBlue;
-            btnResetFilter.MouseUp += (s, e) => btnResetFilter.FlatAppearance.BorderColor = Color.Black;
-            btnResetFilter.MouseLeave += (s, e) => btnResetFilter.FlatAppearance.BorderColor = Color.Black;
+            button.MouseDown += (s, e) => button.FlatAppearance.BorderColor = Color.DarkBlue;
+            button.MouseUp += (s, e) => button.FlatAppearance.BorderColor = Color.Black;
+            button.MouseLeave += (s, e) => button.FlatAppearance.BorderColor = Color.Black;
         }
 
         private void InitializeDataGridView()
@@ -318,16 +303,17 @@ namespace dump
             Color headerBackColor = Color.FromArgb(97, 173, 123);
             Color selectionColor = Color.FromArgb(233, 242, 236);
 
+            // ===== TIMES NEW ROMAN 14PT ДЛЯ DataGridView =====
             dataGridViewUsers.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dataGridViewUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dataGridViewUsers.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dataGridViewUsers.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dataGridViewUsers.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewUsers.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridViewUsers.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dataGridViewUsers.ColumnHeadersHeight = 45;
+            dataGridViewUsers.ColumnHeadersHeight = 50;
             dataGridViewUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
-            dataGridViewUsers.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            dataGridViewUsers.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridViewUsers.DefaultCellStyle.Padding = new Padding(5);
             dataGridViewUsers.DefaultCellStyle.BackColor = Color.White;
             dataGridViewUsers.DefaultCellStyle.ForeColor = Color.Black;
@@ -339,7 +325,7 @@ namespace dump
             dataGridViewUsers.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
             dataGridViewUsers.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridViewUsers.RowTemplate.Height = 35;
+            dataGridViewUsers.RowTemplate.Height = 40;
             dataGridViewUsers.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridViewUsers.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
@@ -361,6 +347,7 @@ namespace dump
             colFIO.HeaderText = "ФИО";
             colFIO.DataPropertyName = "FIO";
             colFIO.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colFIO.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colFIO.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridViewUsers.Columns.Add(colFIO);
 
@@ -369,6 +356,7 @@ namespace dump
             colLogin.HeaderText = "Логин";
             colLogin.DataPropertyName = "login";
             colLogin.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colLogin.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colLogin.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridViewUsers.Columns.Add(colLogin);
 
@@ -384,6 +372,7 @@ namespace dump
             colRole.HeaderText = "Роль";
             colRole.DataPropertyName = "role_name";
             colRole.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colRole.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colRole.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridViewUsers.Columns.Add(colRole);
         }
@@ -411,7 +400,6 @@ namespace dump
                 return;
             }
 
-            // Разрешаем дефис
             if (e.KeyChar == '-')
                 return;
 
@@ -440,7 +428,6 @@ namespace dump
                 return;
             }
 
-            // Разрешаем дефис в поиске
             if (e.KeyChar == '-')
                 return;
 
@@ -537,7 +524,6 @@ namespace dump
 
             for (int i = 1; i < chars.Length; i++)
             {
-                // Проверяем, является ли предыдущий символ пробелом ИЛИ дефисом
                 if ((chars[i - 1] == ' ' || chars[i - 1] == '-') && IsRussianLetter(chars[i]))
                     chars[i] = char.ToUpper(chars[i]);
                 else if (IsRussianLetter(chars[i]) && i > 0 && !IsWordSeparator(chars[i - 1]))
@@ -573,7 +559,6 @@ namespace dump
                 return;
             }
 
-            // Разрешаем дефис в регулярном выражении
             if (!string.IsNullOrEmpty(text) && !Regex.IsMatch(text, @"^[а-яА-ЯёЁ\s\-]+$"))
             {
                 MessageBox.Show("ФИО может содержать только русские буквы, пробелы и дефисы!",
@@ -598,13 +583,11 @@ namespace dump
         {
             if (string.IsNullOrWhiteSpace(fio)) return fio;
 
-            // Разделяем по пробелам, но сохраняем дефисы внутри слов
             string[] words = fio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < words.Length; i++)
             {
                 if (words[i].Length > 0)
                 {
-                    // Если слово содержит дефис, форматируем каждую часть отдельно
                     if (words[i].Contains('-'))
                     {
                         string[] parts = words[i].Split('-');
@@ -1247,7 +1230,31 @@ namespace dump
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            HideEditPanel();
+            // Проверяем, есть ли заполненные поля
+            bool hasData = !string.IsNullOrWhiteSpace(textBoxFIO.Text) ||
+                           !string.IsNullOrWhiteSpace(textBoxLogin.Text) ||
+                           !string.IsNullOrWhiteSpace(textBoxPassword.Text);
+
+            // Если есть данные в полях, спрашиваем подтверждение
+            if (hasData)
+            {
+                DialogResult result = MessageBox.Show(
+                    "Вы действительно хотите отменить редактирование?\n\nВсе несохраненные изменения будут потеряны.",
+                    "Подтверждение отмены",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    HideEditPanel();
+                }
+                // Если No - ничего не делаем, остаемся в режиме редактирования
+            }
+            else
+            {
+                // Если поля пустые - просто закрываем панель
+                HideEditPanel();
+            }
         }
 
         private string ComputeSHA256Hash(string password)

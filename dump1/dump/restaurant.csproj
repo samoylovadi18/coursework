@@ -143,12 +143,6 @@
       <DependentUpon>CertificateStatisticsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="CurrentUser.cs" />
-    <Compile Include="Admin\ImportRestoreForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Admin\ImportRestoreForm.Designer.cs">
-      <DependentUpon>ImportRestoreForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Manager\EmloyForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -253,9 +247,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Director\TopDishForm.resx">
       <DependentUpon>TopDishForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Admin\ImportRestoreForm.resx">
-      <DependentUpon>ImportRestoreForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Manager\Menu.resx">
       <DependentUpon>Menu.cs</DependentUpon>

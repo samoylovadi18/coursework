@@ -37,6 +37,7 @@ namespace dump
         private bool isFormattingSearch = false;
         private Dictionary<string, int> categoryDictionary = new Dictionary<string, int>();
         private bool isLockDialogOpen = false;
+
         public AdminMenu()
         {
             InitializeComponent();
@@ -64,11 +65,11 @@ namespace dump
             btnCancel.Text = "Отмена";
             btnCancel.Font = new Font("Times New Roman", 14, FontStyle.Bold);
 
-            // ПОДПИСЫВАЕМСЯ НА СОБЫТИЕ ЗАКРЫТИЯ ФОРМЫ
             this.FormClosing += AdminMenu_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -194,19 +195,12 @@ namespace dump
             base.OnFormClosed(e);
         }
 
-        // НОВЫЙ ОБРАБОТЧИК - при нажатии на крестик
         private void AdminMenu_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие не было вызвано из кода
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // Открываем AdminForm
                 AdminForm admin = new AdminForm();
                 admin.Show();
             }
@@ -324,13 +318,30 @@ namespace dump
             dgvDishes.MultiSelect = false;
             dgvDishes.RowHeadersVisible = false;
 
+            dgvDishes.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            dgvDishes.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            dgvDishes.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvDishes.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvDishes.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+            dgvDishes.RowTemplate.Height = 80;
+            dgvDishes.RowTemplate.MinimumHeight = 80;
+
+            dgvDishes.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgvDishes.ColumnHeadersHeight = 55;
+
+            Color headerColor = Color.FromArgb(97, 173, 123);
+            dgvDishes.ColumnHeadersDefaultCellStyle.BackColor = headerColor;
+            dgvDishes.EnableHeadersVisualStyles = false;
+
             dgvDishes.Columns.Clear();
 
             DataGridViewImageColumn imageColumn = new DataGridViewImageColumn();
             imageColumn.Name = "photo";
             imageColumn.HeaderText = "Фото";
             imageColumn.DataPropertyName = "photo_image";
-            imageColumn.Width = 80;
+            imageColumn.Width = 100;
             imageColumn.ImageLayout = DataGridViewImageCellLayout.Zoom;
             dgvDishes.Columns.Add(imageColumn);
 
@@ -339,14 +350,16 @@ namespace dump
             nameColumn.HeaderText = "Название";
             nameColumn.DataPropertyName = "dish_name";
             nameColumn.Width = 200;
+            nameColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvDishes.Columns.Add(nameColumn);
 
             DataGridViewTextBoxColumn compoundColumn = new DataGridViewTextBoxColumn();
             compoundColumn.Name = "compound";
             compoundColumn.HeaderText = "Состав";
             compoundColumn.DataPropertyName = "compound";
-            compoundColumn.Width = 300;
+            compoundColumn.Width = 350;
             compoundColumn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            compoundColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
             dgvDishes.Columns.Add(compoundColumn);
 
             DataGridViewTextBoxColumn categoryColumn = new DataGridViewTextBoxColumn();
@@ -354,25 +367,30 @@ namespace dump
             categoryColumn.HeaderText = "Категория";
             categoryColumn.DataPropertyName = "category_name";
             categoryColumn.Width = 150;
+            categoryColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvDishes.Columns.Add(categoryColumn);
 
             DataGridViewTextBoxColumn priceColumn = new DataGridViewTextBoxColumn();
             priceColumn.Name = "price_display";
             priceColumn.HeaderText = "Цена";
-            priceColumn.Width = 120;
+            priceColumn.Width = 140;
+            priceColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            priceColumn.DefaultCellStyle.ForeColor = Color.DarkGreen;
             dgvDishes.Columns.Add(priceColumn);
 
             DataGridViewTextBoxColumn costColumn = new DataGridViewTextBoxColumn();
             costColumn.Name = "cost_display";
             costColumn.HeaderText = "Себестоимость";
-            costColumn.Width = 120;
+            costColumn.Width = 140;
+            costColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvDishes.Columns.Add(costColumn);
 
             DataGridViewTextBoxColumn weightColumn = new DataGridViewTextBoxColumn();
             weightColumn.Name = "weight_volume";
             weightColumn.HeaderText = "Вес/Объем";
             weightColumn.DataPropertyName = "weight_volume";
-            weightColumn.Width = 120;
+            weightColumn.Width = 130;
+            weightColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvDishes.Columns.Add(weightColumn);
 
             DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn();
@@ -392,17 +410,6 @@ namespace dump
             costValueColumn.DataPropertyName = "cost";
             costValueColumn.Visible = false;
             dgvDishes.Columns.Add(costValueColumn);
-
-            dgvDishes.ColumnHeadersHeight = 50;
-            dgvDishes.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            dgvDishes.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvDishes.DefaultCellStyle.Font = new Font("Times New Roman", 11);
-            dgvDishes.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvDishes.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-
-            Color headerColor = Color.FromArgb(97, 173, 123);
-            dgvDishes.ColumnHeadersDefaultCellStyle.BackColor = headerColor;
-            dgvDishes.EnableHeadersVisualStyles = false;
 
             dgvDishes.CellFormatting += DgvDishes_CellFormatting;
         }
@@ -782,6 +789,7 @@ namespace dump
             button.ForeColor = Color.Black;
             button.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             button.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            button.Font = new Font("Times New Roman", 14, FontStyle.Regular);
         }
 
         private void InitializeEditPanelAppearance()
@@ -798,20 +806,18 @@ namespace dump
             };
         }
 
-        // ===== НАСТРОЙКА ВСЕХ ОГРАНИЧЕНИЙ ДЛЯ ПОЛЕЙ ВВОДА =====
         private void SetupValidationTextBoxes()
         {
-            // ===== 1. НАСТРОЙКА ДЛЯ НАЗВАНИЯ БЛЮДА =====
             txtEditDishName.MaxLength = 100;
+            txtEditDishName.Font = new Font("Times New Roman", 14);
             txtEditDishName.KeyPress += (s, e) =>
             {
                 if (!char.IsControl(e.KeyChar) && !IsRussianLetter(e.KeyChar) && e.KeyChar != '-' && e.KeyChar != ' ')
                     e.Handled = true;
             };
 
-            // ===== 2. НАСТРОЙКА ДЛЯ ПОЛЯ ПОИСКА (С ОГРАНИЧЕНИЕМ 100 СИМВОЛОВ) =====
-            txtSearch.MaxLength = 100; // ОГРАНИЧЕНИЕ МАКСИМУМ 100 СИМВОЛОВ
-
+            txtSearch.MaxLength = 100;
+            txtSearch.Font = new Font("Times New Roman", 14);
             txtSearch.KeyPress += (s, e) =>
             {
                 if (!char.IsControl(e.KeyChar) && !IsRussianLetter(e.KeyChar) && e.KeyChar != ' ')
@@ -828,7 +834,6 @@ namespace dump
                     string text = txtSearch.Text;
                     int cursorPos = txtSearch.SelectionStart;
 
-                    // Ограничение длины
                     if (text.Length > 100)
                     {
                         text = text.Substring(0, 100);
@@ -837,7 +842,6 @@ namespace dump
                         return;
                     }
 
-                    // Удаление двойных пробелов
                     string newText = "";
                     bool lastWasSpace = false;
                     foreach (char c in text)
@@ -857,7 +861,6 @@ namespace dump
                         }
                     }
 
-                    // Первая буква заглавная
                     if (newText.Length > 0 && char.IsLower(newText[0]) && IsRussianLetter(newText[0]))
                     {
                         newText = char.ToUpper(newText[0]) + newText.Substring(1);
@@ -875,11 +878,19 @@ namespace dump
                 }
             };
 
-            // ===== 3. НАСТРОЙКА ДЛЯ ПОЛЕЙ ЦЕНЫ И СЕБЕСТОИМОСТИ =====
+            txtCost.Font = new Font("Times New Roman", 14);
+            numEditPrice.Font = new Font("Times New Roman", 14);
+            txtWeightVolume.Font = new Font("Times New Roman", 14);
+            txtEditCompound.Font = new Font("Times New Roman", 14);
+            comboEditCategory.Font = new Font("Times New Roman", 14);
+            comboCategoryFilter.Font = new Font("Times New Roman", 14);
+
             txtCost.KeyPress += TextBoxPrice_KeyPress;
             numEditPrice.KeyPress += TextBoxPrice_KeyPress;
             txtCost.Leave += (s, e) => FormatPriceTextBoxOnLeave(txtCost);
             numEditPrice.Leave += (s, e) => FormatPriceTextBoxOnLeave(numEditPrice);
+
+            txtWeightVolume.MaxLength = 20;
         }
 
         private bool IsRussianLetter(char c)
@@ -942,6 +953,7 @@ namespace dump
             panelEditDish.Visible = true;
             panelEditDish.BringToFront();
             editLabel.Text = isEditMode ? "Редактирование блюда" : "Добавление нового блюда";
+            editLabel.Font = new Font("Times New Roman", 16, FontStyle.Bold);
         }
 
         private void HideEditPanel()
@@ -1167,34 +1179,92 @@ namespace dump
             ShowEditPanel();
         }
 
+        // ===================== ИСПРАВЛЕННЫЙ МЕТОД УДАЛЕНИЯ (ЗАПРЕЩАЕТ УДАЛЕНИЕ ЕСЛИ БЛЮДО В ЗАКАЗАХ) =====================
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             if (dgvDishes.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите блюдо для удаления!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите блюдо для удаления!", "Внимание",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (MessageBox.Show("Удалить выбранное блюдо?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            {
-                int dishId = Convert.ToInt32(dgvDishes.SelectedRows[0].Cells["id_dish"].Value);
+            int dishId = Convert.ToInt32(dgvDishes.SelectedRows[0].Cells["id_dish"].Value);
+            string dishName = dgvDishes.SelectedRows[0].Cells["dish_name"].Value?.ToString() ?? "";
 
-                try
+            try
+            {
+                using (MySqlConnection connection = SettingsBD.GetConnection())
                 {
-                    using (MySqlConnection connection = SettingsBD.GetConnection())
+                    connection.Open();
+
+                    // ===== ПРОВЕРЯЕМ, ИСПОЛЬЗУЕТСЯ ЛИ БЛЮДО В ЗАКАЗАХ =====
+                    string checkQuery = "SELECT COUNT(*) FROM order_dish WHERE id_dish = @id";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@id", dishId);
+                    int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                    if (count > 0)
                     {
-                        connection.Open();
-                        MySqlCommand command = new MySqlCommand("DELETE FROM dishes WHERE id_dish = @id", connection);
-                        command.Parameters.AddWithValue("@id", dishId);
-                        command.ExecuteNonQuery();
-                        MessageBox.Show("Блюдо удалено!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // ===== ЕСЛИ БЛЮДО В ЗАКАЗАХ - ЗАПРЕЩАЕМ УДАЛЕНИЕ =====
+                        MessageBox.Show(
+                            $"❌ Невозможно удалить блюдо \"{dishName}\"!\n\n" +
+                            $"Оно используется в {count} заказах.\n\n" +
+                            $"Сначала удалите это блюдо из всех заказов.",
+                            "Удаление запрещено",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // ===== ЕСЛИ БЛЮДО НЕ В ЗАКАЗАХ - МОЖНО УДАЛИТЬ =====
+                    DialogResult result = MessageBox.Show(
+                        $"Вы действительно хотите удалить блюдо \"{dishName}\"?\n\nЭто действие невозможно отменить!",
+                        "Подтверждение удаления",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        string deleteQuery = "DELETE FROM dishes WHERE id_dish = @id";
+                        MySqlCommand deleteCmd = new MySqlCommand(deleteQuery, connection);
+                        deleteCmd.Parameters.AddWithValue("@id", dishId);
+                        deleteCmd.ExecuteNonQuery();
+
+                        MessageBox.Show($"✅ Блюдо \"{dishName}\" успешно удалено!",
+                            "Успех",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
                         LoadDishes();
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (MySqlException ex)
+            {
+                // Если вдруг ошибка внешнего ключа - перехватываем
+                if (ex.Number == 1451) // Cannot delete or update a parent row: a foreign key constraint fails
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"❌ Невозможно удалить блюдо \"{dishName}\"!\n\n" +
+                                  "Оно используется в заказах.\n\n" +
+                                  "Сначала удалите это блюдо из всех заказов.",
+                                  "Удаление запрещено",
+                                  MessageBoxButtons.OK,
+                                  MessageBoxIcon.Warning);
                 }
+                else
+                {
+                    MessageBox.Show($"Ошибка базы данных:\n{ex.Message}",
+                        "Ошибка",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
