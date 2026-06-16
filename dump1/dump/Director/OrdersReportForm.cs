@@ -52,6 +52,7 @@ namespace dump
                 btnExportOrders.FlatAppearance.BorderColor = Color.Black;
                 btnExportOrders.BackColor = Color.DarkSeaGreen;
                 btnExportOrders.ForeColor = Color.Black;
+                btnExportOrders.Font = new Font("Times New Roman", 14, FontStyle.Regular);
                 btnExportOrders.Click += BtnExportOrders_Click;
             }
 
@@ -64,6 +65,7 @@ namespace dump
                 btnExportProfit.FlatAppearance.BorderColor = Color.Black;
                 btnExportProfit.BackColor = Color.DarkSeaGreen;
                 btnExportProfit.ForeColor = Color.Black;
+                btnExportProfit.Font = new Font("Times New Roman", 14, FontStyle.Regular);
                 btnExportProfit.Click += BtnExportRevenue_Click;
             }
 
@@ -72,6 +74,7 @@ namespace dump
             {
                 chkFilterByPeriod.Text = "Фильтровать по периоду";
                 chkFilterByPeriod.Checked = false;
+                chkFilterByPeriod.Font = new Font("Times New Roman", 14);
                 chkFilterByPeriod.CheckedChanged += ChkFilterByPeriod_CheckedChanged;
             }
 
@@ -84,6 +87,7 @@ namespace dump
                 buttonDetail.FlatAppearance.BorderColor = Color.Black;
                 buttonDetail.BackColor = Color.DarkSeaGreen;
                 buttonDetail.ForeColor = Color.Black;
+                buttonDetail.Font = new Font("Times New Roman", 14, FontStyle.Regular);
                 buttonDetail.Click += ButtonDetail_Click;
             }
 
@@ -93,10 +97,12 @@ namespace dump
             // Подписка на изменение дат
             if (dtpStartDate != null)
             {
+                dtpStartDate.Font = new Font("Times New Roman", 14);
                 dtpStartDate.ValueChanged += DatePicker_ValueChanged;
             }
             if (dtpEndDate != null)
             {
+                dtpEndDate.Font = new Font("Times New Roman", 14);
                 dtpEndDate.ValueChanged += DatePicker_ValueChanged;
             }
 
@@ -174,6 +180,8 @@ namespace dump
 
             labelStartDate.Text = "Период с:";
             labelEndDate.Text = "по:";
+            labelStartDate.Font = new Font("Times New Roman", 14);
+            labelEndDate.Font = new Font("Times New Roman", 14);
 
             LoadOrders();
         }
@@ -193,15 +201,18 @@ namespace dump
             Color headerBackColor = Color.FromArgb(97, 173, 123);
             Color selectionColor = Color.FromArgb(233, 242, 236);
 
+            // ===== ЗЕЛЕНАЯ ШАПКА - TIMES NEW ROMAN 14PT BOLD =====
             dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgvOrders.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvOrders.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvOrders.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dgvOrders.ColumnHeadersHeight = 45;
+            dgvOrders.ColumnHeadersHeight = 50;
+            dgvOrders.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
-            dgvOrders.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            // ===== ЯЧЕЙКИ - TIMES NEW ROMAN 14PT REGULAR =====
+            dgvOrders.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvOrders.DefaultCellStyle.Padding = new Padding(5);
             dgvOrders.DefaultCellStyle.BackColor = Color.White;
             dgvOrders.DefaultCellStyle.ForeColor = Color.Black;
@@ -213,7 +224,7 @@ namespace dump
             dgvOrders.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
             dgvOrders.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgvOrders.RowTemplate.Height = 35;
+            dgvOrders.RowTemplate.Height = 40;
             dgvOrders.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvOrders.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvOrders.GridColor = Color.Gray;
@@ -229,6 +240,7 @@ namespace dump
             colId.Name = "id_order";
             colId.DataPropertyName = "id_order";
             colId.Visible = false;
+            colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colId);
 
             // Дата и время
@@ -237,6 +249,8 @@ namespace dump
             colDateTime.HeaderText = "Дата и время";
             colDateTime.DataPropertyName = "date_time";
             colDateTime.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colDateTime.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colDateTime.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colDateTime);
 
             // Номер заказа
@@ -245,6 +259,8 @@ namespace dump
             colOrderNumber.HeaderText = "№ заказа";
             colOrderNumber.DataPropertyName = "order_number";
             colOrderNumber.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colOrderNumber.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colOrderNumber.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colOrderNumber);
 
             // Телефон (маскированный)
@@ -253,6 +269,8 @@ namespace dump
             colPhone.HeaderText = "Телефон";
             colPhone.DataPropertyName = "phone";
             colPhone.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colPhone);
 
             // Адрес
@@ -261,6 +279,8 @@ namespace dump
             colAddress.HeaderText = "Адрес";
             colAddress.DataPropertyName = "address";
             colAddress.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colAddress.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colAddress.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colAddress);
 
             // Сумма
@@ -271,6 +291,8 @@ namespace dump
             colAmount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             colAmount.DefaultCellStyle.Format = "N2";
             colAmount.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colAmount.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            colAmount.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colAmount);
 
             // Кол-во блюд
@@ -279,6 +301,8 @@ namespace dump
             colDishes.HeaderText = "Кол-во блюд";
             colDishes.DataPropertyName = "dishes_count";
             colDishes.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colDishes.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colDishes.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colDishes);
 
             // Статус
@@ -287,10 +311,16 @@ namespace dump
             colStatus.HeaderText = "Статус";
             colStatus.DataPropertyName = "status";
             colStatus.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colStatus.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            colStatus.SortMode = DataGridViewColumnSortMode.NotSortable;
             dgvOrders.Columns.Add(colStatus);
 
             // Форматирование ячеек (маскирование телефона)
             dgvOrders.CellFormatting += DgvOrders_CellFormatting;
+
+            // Выделение строк
+            dgvOrders.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
+            dgvOrders.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
         }
 
         // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК (МАСКИРОВАНИЕ ТЕЛЕФОНА) =====
@@ -616,7 +646,7 @@ namespace dump
             dgv.RowHeadersVisible = false;
             dgv.BackgroundColor = Color.White;
             dgv.BorderStyle = BorderStyle.Fixed3D;
-            dgv.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            dgv.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgv.EnableHeadersVisualStyles = false;
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -627,20 +657,20 @@ namespace dump
 
             dgv.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgv.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgv.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dgv.ColumnHeadersHeight = 40;
+            dgv.ColumnHeadersHeight = 45;
 
-            dgv.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            dgv.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgv.DefaultCellStyle.Padding = new Padding(5);
             dgv.DefaultCellStyle.BackColor = Color.White;
             dgv.DefaultCellStyle.ForeColor = Color.Black;
             dgv.DefaultCellStyle.SelectionBackColor = selectionColor;
             dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgv.RowTemplate.Height = 35;
+            dgv.RowTemplate.Height = 40;
             dgv.GridColor = Color.Gray;
             dgv.CellBorderStyle = DataGridViewCellBorderStyle.Single;
 
@@ -650,6 +680,7 @@ namespace dump
             colDishName.HeaderText = "Наименование";
             colDishName.DataPropertyName = "dish_name";
             colDishName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colDishName.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colDishName.FillWeight = 50;
             dgv.Columns.Add(colDishName);
 
@@ -658,6 +689,7 @@ namespace dump
             colQuantity.HeaderText = "Кол-во";
             colQuantity.DataPropertyName = "quantity";
             colQuantity.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colQuantity.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colQuantity.FillWeight = 15;
             dgv.Columns.Add(colQuantity);
 
@@ -666,6 +698,7 @@ namespace dump
             colPrice.HeaderText = "Цена";
             colPrice.DataPropertyName = "price";
             colPrice.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colPrice.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPrice.FillWeight = 15;
             dgv.Columns.Add(colPrice);
 
@@ -674,6 +707,7 @@ namespace dump
             colTotal.HeaderText = "Сумма";
             colTotal.DataPropertyName = "total_price";
             colTotal.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colTotal.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             colTotal.FillWeight = 20;
             dgv.Columns.Add(colTotal);
 
@@ -715,7 +749,7 @@ namespace dump
                     {
                         row.DefaultCellStyle.BackColor = Color.LightYellow;
                         row.DefaultCellStyle.ForeColor = Color.DarkOrange;
-                        row.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                        row.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                     }
                 }
             };
@@ -818,6 +852,7 @@ namespace dump
                 }
                 worksheet.Cells[1, 1].Font.Bold = true;
                 worksheet.Cells[1, 1].Font.Size = 14;
+                worksheet.Cells[1, 1].Font.Name = "Times New Roman";
                 Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 7]];
                 titleRange.Merge();
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
@@ -829,6 +864,8 @@ namespace dump
                     Excel.Range headerCell = worksheet.Cells[3, i + 1];
                     headerCell.Value = headers[i];
                     headerCell.Font.Bold = true;
+                    headerCell.Font.Size = 12;
+                    headerCell.Font.Name = "Times New Roman";
                     headerCell.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
                     headerCell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                     headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
@@ -847,6 +884,7 @@ namespace dump
                     amountCell.Value = Convert.ToDouble(data.Rows[row]["total_amount"]);
                     amountCell.NumberFormat = "#,##0.00";
                     amountCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                    amountCell.Font.Name = "Times New Roman";
 
                     worksheet.Cells[row + 4, 6] = data.Rows[row]["dishes_count"].ToString();
                     worksheet.Cells[row + 4, 7] = data.Rows[row]["status"].ToString();
@@ -871,31 +909,38 @@ namespace dump
                 totalTitleCell.Value = "ИТОГИ:";
                 totalTitleCell.Font.Bold = true;
                 totalTitleCell.Font.Size = 12;
+                totalTitleCell.Font.Name = "Times New Roman";
                 Excel.Range totalTitleRange = worksheet.Range[worksheet.Cells[lastRow, 1], worksheet.Cells[lastRow, 2]];
                 totalTitleRange.Merge();
 
                 worksheet.Cells[lastRow + 1, 1] = "Всего заказов:";
                 worksheet.Cells[lastRow + 1, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 1, 1].Font.Name = "Times New Roman";
                 worksheet.Cells[lastRow + 1, 2] = totalOrders;
 
                 worksheet.Cells[lastRow + 2, 1] = "Общая выручка:";
                 worksheet.Cells[lastRow + 2, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 2, 1].Font.Name = "Times New Roman";
                 Excel.Range revenueCell = worksheet.Cells[lastRow + 2, 2];
                 revenueCell.Value = Convert.ToDouble(totalRevenue);
                 revenueCell.NumberFormat = "#,##0.00";
                 revenueCell.Font.Bold = true;
+                revenueCell.Font.Name = "Times New Roman";
 
                 worksheet.Cells[lastRow + 3, 1] = "Всего блюд:";
                 worksheet.Cells[lastRow + 3, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 3, 1].Font.Name = "Times New Roman";
                 worksheet.Cells[lastRow + 3, 2] = totalDishes;
 
                 if (totalOrders > 0)
                 {
                     worksheet.Cells[lastRow + 4, 1] = "Средний чек:";
                     worksheet.Cells[lastRow + 4, 1].Font.Bold = true;
+                    worksheet.Cells[lastRow + 4, 1].Font.Name = "Times New Roman";
                     Excel.Range avgCell = worksheet.Cells[lastRow + 4, 2];
                     avgCell.Value = Convert.ToDouble(totalRevenue / totalOrders);
                     avgCell.NumberFormat = "#,##0.00";
+                    avgCell.Font.Name = "Times New Roman";
                 }
 
                 worksheet.Columns.AutoFit();
@@ -1061,6 +1106,7 @@ namespace dump
                 }
                 worksheet.Cells[1, 1].Font.Bold = true;
                 worksheet.Cells[1, 1].Font.Size = 14;
+                worksheet.Cells[1, 1].Font.Name = "Times New Roman";
                 Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 4]];
                 titleRange.Merge();
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
@@ -1072,6 +1118,8 @@ namespace dump
                     Excel.Range headerCell = worksheet.Cells[3, i + 1];
                     headerCell.Value = headers[i];
                     headerCell.Font.Bold = true;
+                    headerCell.Font.Size = 12;
+                    headerCell.Font.Name = "Times New Roman";
                     headerCell.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
                     headerCell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                     headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
@@ -1087,13 +1135,16 @@ namespace dump
                     revenueCell.NumberFormat = "#,##0.00";
                     revenueCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                     revenueCell.Font.Bold = true;
+                    revenueCell.Font.Name = "Times New Roman";
                     revenueCell.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
                     worksheet.Cells[row + 4, 3] = data.Rows[row]["Кол-во заказов"].ToString();
                     worksheet.Cells[row + 4, 3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    worksheet.Cells[row + 4, 3].Font.Name = "Times New Roman";
 
                     worksheet.Cells[row + 4, 4] = data.Rows[row]["Кол-во блюд"].ToString();
                     worksheet.Cells[row + 4, 4].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    worksheet.Cells[row + 4, 4].Font.Name = "Times New Roman";
 
                     Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 4]];
                     dataRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
@@ -1116,33 +1167,40 @@ namespace dump
                 totalTitleCell.Value = "ИТОГИ:";
                 totalTitleCell.Font.Bold = true;
                 totalTitleCell.Font.Size = 12;
+                totalTitleCell.Font.Name = "Times New Roman";
                 Excel.Range totalTitleRange = worksheet.Range[worksheet.Cells[lastRow, 1], worksheet.Cells[lastRow, 2]];
                 totalTitleRange.Merge();
 
                 worksheet.Cells[lastRow + 1, 1] = "Общая выручка:";
                 worksheet.Cells[lastRow + 1, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 1, 1].Font.Name = "Times New Roman";
                 Excel.Range revenueCell2 = worksheet.Cells[lastRow + 1, 2];
                 revenueCell2.Value = Convert.ToDouble(totalRevenue);
                 revenueCell2.NumberFormat = "#,##0.00";
                 revenueCell2.Font.Bold = true;
+                revenueCell2.Font.Name = "Times New Roman";
                 revenueCell2.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
                 worksheet.Cells[lastRow + 2, 1] = "Всего заказов:";
                 worksheet.Cells[lastRow + 2, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 2, 1].Font.Name = "Times New Roman";
                 worksheet.Cells[lastRow + 2, 2] = totalOrders;
 
                 worksheet.Cells[lastRow + 3, 1] = "Всего блюд:";
                 worksheet.Cells[lastRow + 3, 1].Font.Bold = true;
+                worksheet.Cells[lastRow + 3, 1].Font.Name = "Times New Roman";
                 worksheet.Cells[lastRow + 3, 2] = totalDishes;
 
                 if (totalOrders > 0)
                 {
                     worksheet.Cells[lastRow + 4, 1] = "Средний чек:";
                     worksheet.Cells[lastRow + 4, 1].Font.Bold = true;
+                    worksheet.Cells[lastRow + 4, 1].Font.Name = "Times New Roman";
                     Excel.Range avgCell = worksheet.Cells[lastRow + 4, 2];
                     avgCell.Value = Convert.ToDouble(totalRevenue / totalOrders);
                     avgCell.NumberFormat = "#,##0.00";
                     avgCell.Font.Bold = true;
+                    avgCell.Font.Name = "Times New Roman";
                 }
 
                 worksheet.Columns.AutoFit();

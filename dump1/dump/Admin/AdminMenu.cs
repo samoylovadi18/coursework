@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -37,6 +38,10 @@ namespace dump
         private bool isFormattingSearch = false;
         private Dictionary<string, int> categoryDictionary = new Dictionary<string, int>();
         private bool isLockDialogOpen = false;
+
+        // Цвет выделения как в справочниках
+        private Color selectionColor = Color.FromArgb(233, 242, 236);
+        private Color headerBackColor = Color.FromArgb(97, 173, 123);
 
         public AdminMenu()
         {
@@ -317,94 +322,136 @@ namespace dump
             dgvDishes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvDishes.MultiSelect = false;
             dgvDishes.RowHeadersVisible = false;
+            dgvDishes.EnableHeadersVisualStyles = false;
 
+            // ===== ШАПКА - ЗЕЛЕНАЯ, TIMES NEW ROMAN 14PT BOLD =====
+            dgvDishes.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
+            dgvDishes.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
             dgvDishes.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgvDishes.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvDishes.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvDishes.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 5, 0, 5);
+            dgvDishes.ColumnHeadersHeight = 55;
 
+            // ===== ЯЧЕЙКИ - TIMES NEW ROMAN 14PT REGULAR =====
             dgvDishes.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
-            dgvDishes.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvDishes.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvDishes.DefaultCellStyle.Padding = new Padding(0, 2, 0, 2);
+            dgvDishes.DefaultCellStyle.BackColor = Color.White;
+            dgvDishes.DefaultCellStyle.ForeColor = Color.Black;
+
+            // ===== ВЫДЕЛЕНИЕ - СВЕТЛО-ЗЕЛЕНЫЙ/СЕРЫЙ (КАК В СПРАВОЧНИКАХ) =====
+            dgvDishes.DefaultCellStyle.SelectionBackColor = selectionColor;
+            dgvDishes.DefaultCellStyle.SelectionForeColor = Color.Black;
+            dgvDishes.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
+            dgvDishes.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgvDishes.RowsDefaultCellStyle.BackColor = Color.White;
+            dgvDishes.RowsDefaultCellStyle.ForeColor = Color.Black;
 
             dgvDishes.RowTemplate.Height = 80;
             dgvDishes.RowTemplate.MinimumHeight = 80;
-
             dgvDishes.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dgvDishes.ColumnHeadersHeight = 55;
 
-            Color headerColor = Color.FromArgb(97, 173, 123);
-            dgvDishes.ColumnHeadersDefaultCellStyle.BackColor = headerColor;
-            dgvDishes.EnableHeadersVisualStyles = false;
+            dgvDishes.GridColor = Color.Gray;
+            dgvDishes.BorderStyle = BorderStyle.FixedSingle;
+            dgvDishes.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+            dgvDishes.ScrollBars = ScrollBars.Both;
 
             dgvDishes.Columns.Clear();
 
+            // Колонка Фото
             DataGridViewImageColumn imageColumn = new DataGridViewImageColumn();
             imageColumn.Name = "photo";
             imageColumn.HeaderText = "Фото";
             imageColumn.DataPropertyName = "photo_image";
             imageColumn.Width = 100;
+            imageColumn.MinimumWidth = 80;
             imageColumn.ImageLayout = DataGridViewImageCellLayout.Zoom;
+            imageColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvDishes.Columns.Add(imageColumn);
 
+            // Колонка Название
             DataGridViewTextBoxColumn nameColumn = new DataGridViewTextBoxColumn();
             nameColumn.Name = "dish_name";
             nameColumn.HeaderText = "Название";
             nameColumn.DataPropertyName = "dish_name";
             nameColumn.Width = 200;
+            nameColumn.MinimumWidth = 150;
             nameColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            nameColumn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            nameColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvDishes.Columns.Add(nameColumn);
 
+            // Колонка Состав
             DataGridViewTextBoxColumn compoundColumn = new DataGridViewTextBoxColumn();
             compoundColumn.Name = "compound";
             compoundColumn.HeaderText = "Состав";
             compoundColumn.DataPropertyName = "compound";
             compoundColumn.Width = 350;
+            compoundColumn.MinimumWidth = 200;
             compoundColumn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             compoundColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
+            compoundColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvDishes.Columns.Add(compoundColumn);
 
+            // Колонка Категория
             DataGridViewTextBoxColumn categoryColumn = new DataGridViewTextBoxColumn();
             categoryColumn.Name = "category_name";
             categoryColumn.HeaderText = "Категория";
             categoryColumn.DataPropertyName = "category_name";
             categoryColumn.Width = 150;
+            categoryColumn.MinimumWidth = 120;
             categoryColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            categoryColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvDishes.Columns.Add(categoryColumn);
 
+            // Колонка Цена
             DataGridViewTextBoxColumn priceColumn = new DataGridViewTextBoxColumn();
             priceColumn.Name = "price_display";
             priceColumn.HeaderText = "Цена";
             priceColumn.Width = 140;
+            priceColumn.MinimumWidth = 100;
             priceColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             priceColumn.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            priceColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgvDishes.Columns.Add(priceColumn);
 
+            // Колонка Себестоимость
             DataGridViewTextBoxColumn costColumn = new DataGridViewTextBoxColumn();
             costColumn.Name = "cost_display";
             costColumn.HeaderText = "Себестоимость";
             costColumn.Width = 140;
+            costColumn.MinimumWidth = 100;
             costColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            costColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvDishes.Columns.Add(costColumn);
 
+            // Колонка Вес/Объем
             DataGridViewTextBoxColumn weightColumn = new DataGridViewTextBoxColumn();
             weightColumn.Name = "weight_volume";
             weightColumn.HeaderText = "Вес/Объем";
             weightColumn.DataPropertyName = "weight_volume";
             weightColumn.Width = 130;
+            weightColumn.MinimumWidth = 100;
             weightColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            weightColumn.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvDishes.Columns.Add(weightColumn);
 
+            // Скрытая колонка ID
             DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn();
             idColumn.Name = "id_dish";
             idColumn.DataPropertyName = "id_dish";
             idColumn.Visible = false;
             dgvDishes.Columns.Add(idColumn);
 
+            // Скрытая колонка Цена (значение)
             DataGridViewTextBoxColumn priceValueColumn = new DataGridViewTextBoxColumn();
             priceValueColumn.Name = "price";
             priceValueColumn.DataPropertyName = "price";
             priceValueColumn.Visible = false;
             dgvDishes.Columns.Add(priceValueColumn);
 
+            // Скрытая колонка Себестоимость (значение)
             DataGridViewTextBoxColumn costValueColumn = new DataGridViewTextBoxColumn();
             costValueColumn.Name = "cost";
             costValueColumn.DataPropertyName = "cost";
@@ -1179,7 +1226,7 @@ namespace dump
             ShowEditPanel();
         }
 
-        // ===================== ИСПРАВЛЕННЫЙ МЕТОД УДАЛЕНИЯ (ЗАПРЕЩАЕТ УДАЛЕНИЕ ЕСЛИ БЛЮДО В ЗАКАЗАХ) =====================
+        // ===================== ИСПРАВЛЕННЫЙ МЕТОД УДАЛЕНИЯ =====================
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             if (dgvDishes.SelectedRows.Count == 0)
@@ -1242,7 +1289,7 @@ namespace dump
             catch (MySqlException ex)
             {
                 // Если вдруг ошибка внешнего ключа - перехватываем
-                if (ex.Number == 1451) // Cannot delete or update a parent row: a foreign key constraint fails
+                if (ex.Number == 1451)
                 {
                     MessageBox.Show($"❌ Невозможно удалить блюдо \"{dishName}\"!\n\n" +
                                   "Оно используется в заказах.\n\n" +

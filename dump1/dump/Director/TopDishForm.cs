@@ -21,7 +21,7 @@ namespace dump
         private DataTable dishesData;
         private System.Windows.Forms.ToolTip toolTip1;
         private bool isLockDialogOpen = false;
-        private DateTime minDate = new DateTime(2024, 1, 1); // Минимальная дата
+        private DateTime minDate = new DateTime(2024, 1, 1);
 
         public TopDishForm()
         {
@@ -29,7 +29,6 @@ namespace dump
             dishesData = new DataTable();
             toolTip1 = new System.Windows.Forms.ToolTip();
 
-            // Настройка ограничений для дат
             dateTimePickerStart.MinDate = minDate;
             dateTimePickerStart.MaxDate = DateTime.Now;
             dateTimePickerEnd.MinDate = minDate;
@@ -38,27 +37,27 @@ namespace dump
             dateTimePickerEnd.Value = DateTime.Now;
             dateTimePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
+            dateTimePickerStart.Font = new Font("Times New Roman", 14);
+            dateTimePickerEnd.Font = new Font("Times New Roman", 14);
+
             SetupButtonStyles();
 
-            // Подписываемся только на экспорт
             buttonExport.Click += ButtonExport_Click;
 
             this.Load += TopDishForm_Load;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
 
-            // Добавляем обработчик закрытия формы
             this.FormClosing += TopDishForm_FormClosing;
 
-            // Подписываемся на изменение дат для автоматической загрузки
             dateTimePickerStart.ValueChanged += DateTimePicker_ValueChanged;
             dateTimePickerEnd.ValueChanged += DateTimePicker_ValueChanged;
-
-            // Подписываемся на изменение категории
             comboBoxCategory.SelectedIndexChanged += ComboBoxCategory_SelectedIndexChanged;
-        }
 
-        // ===================== АВТОМАТИЧЕСКАЯ ЗАГРУЗКА ПРИ ИЗМЕНЕНИИ =====================
+            comboBoxCategory.Font = new Font("Times New Roman", 14);
+
+           
+        }
 
         private void DateTimePicker_ValueChanged(object sender, EventArgs e)
         {
@@ -115,26 +114,13 @@ namespace dump
             dataGridViewTopDish.DataSource = emptyTable;
         }
 
-        // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
-
-        /// <summary>
-        /// Обработчик закрытия формы - при нажатии на крестик переходим на DirectorForm
-        /// </summary>
         private void TopDishForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                // Отменяем закрытие формы
                 e.Cancel = true;
-
-                // Отписываемся от менеджера бездействия
                 InactivityManager.UnregisterForm();
-
-                // Скрываем текущую форму
                 this.Visible = false;
-
-                // Открываем форму директора
                 DirectorForm director = new DirectorForm();
                 director.Show();
             }
@@ -267,16 +253,18 @@ namespace dump
 
         private void SetupButtonStyles()
         {
-            // Настройка только кнопки экспорта
             buttonExport.FlatStyle = FlatStyle.Flat;
             buttonExport.FlatAppearance.BorderSize = 1;
             buttonExport.FlatAppearance.BorderColor = Color.Black;
             buttonExport.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             buttonExport.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            buttonExport.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             buttonExport.MouseDown += (s, e) => buttonExport.FlatAppearance.BorderColor = Color.DarkBlue;
             buttonExport.MouseUp += (s, e) => buttonExport.FlatAppearance.BorderColor = Color.Black;
             buttonExport.MouseLeave += (s, e) => buttonExport.FlatAppearance.BorderColor = Color.Black;
+
+
         }
 
         private void TopDishForm_Load(object sender, EventArgs e)
@@ -285,8 +273,6 @@ namespace dump
             LoadCategories();
             labelTotalRevenue.Visible = false;
             labelTotalSold.Visible = false;
-
-            // Загружаем данные при загрузке формы
             LoadTopDishesAutomatically();
         }
 
@@ -305,29 +291,56 @@ namespace dump
 
             dataGridViewTopDish.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dataGridViewTopDish.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dataGridViewTopDish.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dataGridViewTopDish.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dataGridViewTopDish.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewTopDish.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridViewTopDish.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dataGridViewTopDish.ColumnHeadersHeight = 45;
+            dataGridViewTopDish.ColumnHeadersHeight = 50;
 
-            dataGridViewTopDish.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            dataGridViewTopDish.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridViewTopDish.DefaultCellStyle.Padding = new Padding(5);
             dataGridViewTopDish.DefaultCellStyle.BackColor = Color.White;
             dataGridViewTopDish.DefaultCellStyle.ForeColor = Color.Black;
             dataGridViewTopDish.DefaultCellStyle.SelectionBackColor = selectionColor;
             dataGridViewTopDish.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridViewTopDish.RowTemplate.Height = 35;
+            dataGridViewTopDish.RowTemplate.Height = 40;
             dataGridViewTopDish.GridColor = Color.Gray;
             dataGridViewTopDish.BorderStyle = BorderStyle.Fixed3D;
 
             dataGridViewTopDish.Columns.Clear();
 
-            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn { Name = "dish_name", HeaderText = "Блюдо", DataPropertyName = "Блюдо", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft } });
-            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn { Name = "category", HeaderText = "Категория", DataPropertyName = "Категория", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft } });
-            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn { Name = "quantity", HeaderText = "Кол-во продаж", DataPropertyName = "Кол-во продаж", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn { Name = "revenue", HeaderText = "Общая выручка", DataPropertyName = "Общая выручка", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
+            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "dish_name",
+                HeaderText = "Блюдо",
+                DataPropertyName = "Блюдо",
+                DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft, Font = new Font("Times New Roman", 14, FontStyle.Regular) }
+            });
+
+            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "category",
+                HeaderText = "Категория",
+                DataPropertyName = "Категория",
+                DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft, Font = new Font("Times New Roman", 14, FontStyle.Regular) }
+            });
+
+            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "quantity",
+                HeaderText = "Кол-во продаж",
+                DataPropertyName = "Кол-во продаж",
+                DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Times New Roman", 14, FontStyle.Regular) }
+            });
+
+            dataGridViewTopDish.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "revenue",
+                HeaderText = "Общая выручка",
+                DataPropertyName = "Общая выручка",
+                DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen, Font = new Font("Times New Roman", 14, FontStyle.Bold) }
+            });
         }
 
         private void LoadCategories()
@@ -415,6 +428,9 @@ namespace dump
             }
             labelTotalRevenue.Text = $"Общая выручка: {totalRevenue:N2} ₽";
             labelTotalSold.Text = $"Всего продано: {totalSold} шт.";
+
+            labelTotalRevenue.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            labelTotalSold.Font = new Font("Times New Roman", 14, FontStyle.Bold);
         }
 
         private void ButtonReset_Click(object sender, EventArgs e)
@@ -483,7 +499,6 @@ namespace dump
 
                 string categoryName = comboBoxCategory.Text;
 
-                // ЗАГОЛОВОК (расширен до колонки J)
                 Excel.Range titleRange = worksheet.Range["A1:J1"];
                 titleRange.Merge();
                 titleRange.Value = "ТОП 10 БЛЮД ПО ВЫРУЧКЕ";
@@ -493,7 +508,6 @@ namespace dump
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 titleRange.RowHeight = 35;
 
-                // ПЕРИОД
                 Excel.Range periodRange = worksheet.Range["A2:J2"];
                 periodRange.Merge();
                 periodRange.Value = $"Период: {dateTimePickerStart.Value:dd.MM.yyyy} - {dateTimePickerEnd.Value:dd.MM.yyyy} | Категория: {categoryName}";
@@ -503,7 +517,6 @@ namespace dump
                 periodRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 periodRange.RowHeight = 25;
 
-                // ЗАГОЛОВКИ ТАБЛИЦЫ
                 int dataStartRow = 4;
                 string[] headers = { "№", "Блюдо", "Категория", "Кол-во продаж", "Общая выручка" };
 
@@ -520,7 +533,6 @@ namespace dump
                     cell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 }
 
-                // ЗАПОЛНЯЕМ ДАННЫЕ
                 for (int i = 0; i < dishesData.Rows.Count; i++)
                 {
                     int rowNum = dataStartRow + 1 + i;
@@ -555,7 +567,6 @@ namespace dump
                     }
                 }
 
-                // ИТОГОВАЯ СТРОКА
                 int totalRow = dataStartRow + dishesData.Rows.Count + 1;
                 int totalSold = 0;
                 decimal totalRevenue = 0;
@@ -582,29 +593,25 @@ namespace dump
                 ((Excel.Range)worksheet.Cells[totalRow, 5]).HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                 worksheet.Cells[totalRow, 5].Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
-                // НАСТРОЙКА ШИРИНЫ КОЛОНОК
-                worksheet.Columns[1].ColumnWidth = 5;   // №
-                worksheet.Columns[2].ColumnWidth = 35;  // Блюдо
-                worksheet.Columns[3].ColumnWidth = 20;  // Категория
-                worksheet.Columns[4].ColumnWidth = 15;  // Кол-во продаж
-                worksheet.Columns[5].ColumnWidth = 20;  // Общая выручка
-                worksheet.Columns[6].ColumnWidth = 5;   // Отступ
-                worksheet.Columns[7].ColumnWidth = 5;   // Отступ
-                worksheet.Columns[8].ColumnWidth = 5;   // Отступ
-                worksheet.Columns[9].ColumnWidth = 5;   // Отступ
-                worksheet.Columns[10].ColumnWidth = 5;  // Отступ
+                worksheet.Columns[1].ColumnWidth = 5;
+                worksheet.Columns[2].ColumnWidth = 35;
+                worksheet.Columns[3].ColumnWidth = 20;
+                worksheet.Columns[4].ColumnWidth = 15;
+                worksheet.Columns[5].ColumnWidth = 20;
+                worksheet.Columns[6].ColumnWidth = 5;
+                worksheet.Columns[7].ColumnWidth = 5;
+                worksheet.Columns[8].ColumnWidth = 5;
+                worksheet.Columns[9].ColumnWidth = 5;
+                worksheet.Columns[10].ColumnWidth = 5;
 
-                // ============= СОЗДАЕМ ДИАГРАММУ =============
                 if (dishesData.Rows.Count > 0)
                 {
                     int firstDataRow = dataStartRow + 1;
                     int lastDataRow = totalRow - 1;
 
-                    // Данные для диаграммы
                     Excel.Range xValues = worksheet.Range[$"B{firstDataRow}:B{lastDataRow}"];
                     Excel.Range yValues = worksheet.Range[$"E{firstDataRow}:E{lastDataRow}"];
 
-                    // Диаграмма в правой части
                     Excel.ChartObjects chartObjects = (Excel.ChartObjects)worksheet.ChartObjects();
                     Excel.ChartObject chartObject = chartObjects.Add(800, 60, 550, 350);
                     Excel.Chart chart = chartObject.Chart;
@@ -620,7 +627,6 @@ namespace dump
                     chart.HasLegend = true;
                     chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
 
-                    // Подписи осей
                     chart.Axes(Excel.XlAxisType.xlCategory, Excel.XlAxisGroup.xlPrimary).HasTitle = true;
                     chart.Axes(Excel.XlAxisType.xlCategory, Excel.XlAxisGroup.xlPrimary).AxisTitle.Text = "Блюда";
                     chart.Axes(Excel.XlAxisType.xlCategory, Excel.XlAxisGroup.xlPrimary).AxisTitle.Font.Name = "Times New Roman";
@@ -629,7 +635,6 @@ namespace dump
                     chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlPrimary).AxisTitle.Text = "Выручка (₽)";
                     chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlPrimary).AxisTitle.Font.Name = "Times New Roman";
 
-                    // Добавляем данные
                     Excel.SeriesCollection seriesCollection = (Excel.SeriesCollection)chart.SeriesCollection();
                     Excel.Series series = seriesCollection.NewSeries();
 
@@ -638,7 +643,6 @@ namespace dump
                     series.Values = yValues;
                     series.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
 
-                    // Подписи на столбцах
                     series.HasDataLabels = true;
                     Excel.DataLabels dataLabels = series.DataLabels();
                     if (dataLabels != null)
@@ -649,17 +653,14 @@ namespace dump
                         dataLabels.Font.Name = "Times New Roman";
                     }
 
-                    // Оформление
                     chart.ChartArea.Font.Name = "Times New Roman";
                     chart.PlotArea.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.WhiteSmoke);
 
-                    // Сетка
                     Excel.Axis axisY = (Excel.Axis)chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlPrimary);
                     axisY.HasMajorGridlines = true;
                     axisY.MajorGridlines.Border.Color = System.Drawing.ColorTranslator.ToOle(Color.LightGray);
                 }
 
-                // НАСТРОЙКА СТРАНИЦЫ
                 worksheet.PageSetup.Orientation = Excel.XlPageOrientation.xlLandscape;
                 worksheet.PageSetup.FitToPagesWide = 1;
                 worksheet.PageSetup.Zoom = 90;
@@ -693,11 +694,6 @@ namespace dump
             this.Visible = false;
             if (this.Owner != null && !this.Owner.IsDisposed)
                 this.Owner.Show();
-        }
-
-        private void buttonExportPdf_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

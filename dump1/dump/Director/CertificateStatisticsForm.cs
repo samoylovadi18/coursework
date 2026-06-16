@@ -36,6 +36,10 @@ namespace dump
             datePickerEnd.Value = DateTime.Now;
             datePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
+            // Шрифты для DateTimePicker
+            datePickerStart.Font = new Font("Times New Roman", 14);
+            datePickerEnd.Font = new Font("Times New Roman", 14);
+
             btnExport.Click += BtnExport_Click;
 
             SetupDataGridView();
@@ -109,6 +113,7 @@ namespace dump
                 datePickerStart.Location = new Point(150, 20);
                 datePickerStart.Size = new Size(150, 22);
                 datePickerStart.Format = DateTimePickerFormat.Short;
+                datePickerStart.Font = new Font("Times New Roman", 14);
                 this.Controls.Add(datePickerStart);
             }
 
@@ -118,6 +123,7 @@ namespace dump
                 datePickerEnd.Location = new Point(350, 20);
                 datePickerEnd.Size = new Size(150, 22);
                 datePickerEnd.Format = DateTimePickerFormat.Short;
+                datePickerEnd.Font = new Font("Times New Roman", 14);
                 this.Controls.Add(datePickerEnd);
             }
 
@@ -127,6 +133,7 @@ namespace dump
                 labelStart.Text = "Начало периода:";
                 labelStart.Location = new Point(40, 22);
                 labelStart.Size = new Size(100, 20);
+                labelStart.Font = new Font("Times New Roman", 14);
                 this.Controls.Add(labelStart);
             }
 
@@ -136,6 +143,7 @@ namespace dump
                 labelEnd.Text = "Конец периода:";
                 labelEnd.Location = new Point(250, 22);
                 labelEnd.Size = new Size(100, 20);
+                labelEnd.Font = new Font("Times New Roman", 14);
                 this.Controls.Add(labelEnd);
             }
         }
@@ -147,6 +155,7 @@ namespace dump
             btnExport.FlatAppearance.BorderColor = Color.Black;
             btnExport.FlatAppearance.MouseOverBackColor = Color.DarkSeaGreen;
             btnExport.FlatAppearance.MouseDownBackColor = Color.DarkSeaGreen;
+            btnExport.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
             btnExport.MouseDown += (s, e) => btnExport.FlatAppearance.BorderColor = Color.DarkBlue;
             btnExport.MouseUp += (s, e) => btnExport.FlatAppearance.BorderColor = Color.Black;
@@ -179,15 +188,17 @@ namespace dump
             Color headerBackColor = Color.FromArgb(97, 173, 123);
             Color selectionColor = Color.FromArgb(233, 242, 236);
 
+            // ===== ЗЕЛЕНАЯ ШАПКА - TIMES NEW ROMAN 14PT BOLD =====
             dgvCertificates.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dgvCertificates.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgvCertificates.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgvCertificates.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgvCertificates.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvCertificates.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvCertificates.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
-            dgvCertificates.ColumnHeadersHeight = 45;
+            dgvCertificates.ColumnHeadersHeight = 50;
 
-            dgvCertificates.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            // ===== ЯЧЕЙКИ - TIMES NEW ROMAN 14PT REGULAR =====
+            dgvCertificates.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgvCertificates.DefaultCellStyle.Padding = new Padding(5);
             dgvCertificates.DefaultCellStyle.BackColor = Color.White;
             dgvCertificates.DefaultCellStyle.ForeColor = Color.Black;
@@ -199,7 +210,7 @@ namespace dump
             dgvCertificates.RowsDefaultCellStyle.SelectionBackColor = selectionColor;
             dgvCertificates.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dgvCertificates.RowTemplate.Height = 35;
+            dgvCertificates.RowTemplate.Height = 40;
             dgvCertificates.GridColor = Color.Gray;
             dgvCertificates.BorderStyle = BorderStyle.Fixed3D;
 
@@ -207,12 +218,67 @@ namespace dump
 
             dgvCertificates.Columns.Clear();
 
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Статус", HeaderText = "Статус", DataPropertyName = "Статус", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleLeft } });
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Количество", HeaderText = "Количество", DataPropertyName = "Количество", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Общая сумма", HeaderText = "Общая сумма", DataPropertyName = "Общая сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Средняя сумма", HeaderText = "Средняя сумма", DataPropertyName = "Средняя сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Мин. сумма", HeaderText = "Мин. сумма", DataPropertyName = "Мин. сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
-            dgvCertificates.Columns.Add(new DataGridViewTextBoxColumn { Name = "Макс. сумма", HeaderText = "Макс. сумма", DataPropertyName = "Макс. сумма", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N2", ForeColor = Color.DarkGreen } });
+            // Колонка Статус
+            DataGridViewTextBoxColumn colStatus = new DataGridViewTextBoxColumn();
+            colStatus.Name = "Статус";
+            colStatus.HeaderText = "Статус";
+            colStatus.DataPropertyName = "Статус";
+            colStatus.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colStatus.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvCertificates.Columns.Add(colStatus);
+
+            // Колонка Количество
+            DataGridViewTextBoxColumn colCount = new DataGridViewTextBoxColumn();
+            colCount.Name = "Количество";
+            colCount.HeaderText = "Количество";
+            colCount.DataPropertyName = "Количество";
+            colCount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colCount.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvCertificates.Columns.Add(colCount);
+
+            // Колонка Общая сумма
+            DataGridViewTextBoxColumn colTotal = new DataGridViewTextBoxColumn();
+            colTotal.Name = "Общая сумма";
+            colTotal.HeaderText = "Общая сумма";
+            colTotal.DataPropertyName = "Общая сумма";
+            colTotal.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colTotal.DefaultCellStyle.Format = "N2";
+            colTotal.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colTotal.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            dgvCertificates.Columns.Add(colTotal);
+
+            // Колонка Средняя сумма
+            DataGridViewTextBoxColumn colAvg = new DataGridViewTextBoxColumn();
+            colAvg.Name = "Средняя сумма";
+            colAvg.HeaderText = "Средняя сумма";
+            colAvg.DataPropertyName = "Средняя сумма";
+            colAvg.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colAvg.DefaultCellStyle.Format = "N2";
+            colAvg.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colAvg.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvCertificates.Columns.Add(colAvg);
+
+            // Колонка Мин. сумма
+            DataGridViewTextBoxColumn colMin = new DataGridViewTextBoxColumn();
+            colMin.Name = "Мин. сумма";
+            colMin.HeaderText = "Мин. сумма";
+            colMin.DataPropertyName = "Мин. сумма";
+            colMin.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colMin.DefaultCellStyle.Format = "N2";
+            colMin.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colMin.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvCertificates.Columns.Add(colMin);
+
+            // Колонка Макс. сумма
+            DataGridViewTextBoxColumn colMax = new DataGridViewTextBoxColumn();
+            colMax.Name = "Макс. сумма";
+            colMax.HeaderText = "Макс. сумма";
+            colMax.DataPropertyName = "Макс. сумма";
+            colMax.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colMax.DefaultCellStyle.Format = "N2";
+            colMax.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colMax.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgvCertificates.Columns.Add(colMax);
         }
 
         private void LoadCertificateStatistics(DateTime startDate, DateTime endDate)
@@ -294,8 +360,8 @@ namespace dump
             {
                 Graphics g = ev.Graphics;
                 Font titleFont = new Font("Times New Roman", 18, FontStyle.Bold);
-                Font headerFont = new Font("Times New Roman", 13, FontStyle.Bold); // УВЕЛИЧИЛ
-                Font regularFont = new Font("Times New Roman", 10, FontStyle.Regular);
+                Font headerFont = new Font("Times New Roman", 13, FontStyle.Bold);
+                Font regularFont = new Font("Times New Roman", 11, FontStyle.Regular);
                 Font boldFont = new Font("Times New Roman", 11, FontStyle.Bold);
                 Font smallFont = new Font("Times New Roman", 9, FontStyle.Regular);
 
@@ -367,7 +433,7 @@ namespace dump
                 {
                     g.DrawString(line, regularFont, Brushes.Black,
                         new PointF(leftMargin + 20, y));
-                    y += 20;
+                    y += 22;
                 }
 
                 y += 20;
@@ -386,10 +452,10 @@ namespace dump
                 float x = leftMargin;
                 string[] headers = { "Статус", "Кол-во", "Общая сумма", "Средняя сумма", "Мин. сумма", "Макс. сумма" };
 
-                // Заголовки таблицы (увеличенная шапка)
+                // Заголовки таблицы
                 for (int i = 0; i < headers.Length; i++)
                 {
-                    Rectangle rect = new Rectangle((int)x, (int)y, (int)colWidths[i], 32); // УВЕЛИЧИЛ С 28 ДО 32
+                    Rectangle rect = new Rectangle((int)x, (int)y, (int)colWidths[i], 32);
                     g.FillRectangle(new SolidBrush(Color.FromArgb(97, 173, 123)), rect);
                     g.DrawRectangle(Pens.Black, rect);
 
