@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -206,7 +207,6 @@ namespace dump
 
         private MySqlConnection GetWorkingConnection()
         {
-            // Пытаемся получить настройки из SettingsBD
             try
             {
                 var config = SettingsBD.GetCurrentConfig();
@@ -218,7 +218,12 @@ namespace dump
                 string connString = $"server={currentServer};userid={currentUsername};password={currentPassword};database={currentDatabase};charset=utf8mb4;";
                 MySqlConnection conn = new MySqlConnection(connString);
                 conn.Open();
-                LogBackupMessage($"Подключение успешно: {currentServer}/{currentDatabase}");
+
+                using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+
                 return conn;
             }
             catch (Exception ex)
@@ -226,7 +231,6 @@ namespace dump
                 LogBackupMessage($"Ошибка получения настроек из SettingsBD: {ex.Message}");
             }
 
-            // Если не получилось, пробуем получить из текстовых полей на форме
             try
             {
                 TextBox txtServer = this.Controls.Find("txtServer", true).FirstOrDefault() as TextBox;
@@ -241,7 +245,12 @@ namespace dump
                 string connString = $"server={currentServer};userid={currentUsername};password={currentPassword};database={currentDatabase};charset=utf8mb4;";
                 MySqlConnection conn = new MySqlConnection(connString);
                 conn.Open();
-                LogBackupMessage($"Подключение из полей формы успешно: {currentServer}/{currentDatabase}");
+
+                using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+
                 return conn;
             }
             catch (Exception ex)
@@ -255,14 +264,12 @@ namespace dump
 
         private void InitializeScriptRestore()
         {
-            // Создаем диалог выбора файла
             openFileDialogScript = new OpenFileDialog();
             openFileDialogScript.Title = "Выберите SQL файл для восстановления";
             openFileDialogScript.Filter = "SQL файлы (*.sql)|*.sql|Все файлы (*.*)|*.*";
             openFileDialogScript.FilterIndex = 1;
             openFileDialogScript.RestoreDirectory = true;
 
-            // Подписываемся на события кнопок
             if (btnBrowseScript != null)
             {
                 btnBrowseScript.Click += BtnBrowseScript_Click;
@@ -284,7 +291,6 @@ namespace dump
 
         private void BtnRestoreFromScript_Click(object sender, EventArgs e)
         {
-            // Проверяем, выбран ли файл
             if (string.IsNullOrEmpty(txtScriptPath.Text) || !File.Exists(txtScriptPath.Text))
             {
                 MessageBox.Show("Выберите SQL файл для восстановления!", "Ошибка",
@@ -292,7 +298,6 @@ namespace dump
                 return;
             }
 
-            // Подтверждение
             DialogResult result = MessageBox.Show(
                 "ВНИМАНИЕ! Выполнение SQL скрипта может изменить структуру базы данных и данные.\n\n" +
                 "Вы уверены, что хотите продолжить?",
@@ -306,28 +311,24 @@ namespace dump
                 {
                     LogMessage($"Начало выполнения скрипта: {txtScriptPath.Text}");
 
-                    // Читаем SQL скрипт из файла
                     string sqlScript = File.ReadAllText(txtScriptPath.Text, Encoding.UTF8);
 
                     using (MySqlConnection conn = GetWorkingConnection())
                     {
                         LogMessage("Подключение к БД успешно");
 
-                        // Отключаем проверку внешних ключей
                         using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                         {
                             cmd.ExecuteNonQuery();
                             LogMessage("Отключена проверка внешних ключей");
                         }
 
-                        // Выполняем скрипт
                         LogMessage("Выполнение SQL скрипта...");
                         using (MySqlCommand cmd = new MySqlCommand(sqlScript, conn))
                         {
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Включаем проверку внешних ключей
                         using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                         {
                             cmd.ExecuteNonQuery();
@@ -339,7 +340,6 @@ namespace dump
                     MessageBox.Show("SQL скрипт успешно выполнен!", "Успех",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    // Перезагружаем списки таблиц
                     LoadTableLists();
                 }
                 catch (Exception ex)
@@ -385,7 +385,6 @@ namespace dump
                     txtPasswordField.UseSystemPasswordChar = true;
                 }
 
-                // Сохраняем текущие настройки
                 currentServer = config.Server;
                 currentDatabase = config.Database;
                 currentUsername = config.Username;
@@ -397,7 +396,6 @@ namespace dump
             }
         }
 
-        // МЕТОД ДЛЯ ПРОВЕРКИ ПОДКЛЮЧЕНИЯ С ПОНЯТНЫМИ ОШИБКАМИ
         private bool TestConnectionBeforeSave(string server, string database, string username, string password)
         {
             try
@@ -435,20 +433,6 @@ namespace dump
                                      "Проверьте:\n" +
                                      "• Правильно ли указано имя базы данных\n" +
                                      "• Создана ли база данных на сервере";
-                        break;
-                    case 1044:
-                    case 1046:
-                        userMessage = "Нет доступа к указанной базе данных!\n\n" +
-                                     "Проверьте:\n" +
-                                     "• Есть ли у пользователя права на эту базу данных\n" +
-                                     "• Правильно ли указано имя базы данных";
-                        break;
-                    case 0:
-                        userMessage = "Не удалось подключиться к серверу!\n\n" +
-                                     "Проверьте:\n" +
-                                     "• Запущен ли сервер базы данных\n" +
-                                     "• Правильно ли указан порт подключения\n" +
-                                     "• Не блокирует ли подключение брандмауэр";
                         break;
                     default:
                         userMessage = $"Ошибка подключения к базе данных:\n\n{ex.Message}\n\n" +
@@ -523,7 +507,6 @@ namespace dump
 
                 SettingsBD.UpdateConfig(newConfig);
 
-                // Сохраняем в локальные переменные
                 currentServer = server;
                 currentDatabase = database;
                 currentUsername = username;
@@ -600,10 +583,6 @@ namespace dump
                         break;
                     case 1049:
                         userMessage = "База данных не найдена!\n\nПроверьте имя базы данных.";
-                        break;
-                    case 1044:
-                    case 1046:
-                        userMessage = "Нет доступа к базе данных!\n\nПроверьте права пользователя.";
                         break;
                     default:
                         userMessage = $"Ошибка подключения!\n\n{ex.Message}";
@@ -798,17 +777,14 @@ namespace dump
             if (numInactivityTime != null)
             {
                 numInactivityTime.Minimum = 1;
-                numInactivityTime.Maximum = 120; // Максимум 120 минут (2 часа)
+                numInactivityTime.Maximum = 120;
 
-                // Получаем время в секундах, переводим в минуты
                 int seconds = InactivityManager.GetInactivityTime();
                 int minutes = seconds / 60;
 
-                // Если минут меньше 1, устанавливаем 1 минуту (60 секунд)
                 if (minutes < 1)
                 {
                     minutes = 1;
-                    // Обновляем значение в менеджере
                     InactivityManager.SetSecuritySettings(InactivityManager.GetAutoLockEnabled(), 60);
                 }
 
@@ -826,10 +802,8 @@ namespace dump
         private void ChkAutoLock_CheckedChanged(object sender, EventArgs e)
         {
             bool isChecked = chkAutoLock.Checked;
-
-            // Получаем текущее время в минутах
             int minutes = (int)(numInactivityTime?.Value ?? 5);
-            int seconds = minutes * 60; // Переводим в секунды для хранения
+            int seconds = minutes * 60;
 
             InactivityManager.SetSecuritySettings(isChecked, seconds);
 
@@ -846,7 +820,7 @@ namespace dump
             if (numInactivityTime != null)
             {
                 int minutes = (int)numInactivityTime.Value;
-                int seconds = minutes * 60; // Переводим в секунды для хранения
+                int seconds = minutes * 60;
                 InactivityManager.SetSecuritySettings(InactivityManager.GetAutoLockEnabled(), seconds);
                 LogMessage($"Время бездействия изменено на {minutes} мин.");
             }
@@ -858,7 +832,7 @@ namespace dump
             {
                 bool isEnabled = chkAutoLock?.Checked ?? false;
                 int minutes = (int)(numInactivityTime?.Value ?? 5);
-                int seconds = minutes * 60; // Переводим в секунды для хранения
+                int seconds = minutes * 60;
 
                 InactivityManager.SetSecuritySettings(isEnabled, seconds);
 
@@ -1020,7 +994,7 @@ namespace dump
                     `role_name` VARCHAR(50) NOT NULL,
                     PRIMARY KEY (`id_role`),
                     UNIQUE KEY `role_name` (`role_name`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: roles");
@@ -1046,7 +1020,7 @@ namespace dump
                     UNIQUE KEY `login` (`login`),
                     KEY `id_role` (`id_role`),
                     CONSTRAINT `users_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id_role`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: users");
@@ -1058,7 +1032,7 @@ namespace dump
                     `id_status` INT NOT NULL AUTO_INCREMENT,
                     `status_name` VARCHAR(255) DEFAULT NULL,
                     PRIMARY KEY (`id_status`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: order_statuses");
@@ -1079,7 +1053,7 @@ namespace dump
                     `id_category` INT NOT NULL AUTO_INCREMENT,
                     `category_name` VARCHAR(255) NOT NULL,
                     PRIMARY KEY (`id_category`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: categories");
@@ -1099,7 +1073,7 @@ namespace dump
                     PRIMARY KEY (`id_dish`),
                     KEY `FK_id_category` (`id_category`),
                     CONSTRAINT `dishes_ibfk_1` FOREIGN KEY (`id_category`) REFERENCES `categories` (`id_category`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: dishes");
@@ -1111,7 +1085,7 @@ namespace dump
                     `id_status_certificate` INT NOT NULL AUTO_INCREMENT,
                     `name` VARCHAR(255) DEFAULT NULL,
                     PRIMARY KEY (`id_status_certificate`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: status_certificates");
@@ -1139,7 +1113,7 @@ namespace dump
                     PRIMARY KEY (`id_certificate`),
                     KEY `FK_id_status_certificate` (`id_status_certificate`),
                     CONSTRAINT `certificates_ibfk_1` FOREIGN KEY (`id_status_certificate`) REFERENCES `status_certificates` (`id_status_certificate`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: certificates");
@@ -1152,7 +1126,7 @@ namespace dump
                     `name` VARCHAR(255) DEFAULT NULL,
                     `from_price` DECIMAL(10,2) DEFAULT NULL,
                     PRIMARY KEY (`id_present`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: present");
@@ -1176,7 +1150,7 @@ namespace dump
                     PRIMARY KEY (`id_order`),
                     KEY `id_status` (`id_status`),
                     CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: orders");
@@ -1199,7 +1173,7 @@ namespace dump
                     CONSTRAINT `order_dish_ibfk_1` FOREIGN KEY (`id_order`) REFERENCES `orders` (`id_order`) ON DELETE CASCADE,
                     CONSTRAINT `order_dish_ibfk_2` FOREIGN KEY (`id_dish`) REFERENCES `dishes` (`id_dish`),
                     CONSTRAINT `order_dish_ibfk_3` FOREIGN KEY (`id_present`) REFERENCES `present` (`id_present`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: order_dish");
@@ -1215,7 +1189,7 @@ namespace dump
                     KEY `id_order` (`id_order`),
                     KEY `other_orders_ibfk_1` (`id_status`),
                     CONSTRAINT `other_orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", conn))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", conn))
             {
                 cmd.ExecuteNonQuery();
                 LogMessage("  Создана: other_orders");
@@ -1226,7 +1200,11 @@ namespace dump
 
         // ===================== ИМПОРТ/ЭКСПОРТ =====================
 
-        private readonly string[] excludedTables = new string[] { "roles" };
+        // Таблицы, исключенные из импорта (роли нельзя импортировать)
+        private readonly string[] importExcludedTables = new string[] { "roles" };
+
+        // Таблицы, исключенные из экспорта (пустой массив - все таблицы доступны для экспорта)
+        private readonly string[] exportExcludedTables = new string[] { };
 
         private void InitializeImportExportFeature()
         {
@@ -1251,7 +1229,11 @@ namespace dump
             if (txtImportFilePath != null)
             {
                 txtImportFilePath.ReadOnly = true;
-                txtImportFilePath.TextChanged += (s, e) => btnImport.Enabled = !string.IsNullOrEmpty(txtImportFilePath.Text);
+                txtImportFilePath.TextChanged += (s, e) =>
+                {
+                    if (btnImport != null)
+                        btnImport.Enabled = !string.IsNullOrEmpty(txtImportFilePath.Text) && File.Exists(txtImportFilePath.Text);
+                };
             }
 
             if (cmbExportTables != null)
@@ -1289,12 +1271,23 @@ namespace dump
                     foreach (DataRow row in schema.Rows)
                     {
                         string tableName = row["TABLE_NAME"].ToString();
-                        if (!tableName.StartsWith("mysql") &&
-                            !tableName.StartsWith("information_schema") &&
-                            !excludedTables.Contains(tableName))
+
+                        if (tableName.StartsWith("mysql") ||
+                            tableName.StartsWith("information_schema") ||
+                            tableName.StartsWith("performance_schema") ||
+                            tableName.StartsWith("sys"))
                         {
-                            if (cmbTables != null) cmbTables.Items.Add(tableName);
-                            if (cmbExportTables != null) cmbExportTables.Items.Add(tableName);
+                            continue;
+                        }
+
+                        if (cmbTables != null && !importExcludedTables.Contains(tableName))
+                        {
+                            cmbTables.Items.Add(tableName);
+                        }
+
+                        if (cmbExportTables != null && !exportExcludedTables.Contains(tableName))
+                        {
+                            cmbExportTables.Items.Add(tableName);
                         }
                     }
 
@@ -1320,12 +1313,55 @@ namespace dump
                 ofd.FilterIndex = 1;
                 ofd.RestoreDirectory = true;
 
+                // Создаем папку для импорта если её нет
+                string importFolder = Path.Combine(Application.StartupPath, "Импорт");
+                if (!Directory.Exists(importFolder))
+                {
+                    Directory.CreateDirectory(importFolder);
+                }
+                ofd.InitialDirectory = importFolder;
+
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     txtImportFilePath.Text = ofd.FileName;
+                    if (btnImport != null)
+                        btnImport.Enabled = true;
+
+                    // Предпросмотр файла
+                    PreviewCSVFile(ofd.FileName);
                 }
             }
         }
+
+        /// <summary>
+        /// Предпросмотр CSV файла
+        /// </summary>
+        private void PreviewCSVFile(string filePath)
+        {
+            try
+            {
+                var lines = File.ReadAllLines(filePath, Encoding.UTF8).Take(5).ToArray();
+                StringBuilder preview = new StringBuilder();
+                preview.AppendLine("Предпросмотр файла (первые 5 строк):");
+                preview.AppendLine(new string('-', 50));
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(lines[i]))
+                    {
+                        preview.AppendLine($"Строка {i + 1}: {lines[i]}");
+                    }
+                }
+
+                LogMessage(preview.ToString());
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка предпросмотра файла: {ex.Message}");
+            }
+        }
+
+        // ===================== ИМПОРТ (КАК В PROTOTIP) =====================
 
         private void BtnImport_Click(object sender, EventArgs e)
         {
@@ -1333,34 +1369,140 @@ namespace dump
             {
                 if (cmbTables?.SelectedItem == null)
                 {
-                    MessageBox.Show("Выберите таблицу для импорта!");
+                    MessageBox.Show("Выберите таблицу для импорта!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 string tableName = cmbTables.SelectedItem.ToString();
+
+                if (importExcludedTables.Contains(tableName))
+                {
+                    MessageBox.Show($"Импорт для таблицы '{tableName}' запрещен!",
+                        "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 string filePath = txtImportFilePath.Text;
 
                 if (!File.Exists(filePath))
                 {
-                    MessageBox.Show("Файл не существует!");
+                    MessageBox.Show("Файл не существует!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
+                // Читаем файл
+                var lines = File.ReadAllLines(filePath, Encoding.UTF8)
+                    .Where(l => !string.IsNullOrWhiteSpace(l))
+                    .ToArray();
 
-                if (lines.Length < 2)
+                if (lines.Length == 0)
                 {
-                    MessageBox.Show("Файл пуст или не содержит данных!");
+                    MessageBox.Show("Файл пуст", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+
+                // Получаем схему таблицы
+                DataTable tableSchema = GetTableSchema(tableName);
+                if (tableSchema == null || tableSchema.Columns.Count == 0)
+                {
+                    MessageBox.Show("Не удалось получить структуру таблицы", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Получаем автоинкрементные поля
+                List<string> autoIncrementColumns = GetAutoIncrementColumns(tableName);
+                char separator = lines[0].Contains(';') ? ';' : ',';
+                string[] headers = lines[0].Split(separator);
+                int startRow = 0;
+
+                for (int h = 0; h < headers.Length; h++)
+                {
+                    headers[h] = headers[h].Trim().Trim('"').Trim('\'');
+                }
+
+                bool hasHeader = false;
+                foreach (string header in headers)
+                {
+                    if (tableSchema.Columns.Contains(header))
+                    {
+                        hasHeader = true;
+                        break;
+                    }
+                }
+
+                if (hasHeader)
+                {
+                    startRow = 1;
+                    LogMessage($"✓ Обнаружена строка заголовков, импорт начнется со строки 2");
+                }
+
+                List<string> skipColumns = new List<string>();
+                // Для таблицы dishes пропускаем photo (BLOB)
+                if (tableName.ToLower() == "dishes")
+                {
+                    skipColumns.Add("photo");
+                    LogMessage("✓ Поле photo (BLOB) будет пропущено при импорте");
+                }
+
+                int expectedColumns = tableSchema.Columns.Count - autoIncrementColumns.Count - skipColumns.Count;
+                string[] firstDataRow = lines[startRow].Split(separator);
+
+                if (firstDataRow.Length != expectedColumns)
+                {
+                    string errorMsg = $"Несоответствие количества полей!\n" +
+                                    $"В CSV файле: {firstDataRow.Length} полей\n" +
+                                    $"В таблице '{tableName}': {tableSchema.Columns.Count} полей\n" +
+                                    $"Автоинкрементные поля: {string.Join(", ", autoIncrementColumns)}\n" +
+                                    $"Пропущенные поля: {string.Join(", ", skipColumns)}\n" +
+                                    $"Ожидаемое количество полей в CSV: {expectedColumns}";
+
+                    LogMessage($"✗ ОШИБКА: {errorMsg}");
+                    MessageBox.Show(errorMsg, "Ошибка импорта", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                List<int> columnMapping = new List<int>();
+                if (hasHeader)
+                {
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        string header = headers[i];
+                        if (tableSchema.Columns.Contains(header) &&
+                            !autoIncrementColumns.Contains(header) &&
+                            !skipColumns.Contains(header))
+                        {
+                            columnMapping.Add(tableSchema.Columns[header].Ordinal);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < tableSchema.Columns.Count; i++)
+                    {
+                        string colName = tableSchema.Columns[i].ColumnName;
+                        if (!autoIncrementColumns.Contains(colName) && !skipColumns.Contains(colName))
+                        {
+                            columnMapping.Add(i);
+                        }
+                    }
+                }
+
+                int importedCount = 0;
+                int errorCount = 0;
+                List<string> errors = new List<string>();
 
                 using (MySqlConnection conn = GetWorkingConnection())
                 {
+                    // Отключаем проверку внешних ключей
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
 
+                    // Очищаем таблицу
                     try
                     {
                         using (MySqlCommand cmd = new MySqlCommand($"TRUNCATE TABLE `{tableName}`", conn))
@@ -1380,50 +1522,133 @@ namespace dump
                         }
                     }
 
-                    char delimiter = lines[0].Contains(';') ? ';' : ',';
-                    int importedCount = 0;
+                    // Генерируем INSERT запрос
+                    var columns = tableSchema.Columns.Cast<DataColumn>()
+                        .Where(c => !autoIncrementColumns.Contains(c.ColumnName))
+                        .Where(c => !skipColumns.Contains(c.ColumnName))
+                        .Select(c => $"`{c.ColumnName}`")
+                        .ToList();
 
-                    for (int i = 1; i < lines.Length; i++)
+                    string columnsStr = string.Join(", ", columns);
+                    string parameters = string.Join(", ", Enumerable.Range(0, columns.Count).Select(i => $"@p{i}"));
+                    string insertQuery = $"INSERT INTO `{tableName}` ({columnsStr}) VALUES ({parameters})";
+
+                    // Обрабатываем строки
+                    for (int i = startRow; i < lines.Length; i++)
                     {
-                        if (string.IsNullOrWhiteSpace(lines[i])) continue;
+                        string line = lines[i].Trim();
+                        if (string.IsNullOrEmpty(line)) continue;
 
-                        string[] values = ParseCSVLine(lines[i], delimiter);
-                        string placeholders = string.Join(",", values.Select((v, idx) => $"@p{idx}"));
-                        string query = $"INSERT INTO `{tableName}` VALUES ({placeholders})";
+                        // Убираем кавычки
+                        line = line.Replace("\"", "");
+                        string[] values = line.Split(separator);
 
-                        using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                        try
                         {
-                            for (int j = 0; j < values.Length; j++)
+                            using (MySqlCommand cmd = new MySqlCommand(insertQuery, conn))
                             {
-                                string val = values[j].Trim().Trim('"');
-                                if (string.IsNullOrEmpty(val) || val == "NULL")
+                                int paramIndex = 0;
+                                for (int j = 0; j < columnMapping.Count; j++)
                                 {
-                                    cmd.Parameters.AddWithValue($"@p{j}", DBNull.Value);
+                                    int tableColIndex = columnMapping[j];
+                                    string value = values[j].Trim();
+                                    Type columnType = tableSchema.Columns[tableColIndex].DataType;
+
+                                    if (string.IsNullOrEmpty(value))
+                                    {
+                                        cmd.Parameters.AddWithValue($"@p{paramIndex}", DBNull.Value);
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            if (columnType == typeof(int) || columnType == typeof(long) || columnType == typeof(int?))
+                                            {
+                                                cmd.Parameters.AddWithValue($"@p{paramIndex}", int.Parse(value));
+                                            }
+                                            else if (columnType == typeof(decimal) || columnType == typeof(decimal?))
+                                            {
+                                                value = value.Replace('.', ',');
+                                                cmd.Parameters.AddWithValue($"@p{paramIndex}", decimal.Parse(value));
+                                            }
+                                            else if (columnType == typeof(DateTime) || columnType == typeof(DateTime?))
+                                            {
+                                                cmd.Parameters.AddWithValue($"@p{paramIndex}", DateTime.Parse(value));
+                                            }
+                                            else if (columnType == typeof(bool) || columnType == typeof(bool?) || columnType == typeof(byte))
+                                            {
+                                                cmd.Parameters.AddWithValue($"@p{paramIndex}", value == "1" || value.ToLower() == "true" ? 1 : 0);
+                                            }
+                                            else
+                                            {
+                                                cmd.Parameters.Add($"@p{paramIndex}", MySqlDbType.VarChar).Value = value;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception($"Ошибка преобразования '{value}' в {columnType.Name}: {ex.Message}");
+                                        }
+                                    }
+                                    paramIndex++;
                                 }
-                                else
-                                {
-                                    cmd.Parameters.AddWithValue($"@p{j}", val);
-                                }
+
+                                cmd.ExecuteNonQuery();
+                                importedCount++;
                             }
-                            cmd.ExecuteNonQuery();
-                            importedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            errorCount++;
+                            errors.Add($"Строка {i + 1}: {ex.Message}");
+                            LogMessage($"Ошибка в строке {i + 1}: {ex.Message}");
                         }
                     }
 
+                    // Включаем проверку внешних ключей
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                     {
                         cmd.ExecuteNonQuery();
                     }
-
-                    MessageBox.Show($"Импорт завершен!\nДобавлено записей: {importedCount}");
-                    txtImportFilePath.Text = "";
                 }
+
+                // Вывод результатов
+                LogMessage($"\n=== РЕЗУЛЬТАТЫ ИМПОРТА ===");
+                LogMessage($"Таблица: {tableName}");
+                LogMessage($"Файл: {Path.GetFileName(filePath)}");
+                LogMessage($"Успешно импортировано: {importedCount} записей");
+                LogMessage($"Ошибок: {errorCount}");
+
+                if (errors.Count > 0)
+                {
+                    LogMessage($"\nПервые 5 ошибок:");
+                    foreach (string error in errors.Take(5))
+                    {
+                        LogMessage($"  • {error}");
+                    }
+                }
+
+                MessageBox.Show($"Импорт завершен!\n\n" +
+                               $"Таблица: {tableName}\n" +
+                               $"Файл: {Path.GetFileName(filePath)}\n\n" +
+                               $"✓ Успешно: {importedCount} записей\n" +
+                               $"✗ Ошибок: {errorCount}",
+                    "Результат импорта",
+                    MessageBoxButtons.OK,
+                    errorCount > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+                txtImportFilePath.Text = "";
+                if (btnImport != null)
+                    btnImport.Enabled = false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при импорте: {ex.Message}");
+                MessageBox.Show($"Ошибка при импорте:\n{ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LogMessage($"Ошибка импорта: {ex.Message}");
             }
         }
+
+        // ===================== ЭКСПОРТ (ПО АНАЛОГИИ С PROTOTIP) =====================
 
         private void BtnExport_Click(object sender, EventArgs e)
         {
@@ -1431,61 +1656,238 @@ namespace dump
             {
                 if (cmbExportTables?.SelectedItem == null)
                 {
-                    MessageBox.Show("Выберите таблицу для экспорта!");
+                    MessageBox.Show("Выберите таблицу для экспорта!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 string tableName = cmbExportTables.SelectedItem.ToString();
 
-                if (saveFileDialog?.ShowDialog() == DialogResult.OK)
+                if (exportExcludedTables.Contains(tableName))
                 {
-                    string filePath = saveFileDialog.FileName;
-                    ExportToCSV(tableName, filePath);
-                    MessageBox.Show($"Таблица '{tableName}' успешно экспортирована!");
+                    MessageBox.Show($"Экспорт для таблицы '{tableName}' запрещен!",
+                        "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+                    saveFileDialog.FileName = $"{tableName}_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+                    saveFileDialog.Title = "Сохранить CSV файл";
+                    saveFileDialog.RestoreDirectory = true;
+
+                    // Создаем папку для экспорта если её нет
+                    string exportFolder = Path.Combine(Application.StartupPath, "Экспорт");
+                    if (!Directory.Exists(exportFolder))
+                    {
+                        Directory.CreateDirectory(exportFolder);
+                    }
+                    saveFileDialog.InitialDirectory = exportFolder;
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        ExportToCSV(tableName, saveFileDialog.FileName);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте: {ex.Message}");
+                MessageBox.Show($"Ошибка при экспорте:\n{ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LogMessage($"Ошибка экспорта: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Экспорт таблицы в CSV (по аналогии с prototip)
+        /// </summary>
         private void ExportToCSV(string tableName, string filePath)
         {
-            using (MySqlConnection conn = GetWorkingConnection())
+            try
             {
-                using (MySqlCommand cmd = new MySqlCommand("SET NAMES utf8mb4;", conn))
+                LogMessage($"Начало экспорта таблицы {tableName}...");
+
+                using (MySqlConnection conn = GetWorkingConnection())
                 {
-                    cmd.ExecuteNonQuery();
-                }
+                    // Получаем автоинкрементные поля
+                    List<string> autoIncrementCols = GetAutoIncrementColumns(tableName);
 
-                string query = $"SELECT * FROM `{tableName}`";
-                MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
-                DataTable dt = new DataTable();
-                adapter.Fill(dt);
+                    // Список пропускаемых колонок
+                    List<string> skipColumns = new List<string>();
+                    skipColumns.AddRange(autoIncrementCols);
 
-                StringBuilder sb = new StringBuilder();
-
-                for (int i = 0; i < dt.Columns.Count; i++)
-                {
-                    sb.Append($"{dt.Columns[i].ColumnName}");
-                    if (i < dt.Columns.Count - 1) sb.Append(";");
-                }
-                sb.AppendLine();
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    for (int i = 0; i < dt.Columns.Count; i++)
+                    // Для таблицы dishes пропускаем photo (BLOB)
+                    if (tableName.ToLower() == "dishes")
                     {
-                        string value = row[i]?.ToString() ?? "";
-                        sb.Append(value);
-                        if (i < dt.Columns.Count - 1) sb.Append(";");
+                        skipColumns.Add("photo");
+                        LogMessage("✓ Поле photo (BLOB) будет пропущено при экспорте");
                     }
-                    sb.AppendLine();
+
+                    // Получаем схему таблицы
+                    DataTable schema = GetTableSchema(tableName);
+                    List<string> exportColumns = new List<string>();
+                    foreach (DataColumn col in schema.Columns)
+                    {
+                        if (!skipColumns.Contains(col.ColumnName))
+                        {
+                            exportColumns.Add(col.ColumnName);
+                        }
+                    }
+
+                    LogMessage($"Экспортируемые колонки: {string.Join(", ", exportColumns)}");
+
+                    string columnsStr = string.Join(", ", exportColumns.Select(c => $"`{c}`"));
+                    string query = $"SELECT {columnsStr} FROM `{tableName}`";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            using (StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8))
+                            {
+                                // Добавляем BOM для правильного распознавания UTF-8 в Excel
+                                writer.BaseStream.Write(new byte[] { 0xEF, 0xBB, 0xBF }, 0, 3);
+
+                                // Записываем заголовки
+                                writer.WriteLine(string.Join(";", exportColumns));
+
+                                int rowCount = 0;
+                                while (reader.Read())
+                                {
+                                    List<string> row = new List<string>();
+                                    for (int i = 0; i < exportColumns.Count; i++)
+                                    {
+                                        string value = "";
+                                        if (!reader.IsDBNull(i))
+                                        {
+                                            object val = reader.GetValue(i);
+                                            if (val is DateTime dt)
+                                            {
+                                                value = dt.ToString("yyyy-MM-dd HH:mm:ss");
+                                            }
+                                            else if (val is decimal dec)
+                                            {
+                                                value = dec.ToString("F2").Replace('.', ',');
+                                            }
+                                            else if (val is float fl)
+                                            {
+                                                value = fl.ToString("F2").Replace('.', ',');
+                                            }
+                                            else if (val is double dbl)
+                                            {
+                                                value = dbl.ToString("F2").Replace('.', ',');
+                                            }
+                                            else
+                                            {
+                                                value = val.ToString();
+                                            }
+                                        }
+                                        row.Add(EscapeCsvField(value));
+                                    }
+                                    writer.WriteLine(string.Join(";", row));
+                                    rowCount++;
+                                }
+
+                                LogMessage($"✓ Экспорт завершен: {rowCount} записей");
+                                LogMessage($"✓ Файл сохранен: {filePath}");
+                            }
+                        }
+                    }
                 }
 
-                File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(true));
+                MessageBox.Show($"Экспорт успешно завершен!\n\n" +
+                               $"Таблица: {tableName}\n" +
+                               $"Файл: {Path.GetFileName(filePath)}\n" +
+                               $"Путь: {Path.GetDirectoryName(filePath)}",
+                    "Экспорт завершен", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            catch (Exception ex)
+            {
+                LogMessage($"✗ ОШИБКА ЭКСПОРТА: {ex.Message}");
+                MessageBox.Show($"Ошибка экспорта:\n{ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Экранирование CSV поля
+        /// </summary>
+        private string EscapeCsvField(string field)
+        {
+            if (string.IsNullOrEmpty(field))
+                return "";
+
+            // Если поле содержит разделитель, кавычки или перевод строки - экранируем
+            if (field.Contains(";") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
+            {
+                field = field.Replace("\"", "\"\"");
+                field = $"\"{field}\"";
+            }
+
+            return field;
+        }
+
+        /// <summary>
+        /// Получение схемы таблицы
+        /// </summary>
+        private DataTable GetTableSchema(string tableName)
+        {
+            try
+            {
+                using (MySqlConnection conn = GetWorkingConnection())
+                {
+                    string query = $"SELECT * FROM `{tableName}` LIMIT 0";
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
+                    DataTable schema = new DataTable();
+                    adapter.Fill(schema);
+                    return schema;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка получения схемы таблицы: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Получение автоинкрементных полей
+        /// </summary>
+        private List<string> GetAutoIncrementColumns(string tableName)
+        {
+            List<string> autoIncrementCols = new List<string>();
+
+            try
+            {
+                using (MySqlConnection conn = GetWorkingConnection())
+                {
+                    string query = @"
+                        SELECT COLUMN_NAME 
+                        FROM INFORMATION_SCHEMA.COLUMNS 
+                        WHERE TABLE_SCHEMA = DATABASE() 
+                        AND TABLE_NAME = @tableName 
+                        AND EXTRA LIKE '%auto_increment%'";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@tableName", tableName);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            autoIncrementCols.Add(reader["COLUMN_NAME"].ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Ошибка получения автоинкрементных полей: {ex.Message}");
+            }
+
+            return autoIncrementCols;
         }
 
         private string[] ParseCSVLine(string line, char delimiter)
@@ -1540,7 +1942,6 @@ namespace dump
 
         private void InitializeBackupFeature()
         {
-            // Находим все элементы на форме по имени
             txtBackupPath = this.Controls.Find("txtBackupPath", true).FirstOrDefault() as TextBox;
             btnBrowseBackupPath = this.Controls.Find("btnBrowseBackupPath", true).FirstOrDefault() as Button;
             rbFullBackup = this.Controls.Find("rbFullBackup", true).FirstOrDefault() as RadioButton;
@@ -1552,7 +1953,6 @@ namespace dump
             cmbAutoBackupType = this.Controls.Find("cmbAutoBackupType", true).FirstOrDefault() as ComboBox;
             lblBackupStatus = this.Controls.Find("lblBackupStatus", true).FirstOrDefault() as Label;
 
-            // Настройка ComboBox
             if (cmbAutoBackupType != null)
             {
                 cmbAutoBackupType.Items.Clear();
@@ -1562,7 +1962,6 @@ namespace dump
                 cmbAutoBackupType.Enabled = false;
             }
 
-            // Настройка NumericUpDown
             if (numBackupInterval != null)
             {
                 numBackupInterval.Minimum = 1;
@@ -1571,18 +1970,15 @@ namespace dump
                 numBackupInterval.Enabled = false;
             }
 
-            // Устанавливаем путь
             if (txtBackupPath != null)
             {
                 txtBackupPath.Text = backupFolder;
                 txtBackupPath.ReadOnly = true;
             }
 
-            // Создаем таймер
             autoBackupTimer = new System.Windows.Forms.Timer();
             autoBackupTimer.Tick += AutoBackupTimer_Tick;
 
-            // Подписываем события
             if (btnBrowseBackupPath != null)
             {
                 btnBrowseBackupPath.Click += BtnBrowseBackupPath_Click;
@@ -1603,7 +1999,6 @@ namespace dump
                 numBackupInterval.ValueChanged += NumBackupInterval_ValueChanged;
             }
 
-            // Загружаем настройки из файла
             LoadBackupSettingsFromFile();
 
             LogBackupMessage("Система резервного копирования готова");
@@ -1828,12 +2223,10 @@ namespace dump
                 LogBackupMessage($"Папка сохранения: {targetFolder}");
                 LogBackupMessage($"Имя файла: {backupFileName}");
 
-                // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД ДЛЯ ПОДКЛЮЧЕНИЯ
                 using (MySqlConnection conn = GetWorkingConnection())
                 {
                     LogBackupMessage("Подключение к базе данных установлено успешно");
 
-                    // Отключаем проверку внешних ключей
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", conn))
                     {
                         cmd.ExecuteNonQuery();
@@ -1842,7 +2235,6 @@ namespace dump
 
                     StringBuilder sqlScript = new StringBuilder();
 
-                    // Добавляем заголовок
                     sqlScript.AppendLine($"-- Резервная копия создана: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                     sqlScript.AppendLine($"-- Тип резервной копии: {GetBackupTypeName(backupType)}");
                     sqlScript.AppendLine($"-- Сервер: {conn.DataSource}");
@@ -1851,7 +2243,6 @@ namespace dump
                     sqlScript.AppendLine("SET AUTOCOMMIT = 0;");
                     sqlScript.AppendLine("");
 
-                    // Получаем список таблиц
                     List<string> tables = GetTableList(conn);
                     int totalTables = tables.Count;
                     int currentTable = 0;
@@ -1870,7 +2261,6 @@ namespace dump
 
                         LogBackupMessage($"  Обработка таблицы {currentTable}/{totalTables}: {table}");
 
-                        // Сохраняем структуру таблицы
                         if (backupType == "structure" || backupType == "full")
                         {
                             string createTableScript = GetTableStructure(conn, table);
@@ -1882,7 +2272,6 @@ namespace dump
                             }
                         }
 
-                        // Сохраняем данные таблицы
                         if ((backupType == "data" || backupType == "full"))
                         {
                             string dataScript = GetTableData(conn, table);
@@ -1903,12 +2292,10 @@ namespace dump
                     sqlScript.AppendLine("SET FOREIGN_KEY_CHECKS = 1;");
                     sqlScript.AppendLine("-- Конец резервной копии");
 
-                    // Сохраняем SQL файл
                     File.WriteAllText(fullPath, sqlScript.ToString(), Encoding.UTF8);
                     LogBackupMessage($"SQL скрипт сохранен: {backupFileName}");
                     LogBackupMessage($"Размер SQL файла: {new FileInfo(fullPath).Length / 1024.0:F2} KB");
 
-                    // Включаем проверку внешних ключей
                     using (MySqlCommand cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", conn))
                     {
                         cmd.ExecuteNonQuery();
@@ -1916,7 +2303,6 @@ namespace dump
                     }
                 }
 
-                // Сжимаем файл в ZIP
                 if (lblBackupStatus != null)
                 {
                     lblBackupStatus.Text = "Сжатие файла...";
@@ -1949,7 +2335,6 @@ namespace dump
                                   "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                // Очищаем старые бэкапы
                 int deletedCount = CleanupOldBackups(10);
                 if (deletedCount > 0)
                 {
@@ -2014,7 +2399,6 @@ namespace dump
             {
                 string tableName = row["TABLE_NAME"].ToString();
 
-                // Исключаем системные таблицы
                 if (!tableName.StartsWith("mysql") &&
                     !tableName.StartsWith("information_schema") &&
                     !tableName.StartsWith("performance_schema") &&
@@ -2055,7 +2439,6 @@ namespace dump
                         return "";
                     }
 
-                    // Получаем имена колонок
                     var columns = new List<string>();
                     for (int i = 0; i < reader.FieldCount; i++)
                     {

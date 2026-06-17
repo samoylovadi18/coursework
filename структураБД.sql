@@ -15,9 +15,9 @@ SET time_zone = "+00:00";
 --
 -- База данных: `da`
 --
-DROP DATABASE IF EXISTS `da`;
-CREATE DATABASE `da` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `da`;
+DROP DATABASE IF EXISTS `db98`;
+CREATE DATABASE `db98` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `db98`;
 
 -- --------------------------------------------------------
 
