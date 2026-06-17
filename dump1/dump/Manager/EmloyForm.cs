@@ -36,6 +36,7 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -369,6 +370,7 @@ namespace dump
                                 detailsForm.MaximizeBox = false;
                                 detailsForm.MinimizeBox = false;
                                 detailsForm.BackColor = Color.White;
+                                detailsForm.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
                                 TableLayoutPanel tlp = new TableLayoutPanel();
                                 tlp.Dock = DockStyle.Fill;
@@ -394,6 +396,7 @@ namespace dump
                                 btnOk.FlatAppearance.BorderColor = Color.Black;
                                 btnOk.BackColor = Color.DarkSeaGreen;
                                 btnOk.ForeColor = Color.Black;
+                                btnOk.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
                                 detailsForm.Controls.Add(tlp);
                                 detailsForm.Controls.Add(btnOk);
@@ -434,13 +437,13 @@ namespace dump
         {
             Label lbl = new Label();
             lbl.Text = label;
-            lbl.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+            lbl.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lbl.TextAlign = ContentAlignment.MiddleLeft;
             lbl.Dock = DockStyle.Fill;
 
             Label val = new Label();
             val.Text = value;
-            val.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            val.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             val.TextAlign = ContentAlignment.MiddleLeft;
             val.Dock = DockStyle.Fill;
 
@@ -471,7 +474,7 @@ namespace dump
             }
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (БЕЗ КОЛОНОК ФИО) =====
+        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (С ШРИФТОМ TIMES NEW ROMAN 14) =====
         private void InitializeDataGridView()
         {
             dataGridView1.ShowCellToolTips = false;
@@ -486,31 +489,36 @@ namespace dump
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView1.RowTemplate.Height = 40;
-            dataGridView1.RowTemplate.MinimumHeight = 40;
+            dataGridView1.RowTemplate.Height = 50;
+            dataGridView1.RowTemplate.MinimumHeight = 45;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.EnableHeadersVisualStyles = false;
-            dataGridView1.ColumnHeadersHeight = 45;
+            dataGridView1.ColumnHeadersHeight = 55;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
             Color headerBackColor = Color.FromArgb(97, 173, 123);
 
+            // ===== НАСТРОЙКА ШРИФТОВ TIMES NEW ROMAN 14 =====
+            // Шрифт для заголовков колонок - Times New Roman 14 Bold
+            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridView1.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
+            dataGridView1.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 5, 0, 5);
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionBackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
-            dataGridView1.DefaultCellStyle.Padding = new Padding(0, 2, 0, 2);
+            // Шрифт для ячеек - Times New Roman 14 Regular
+            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dataGridView1.DefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
             dataGridView1.DefaultCellStyle.BackColor = Color.White;
             dataGridView1.DefaultCellStyle.ForeColor = Color.Black;
             dataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.DefaultCellStyle.SelectionForeColor = Color.Black;
 
+            // Шрифт для строк
+            dataGridView1.RowsDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridView1.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
             dataGridView1.RowsDefaultCellStyle.BackColor = Color.White;
@@ -527,9 +535,10 @@ namespace dump
             colId.Name = "id_certificate";
             colId.HeaderText = "№";
             colId.DataPropertyName = "id_certificate";
-            colId.Width = 60;
+            colId.Width = 70;
             colId.MinimumWidth = 60;
             colId.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colId.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colId);
 
@@ -538,9 +547,10 @@ namespace dump
             colPhone.Name = "phone_number";
             colPhone.HeaderText = "Телефон";
             colPhone.DataPropertyName = "phone_number";
-            colPhone.Width = 150;
+            colPhone.Width = 180;
             colPhone.MinimumWidth = 140;
             colPhone.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPhone);
 
@@ -549,11 +559,12 @@ namespace dump
             colPrice.Name = "price";
             colPrice.HeaderText = "Стоимость";
             colPrice.DataPropertyName = "price";
-            colPrice.Width = 100;
-            colPrice.MinimumWidth = 90;
+            colPrice.Width = 120;
+            colPrice.MinimumWidth = 100;
             colPrice.DefaultCellStyle.Format = "N2";
             colPrice.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             colPrice.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            colPrice.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPrice.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPrice);
 
@@ -562,10 +573,11 @@ namespace dump
             colDate.Name = "date";
             colDate.HeaderText = "Дата выдачи";
             colDate.DataPropertyName = "date";
-            colDate.Width = 100;
-            colDate.MinimumWidth = 90;
+            colDate.Width = 120;
+            colDate.MinimumWidth = 100;
             colDate.DefaultCellStyle.Format = "dd.MM.yyyy";
             colDate.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colDate.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colDate.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colDate);
 
@@ -581,10 +593,10 @@ namespace dump
             colStatusName.Name = "status_name";
             colStatusName.HeaderText = "Статус";
             colStatusName.DataPropertyName = "status_name";
-            colStatusName.Width = 120;
-            colStatusName.MinimumWidth = 100;
+            colStatusName.Width = 140;
+            colStatusName.MinimumWidth = 110;
             colStatusName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             colStatusName.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colStatusName);
 
@@ -622,19 +634,19 @@ namespace dump
                 {
                     case "Активен":
                         e.CellStyle.ForeColor = Color.Green;
-                        e.CellStyle.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+                        e.CellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         break;
                     case "Использован":
                         e.CellStyle.ForeColor = Color.Blue;
-                        e.CellStyle.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+                        e.CellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         break;
                     case "Просрочен":
                         e.CellStyle.ForeColor = Color.Red;
-                        e.CellStyle.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+                        e.CellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         break;
                     case "Возвращён":
                         e.CellStyle.ForeColor = Color.Orange;
-                        e.CellStyle.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+                        e.CellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         break;
                 }
             }

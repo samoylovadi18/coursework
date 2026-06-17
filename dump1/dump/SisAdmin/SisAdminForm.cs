@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using System.IO.Compression;
 
-
 namespace dump
 {
     public partial class SisAdminForm : Form
@@ -42,6 +41,10 @@ namespace dump
         {
             InitializeComponent();
 
+            // Регистрируем форму в менеджере бездействия
+            InactivityManager.RegisterForm(this);
+            InactivityManager.OnLockRequest += LockSystem;
+
             // Инициализируем папку для бэкапов
             backupFolder = Path.Combine(Application.StartupPath, "Backups");
 
@@ -70,6 +73,133 @@ namespace dump
 
             // Добавляем обработчик закрытия формы
             this.FormClosing += SisAdminForm_FormClosing;
+        }
+
+        // ===================== БЛОКИРОВКА СИСТЕМЫ =====================
+
+        private void LockSystem()
+        {
+            if (isLockDialogOpen) return;
+            isLockDialogOpen = true;
+
+            this.Invoke(new Action(() =>
+            {
+                Form lockDialog = new Form();
+                lockDialog.Text = "Блокировка системы";
+                lockDialog.Size = new Size(380, 230);
+                lockDialog.StartPosition = FormStartPosition.CenterScreen;
+                lockDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                lockDialog.MaximizeBox = false;
+                lockDialog.MinimizeBox = false;
+                lockDialog.TopMost = true;
+
+                Label lblMessage = new Label();
+                lblMessage.Text = $"Система заблокирована из-за бездействия ({InactivityManager.GetInactivityTime() / 60} мин.)\nВведите пароль для разблокировки:";
+                lblMessage.Location = new Point(20, 20);
+                lblMessage.Size = new Size(330, 50);
+                lblMessage.TextAlign = ContentAlignment.MiddleCenter;
+
+                Label lblUser = new Label();
+                lblUser.Text = $"Пользователь: {CurrentUser.FIO}";
+                lblUser.Location = new Point(20, 75);
+                lblUser.Size = new Size(330, 25);
+                lblUser.TextAlign = ContentAlignment.MiddleCenter;
+                lblUser.Font = new Font("Microsoft Sans Serif", 9, FontStyle.Bold);
+
+                TextBox txtPassword = new TextBox();
+                txtPassword.Location = new Point(90, 110);
+                txtPassword.Size = new Size(180, 20);
+                txtPassword.UseSystemPasswordChar = true;
+
+                Button btnUnlock = new Button();
+                btnUnlock.Text = "Разблокировать";
+                btnUnlock.Location = new Point(130, 145);
+                btnUnlock.Size = new Size(100, 30);
+
+                btnUnlock.Click += (s, e) => CheckPasswordAndUnlock(txtPassword, lockDialog);
+                txtPassword.KeyPress += (s, e) =>
+                {
+                    if (e.KeyChar == (char)Keys.Enter)
+                        CheckPasswordAndUnlock(txtPassword, lockDialog);
+                };
+
+                lockDialog.Controls.Add(lblMessage);
+                lockDialog.Controls.Add(lblUser);
+                lockDialog.Controls.Add(txtPassword);
+                lockDialog.Controls.Add(btnUnlock);
+                lockDialog.FormClosed += (s, e) => { isLockDialogOpen = false; };
+                lockDialog.ShowDialog();
+            }));
+        }
+
+        private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
+        {
+            bool isCorrect = false;
+
+            if (CurrentUser.Username == "sisadmin" && CurrentUser.RoleId == 99)
+            {
+                if (txtPassword.Text == "admin")
+                    isCorrect = true;
+            }
+            else
+            {
+                string dbPassword = GetPasswordFromDB();
+                string inputHash = HashPassword(txtPassword.Text);
+                if (inputHash == dbPassword)
+                    isCorrect = true;
+            }
+
+            if (isCorrect)
+            {
+                lockDialog.Close();
+                InactivityManager.ResetActivity();
+            }
+            else
+            {
+                MessageBox.Show("Неверный пароль! Вы будете перенаправлены на окно входа.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                lockDialog.Close();
+                InactivityManager.UnregisterForm();
+                this.Close();
+
+                LoginForm login = new LoginForm();
+                login.Show();
+            }
+        }
+
+        private string GetPasswordFromDB()
+        {
+            try
+            {
+                using (var conn = SettingsBD.GetConnection())
+                {
+                    conn.Open();
+                    var cmd = new MySqlCommand("SELECT password_hash FROM users WHERE login = @login", conn);
+                    cmd.Parameters.AddWithValue("@login", CurrentUser.Username);
+                    return cmd.ExecuteScalar()?.ToString();
+                }
+            }
+            catch { return null; }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in hash)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            InactivityManager.UnregisterForm();
+            base.OnFormClosed(e);
         }
 
         // ===================== ПОЛУЧЕНИЕ РАБОЧЕГО ПОДКЛЮЧЕНИЯ =====================
@@ -654,7 +784,7 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
-        // ===================== БЛОКИРОВКА СИСТЕМЫ =====================
+        // ===================== БЛОКИРОВКА СИСТЕМЫ (В МИНУТАХ) =====================
 
         private void InitializeSecurityFeature()
         {
@@ -668,8 +798,21 @@ namespace dump
             if (numInactivityTime != null)
             {
                 numInactivityTime.Minimum = 1;
-                numInactivityTime.Maximum = 3600;
-                numInactivityTime.Value = InactivityManager.GetInactivityTime();
+                numInactivityTime.Maximum = 120; // Максимум 120 минут (2 часа)
+
+                // Получаем время в секундах, переводим в минуты
+                int seconds = InactivityManager.GetInactivityTime();
+                int minutes = seconds / 60;
+
+                // Если минут меньше 1, устанавливаем 1 минуту (60 секунд)
+                if (minutes < 1)
+                {
+                    minutes = 1;
+                    // Обновляем значение в менеджере
+                    InactivityManager.SetSecuritySettings(InactivityManager.GetAutoLockEnabled(), 60);
+                }
+
+                numInactivityTime.Value = minutes;
                 numInactivityTime.Enabled = InactivityManager.GetAutoLockEnabled();
                 numInactivityTime.ValueChanged += NumInactivityTime_ValueChanged;
             }
@@ -683,7 +826,12 @@ namespace dump
         private void ChkAutoLock_CheckedChanged(object sender, EventArgs e)
         {
             bool isChecked = chkAutoLock.Checked;
-            InactivityManager.SetSecuritySettings(isChecked, InactivityManager.GetInactivityTime());
+
+            // Получаем текущее время в минутах
+            int minutes = (int)(numInactivityTime?.Value ?? 5);
+            int seconds = minutes * 60; // Переводим в секунды для хранения
+
+            InactivityManager.SetSecuritySettings(isChecked, seconds);
 
             if (numInactivityTime != null)
             {
@@ -697,9 +845,10 @@ namespace dump
         {
             if (numInactivityTime != null)
             {
-                int seconds = (int)numInactivityTime.Value;
+                int minutes = (int)numInactivityTime.Value;
+                int seconds = minutes * 60; // Переводим в секунды для хранения
                 InactivityManager.SetSecuritySettings(InactivityManager.GetAutoLockEnabled(), seconds);
-                LogMessage($"Время бездействия изменено на {seconds} сек.");
+                LogMessage($"Время бездействия изменено на {minutes} мин.");
             }
         }
 
@@ -708,18 +857,19 @@ namespace dump
             try
             {
                 bool isEnabled = chkAutoLock?.Checked ?? false;
-                int seconds = (int)(numInactivityTime?.Value ?? 60);
+                int minutes = (int)(numInactivityTime?.Value ?? 5);
+                int seconds = minutes * 60; // Переводим в секунды для хранения
 
                 InactivityManager.SetSecuritySettings(isEnabled, seconds);
 
-                LogMessage($"Настройки безопасности сохранены: блокировка {(isEnabled ? "включена" : "выключена")}, время {seconds} сек.");
+                LogMessage($"Настройки безопасности сохранены: блокировка {(isEnabled ? "включена" : "выключена")}, время {minutes} мин.");
 
                 string message;
                 if (isEnabled)
                 {
                     message = $"Настройки безопасности успешно сохранены!\n\n" +
                              $"Блокировка: Включена\n" +
-                             $"Время бездействия: {seconds} сек.";
+                             $"Время бездействия: {minutes} мин.";
                 }
                 else
                 {

@@ -1,4 +1,4 @@
 {
-  "AutoLockEnabled": false,
-  "InactivityTimeSeconds": 10
+  "AutoLockEnabled": true,
+  "InactivityTimeSeconds": 60
 }

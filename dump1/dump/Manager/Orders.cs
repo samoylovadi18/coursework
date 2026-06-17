@@ -100,7 +100,6 @@ namespace dump
         private void Orders_ResizeEnd(object sender, EventArgs e)
         {
             UpdateScale();
-            // После масштабирования обновляем отображение данных
             RefreshOrdersData();
         }
 
@@ -108,22 +107,17 @@ namespace dump
         {
             if (this.WindowState == FormWindowState.Minimized) return;
 
-            // Вычисляем новый масштаб
             float scaleX = (float)this.ClientSize.Width / (float)originalFormSize.Width;
             float scaleY = (float)this.ClientSize.Height / (float)originalFormSize.Height;
             float newScale = Math.Min(scaleX, scaleY);
 
-            // Ограничиваем масштаб (от 0.6 до 1.5)
             newScale = Math.Max(0.6f, Math.Min(1.5f, newScale));
 
             if (Math.Abs(newScale - currentScale) < 0.01f) return;
 
             currentScale = newScale;
 
-            // Масштабируем все элементы
             ScaleControls(this);
-
-            // Масштабируем колонки DataGridView
             ScaleDataGridViewColumns();
         }
 
@@ -131,7 +125,6 @@ namespace dump
         {
             foreach (Control control in parent.Controls)
             {
-                // Масштабируем размер
                 if (originalSizes.ContainsKey(control))
                 {
                     control.Size = new Size(
@@ -140,7 +133,6 @@ namespace dump
                     );
                 }
 
-                // Масштабируем позицию
                 if (originalLocations.ContainsKey(control))
                 {
                     control.Location = new Point(
@@ -149,7 +141,6 @@ namespace dump
                     );
                 }
 
-                // Масштабируем шрифт
                 if (originalFonts.ContainsKey(control))
                 {
                     float newFontSize = originalFonts[control].Size * currentScale;
@@ -174,7 +165,6 @@ namespace dump
         {
             if (dataGridView1 == null || dataGridView1.Columns.Count == 0) return;
 
-            // Сохраняем оригинальные ширины колонок при первом вызове
             if (originalColumnWidths.Count == 0)
             {
                 foreach (DataGridViewColumn col in dataGridView1.Columns)
@@ -183,7 +173,6 @@ namespace dump
                 }
             }
 
-            // Применяем масштабирование к колонкам
             foreach (DataGridViewColumn col in dataGridView1.Columns)
             {
                 if (originalColumnWidths.ContainsKey(col.Name))
@@ -194,27 +183,28 @@ namespace dump
                 }
             }
 
-            // Масштабируем высоту строк
-            int newRowHeight = (int)(40 * currentScale);
-            newRowHeight = Math.Max(30, Math.Min(70, newRowHeight));
+            int newRowHeight = (int)(50 * currentScale);
+            newRowHeight = Math.Max(35, Math.Min(80, newRowHeight));
             dataGridView1.RowTemplate.Height = newRowHeight;
             dataGridView1.RowTemplate.MinimumHeight = newRowHeight;
 
-            // Масштабируем высоту заголовков
-            int newHeaderHeight = (int)(45 * currentScale);
-            newHeaderHeight = Math.Max(35, Math.Min(70, newHeaderHeight));
+            int newHeaderHeight = (int)(55 * currentScale);
+            newHeaderHeight = Math.Max(40, Math.Min(80, newHeaderHeight));
             dataGridView1.ColumnHeadersHeight = newHeaderHeight;
 
-            // Масштабируем шрифты в заголовках
-            int newHeaderFontSize = (int)(12 * currentScale);
-            newHeaderFontSize = Math.Max(9, Math.Min(16, newHeaderFontSize));
+            // Шрифт для заголовков - Times New Roman 14 Bold (с масштабированием)
+            int newHeaderFontSize = (int)(14 * currentScale);
+            newHeaderFontSize = Math.Max(10, Math.Min(20, newHeaderFontSize));
             dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", newHeaderFontSize, FontStyle.Bold);
 
-            // Масштабируем шрифты в ячейках
-            int newCellFontSize = (int)(10 * currentScale);
-            newCellFontSize = Math.Max(8, Math.Min(14, newCellFontSize));
+            // Шрифт для ячеек - Times New Roman 14 Regular (с масштабированием)
+            int newCellFontSize = (int)(14 * currentScale);
+            newCellFontSize = Math.Max(10, Math.Min(20, newCellFontSize));
             dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", newCellFontSize, FontStyle.Regular);
+            dataGridView1.RowsDefaultCellStyle.Font = new Font("Times New Roman", newCellFontSize, FontStyle.Regular);
         }
+
+        // ===================== МЕТОДЫ БЛОКИРОВКИ =====================
 
         private void LockSystem()
         {
@@ -352,11 +342,12 @@ namespace dump
             }
         }
 
+        // ===================== ИНИЦИАЛИЗАЦИЯ =====================
+
         private void InitializeComponents()
         {
             InitializeDataGridView();
 
-            // НАСТРОЙКА КОМБОБОКСА ДЛЯ ВЫБОРА ТИПА ПОИСКА
             if (comboBoxSearchType != null)
             {
                 comboBoxSearchType.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -366,7 +357,6 @@ namespace dump
                 comboBoxSearchType.SelectedIndex = 0;
                 comboBoxSearchType.SelectedIndexChanged += ComboBoxSearchType_SelectedIndexChanged;
 
-                // Сохраняем оригинальные параметры для комбобокса
                 if (!originalFonts.ContainsKey(comboBoxSearchType))
                 {
                     originalFonts[comboBoxSearchType] = new Font(comboBoxSearchType.Font.FontFamily, comboBoxSearchType.Font.Size, comboBoxSearchType.Font.Style, comboBoxSearchType.Font.Unit);
@@ -381,13 +371,11 @@ namespace dump
                 }
             }
 
-            // Настройка textBoxSearch
             SetupSearchPlaceholder();
             textBoxSearch.TextChanged += textBoxSearch_TextChanged;
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
             textBoxSearch.Click += TextBoxSearch_Click;
 
-            // Сохраняем оригинальные параметры для textBoxSearch
             if (!originalFonts.ContainsKey(textBoxSearch))
             {
                 originalFonts[textBoxSearch] = new Font(textBoxSearch.Font.FontFamily, textBoxSearch.Font.Size, textBoxSearch.Font.Style, textBoxSearch.Font.Unit);
@@ -404,7 +392,6 @@ namespace dump
             comboBoxOrderStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxOrderStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
 
-            // Сохраняем оригинальные параметры для comboBoxOrderStatus
             if (!originalFonts.ContainsKey(comboBoxOrderStatus))
             {
                 originalFonts[comboBoxOrderStatus] = new Font(comboBoxOrderStatus.Font.FontFamily, comboBoxOrderStatus.Font.Size, comboBoxOrderStatus.Font.Style, comboBoxOrderStatus.Font.Unit);
@@ -426,7 +413,6 @@ namespace dump
 
             dataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
 
-            // Сохраняем оригинальные ширины колонок DataGridView
             foreach (DataGridViewColumn col in dataGridView1.Columns)
             {
                 if (!originalColumnWidths.ContainsKey(col.Name))
@@ -455,7 +441,6 @@ namespace dump
             btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
 
-            // Сохраняем оригинальные параметры для кнопки
             if (!originalFonts.ContainsKey(btn))
             {
                 originalFonts[btn] = new Font(btn.Font.FontFamily, btn.Font.Size, btn.Font.Style, btn.Font.Unit);
@@ -469,6 +454,8 @@ namespace dump
                 originalLocations[btn] = btn.Location;
             }
         }
+
+        // ===================== МЕТОДЫ ПОИСКА И ФИЛЬТРАЦИИ =====================
 
         private void SetupSearchPlaceholder()
         {
@@ -549,7 +536,6 @@ namespace dump
 
             if (currentSearchType == SearchType.ByOrderNumber)
             {
-                // Поиск по номеру заказа - только цифры
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > 10)
@@ -572,7 +558,6 @@ namespace dump
             }
             else
             {
-                // Поиск по телефону с маской
                 string digits = new string(inputText.Where(char.IsDigit).ToArray());
 
                 if (digits.Length > 11)
@@ -695,22 +680,6 @@ namespace dump
             return result;
         }
 
-        private class StatusState
-        {
-            public int SelectedStatusId { get; set; }
-            public string SelectedStatusName { get; set; }
-        }
-
-        private class OrderDetailItem
-        {
-            public string Name { get; set; }
-            public int Quantity { get; set; }
-            public decimal Price { get; set; }
-            public decimal TotalPrice { get; set; }
-            public bool IsGift { get; set; }
-            public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
-        }
-
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
@@ -728,6 +697,96 @@ namespace dump
                 return phone;
             }
         }
+
+        // ===================== ОСНОВНАЯ ЛОГИКА СТАТУСОВ =====================
+
+        /// <summary>
+        /// Получает список разрешенных ID статусов для перехода из текущего статуса
+        /// </summary>
+        private List<int> GetAllowedStatuses(int currentStatusId)
+        {
+            List<int> allowedStatuses = new List<int>();
+
+            switch (currentStatusId)
+            {
+                case 2: // Принят
+                    // Можно изменить на: Готов, В пути, Доставлен, Отменён
+                    allowedStatuses.AddRange(new[] { 4, 5, 6, 7 });
+                    break;
+
+                case 4: // Готов
+                    // Можно изменить на: В пути, Доставлен (НЕЛЬЗЯ на Отменён)
+                    allowedStatuses.AddRange(new[] { 5, 6 });
+                    break;
+
+                case 5: // В пути
+                    // Можно изменить на: Доставлен (НЕЛЬЗЯ на Отменён)
+                    allowedStatuses.AddRange(new[] { 6 });
+                    break;
+
+                case 6: // Доставлен
+                    // Нельзя менять статус - возвращаем пустой список
+                    break;
+
+                case 7: // Отменён
+                    // Нельзя менять статус - возвращаем пустой список
+                    break;
+
+                default:
+                    // Для неизвестных статусов разрешаем все кроме 6 и 7
+                    allowedStatuses.AddRange(new[] { 2, 4, 5 });
+                    break;
+            }
+
+            return allowedStatuses;
+        }
+
+        /// <summary>
+        /// Проверяет, разрешен ли переход в новый статус
+        /// </summary>
+        private bool IsStatusTransitionAllowed(int currentStatusId, int newStatusId)
+        {
+            // Если статусы совпадают - разрешаем (ничего не меняется)
+            if (currentStatusId == newStatusId)
+                return true;
+
+            // Если новый статус - "Доставлен" (6) или "Отменён" (7), проверяем особые условия
+            if (newStatusId == 6 || newStatusId == 7)
+            {
+                // Проверяем, разрешен ли этот статус для текущего
+                List<int> allowed = GetAllowedStatuses(currentStatusId);
+                return allowed.Contains(newStatusId);
+            }
+
+            // Для остальных статусов проверяем через GetAllowedStatuses
+            List<int> allowedStatuses = GetAllowedStatuses(currentStatusId);
+            return allowedStatuses.Contains(newStatusId);
+        }
+
+        /// <summary>
+        /// Получает сообщение с объяснением, почему переход запрещен
+        /// </summary>
+        private string GetStatusTransitionErrorMessage(int currentStatusId, string currentStatusName, int newStatusId, string newStatusName)
+        {
+            if (currentStatusId == newStatusId)
+                return "Статус не изменился.";
+
+            if (currentStatusId == 6)
+                return $"Заказ уже доставлен. Нельзя изменить статус \"{currentStatusName}\".";
+
+            if (currentStatusId == 7)
+                return $"Заказ отменён. Нельзя изменить статус \"{currentStatusName}\".";
+
+            if (newStatusId == 7 && currentStatusId != 2)
+                return $"Нельзя отменить заказ со статусом \"{currentStatusName}\". Отменить можно только заказ со статусом \"Принят\".";
+
+            if (newStatusId == 6 && currentStatusId == 2)
+                return $"Нельзя сразу доставить заказ. Сначала переведите его в статус \"Готов\" или \"В пути\".";
+
+            return $"Переход из статуса \"{currentStatusName}\" в статус \"{newStatusName}\" запрещен.";
+        }
+
+        // ===================== ОТОБРАЖЕНИЕ ДЕТАЛЕЙ ЗАКАЗА =====================
 
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
@@ -780,11 +839,10 @@ namespace dump
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
-                // Сохраняем оригинальные параметры для формы деталей
                 float detailScale = currentScale;
 
                 Panel infoPanel = CreateInfoPanel(orderId, phoneNumber, address, persons, orderDate, paymentMethod);
-                Panel statusPanel = CreateStatusPanel(currentStatusId, currentStatus, statusState);
+                Panel statusPanel = CreateStatusPanelWithRestrictions(currentStatusId, currentStatus, statusState);
                 Panel commentPanel = CreateCommentPanel(comment);
 
                 List<OrderDetailItem> orderDetails = LoadOrderDetails(orderId);
@@ -812,7 +870,7 @@ namespace dump
                 totalPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(totalPanel);
 
-                // Применяем масштабирование к форме деталей
+                // Применяем масштабирование
                 if (detailScale != 1.0f)
                 {
                     foreach (Control ctrl in detailForm.Controls)
@@ -842,6 +900,22 @@ namespace dump
                 {
                     if (statusState.SelectedStatusId != currentStatusId)
                     {
+                        // Проверяем, разрешен ли переход
+                        if (!IsStatusTransitionAllowed(currentStatusId, statusState.SelectedStatusId))
+                        {
+                            string errorMsg = GetStatusTransitionErrorMessage(
+                                currentStatusId,
+                                currentStatus,
+                                statusState.SelectedStatusId,
+                                statusState.SelectedStatusName
+                            );
+
+                            MessageBox.Show(errorMsg, "Изменение статуса запрещено",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            args.Cancel = true;
+                            return;
+                        }
+
                         DialogResult result = MessageBox.Show(
                             $"Изменить статус заказа с \"{currentStatus}\" на \"{statusState.SelectedStatusName}\"?",
                             "Сохранение изменений",
@@ -872,6 +946,8 @@ namespace dump
             }
         }
 
+        // ===================== СОЗДАНИЕ ПАНЕЛЕЙ ДЛЯ ФОРМЫ ДЕТАЛЕЙ =====================
+
         private Panel CreateInfoPanel(int orderId, string phoneNumber, string address,
             int persons, DateTime orderDate, string paymentMethod)
         {
@@ -898,6 +974,203 @@ namespace dump
             panel.Controls.Add(lblInfo);
             return panel;
         }
+
+        /// <summary>
+        /// Создает панель выбора статуса с ограничениями
+        /// </summary>
+        private Panel CreateStatusPanelWithRestrictions(int currentStatusId, string currentStatus, StatusState statusState)
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(765, 60);
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.BackColor = Color.FromArgb(255, 255, 220);
+
+            Label lblCurrentStatus = new Label();
+            lblCurrentStatus.Text = "Текущий статус:";
+            lblCurrentStatus.Location = new Point(10, 18);
+            lblCurrentStatus.Size = new Size(100, 25);
+            lblCurrentStatus.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            lblCurrentStatus.TextAlign = ContentAlignment.MiddleLeft;
+            lblCurrentStatus.BackColor = Color.Transparent;
+
+            Label lblCurrentStatusValue = new Label();
+            lblCurrentStatusValue.Text = currentStatus;
+            lblCurrentStatusValue.Location = new Point(120, 18);
+            lblCurrentStatusValue.Size = new Size(150, 25);
+            lblCurrentStatusValue.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            lblCurrentStatusValue.ForeColor = Color.DarkBlue;
+            lblCurrentStatusValue.TextAlign = ContentAlignment.MiddleLeft;
+            lblCurrentStatusValue.BackColor = Color.Transparent;
+
+            Label lblNewStatus = new Label();
+            lblNewStatus.Text = "Новый статус:";
+            lblNewStatus.Location = new Point(280, 18);
+            lblNewStatus.Size = new Size(90, 25);
+            lblNewStatus.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            lblNewStatus.TextAlign = ContentAlignment.MiddleLeft;
+            lblNewStatus.BackColor = Color.Transparent;
+
+            ComboBox cmbNewStatus = new ComboBox();
+            cmbNewStatus.Location = new Point(380, 18);
+            cmbNewStatus.Size = new Size(200, 25);
+            cmbNewStatus.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbNewStatus.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            cmbNewStatus.BackColor = Color.White;
+
+            // Получаем разрешенные статусы для перехода
+            List<int> allowedStatusIds = GetAllowedStatuses(currentStatusId);
+
+            // Заполняем комбобокс только разрешенными статусами
+            foreach (var status in statusDictionary)
+            {
+                // Всегда добавляем текущий статус, даже если он не в списке разрешенных
+                if (status.Key == currentStatusId || allowedStatusIds.Contains(status.Key))
+                {
+                    cmbNewStatus.Items.Add(new StatusItem(status.Key, status.Value));
+                }
+            }
+
+            cmbNewStatus.DisplayMember = "Name";
+
+            // Выбираем текущий статус
+            foreach (StatusItem item in cmbNewStatus.Items)
+            {
+                if (item.Id == currentStatusId)
+                {
+                    cmbNewStatus.SelectedItem = item;
+                    statusState.SelectedStatusId = item.Id;
+                    statusState.SelectedStatusName = item.Name;
+                    break;
+                }
+            }
+
+            // Если текущий статус не найден (например, статус 6 или 7 не добавлен в список),
+            // добавляем его отдельно
+            if (cmbNewStatus.SelectedItem == null)
+            {
+                StatusItem currentItem = new StatusItem(currentStatusId, currentStatus);
+                cmbNewStatus.Items.Insert(0, currentItem);
+                cmbNewStatus.SelectedItem = currentItem;
+                statusState.SelectedStatusId = currentItem.Id;
+                statusState.SelectedStatusName = currentItem.Name;
+            }
+
+            // Если нет доступных статусов для изменения, делаем комбобокс неактивным
+            if (cmbNewStatus.Items.Count <= 1)
+            {
+                cmbNewStatus.Enabled = false;
+                cmbNewStatus.BackColor = Color.LightGray;
+
+                // Добавляем поясняющую надпись
+                Label lblNoChanges = new Label();
+                lblNoChanges.Text = "✖ Изменение статуса невозможно";
+                lblNoChanges.Location = new Point(590, 18);
+                lblNoChanges.Size = new Size(160, 25);
+                lblNoChanges.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                lblNoChanges.ForeColor = Color.Red;
+                lblNoChanges.TextAlign = ContentAlignment.MiddleLeft;
+                lblNoChanges.BackColor = Color.Transparent;
+                panel.Controls.Add(lblNoChanges);
+            }
+            else
+            {
+                // Добавляем подсказку о доступных статусах
+                string allowedNames = string.Join(", ", allowedStatusIds
+                    .Where(id => statusDictionary.ContainsKey(id))
+                    .Select(id => statusDictionary[id]));
+
+                if (!string.IsNullOrEmpty(allowedNames))
+                {
+                    Label lblHint = new Label();
+                    lblHint.Text = $"Доступно: {allowedNames}";
+                    lblHint.Location = new Point(590, 18);
+                    lblHint.Size = new Size(160, 25);
+                    lblHint.Font = new Font("Times New Roman", 8, FontStyle.Italic);
+                    lblHint.ForeColor = Color.DarkGreen;
+                    lblHint.TextAlign = ContentAlignment.MiddleLeft;
+                    lblHint.BackColor = Color.Transparent;
+                    panel.Controls.Add(lblHint);
+                }
+            }
+
+            cmbNewStatus.SelectedIndexChanged += (s, e) =>
+            {
+                if (cmbNewStatus.SelectedItem is StatusItem selectedItem)
+                {
+                    statusState.SelectedStatusId = selectedItem.Id;
+                    statusState.SelectedStatusName = selectedItem.Name;
+                }
+            };
+
+            panel.Controls.Add(lblCurrentStatus);
+            panel.Controls.Add(lblCurrentStatusValue);
+            panel.Controls.Add(lblNewStatus);
+            panel.Controls.Add(cmbNewStatus);
+
+            return panel;
+        }
+
+        private Panel CreateCommentPanel(string comment)
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(765, 60);
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.BackColor = Color.FromArgb(240, 255, 240);
+
+            Label lblCommentTitle = new Label();
+            lblCommentTitle.Text = "Комментарий к заказу:";
+            lblCommentTitle.Location = new Point(10, 5);
+            lblCommentTitle.Size = new Size(200, 20);
+            lblCommentTitle.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            lblCommentTitle.BackColor = Color.Transparent;
+
+            Label lblComment = new Label();
+            lblComment.Text = string.IsNullOrEmpty(comment) ? "(нет комментария)" : comment;
+            lblComment.Location = new Point(10, 30);
+            lblComment.Size = new Size(740, 25);
+            lblComment.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            lblComment.TextAlign = ContentAlignment.MiddleLeft;
+            lblComment.BackColor = Color.Transparent;
+            lblComment.AutoEllipsis = true;
+
+            panel.Controls.Add(lblCommentTitle);
+            panel.Controls.Add(lblComment);
+
+            return panel;
+        }
+
+        private Panel CreateTotalPanel(decimal totalSum)
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(765, 50);
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.BackColor = Color.FromArgb(230, 255, 230);
+
+            Label lblTotalTitle = new Label();
+            lblTotalTitle.Text = "ИТОГО:";
+            lblTotalTitle.Location = new Point(10, 12);
+            lblTotalTitle.Size = new Size(80, 25);
+            lblTotalTitle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            lblTotalTitle.ForeColor = Color.DarkGreen;
+            lblTotalTitle.TextAlign = ContentAlignment.MiddleLeft;
+            lblTotalTitle.BackColor = Color.Transparent;
+
+            Label lblTotalSum = new Label();
+            lblTotalSum.Text = $"{totalSum.ToString("N2", russianCulture)} ₽";
+            lblTotalSum.Location = new Point(100, 12);
+            lblTotalSum.Size = new Size(200, 25);
+            lblTotalSum.Font = new Font("Times New Roman", 14, FontStyle.Bold);
+            lblTotalSum.ForeColor = Color.DarkRed;
+            lblTotalSum.TextAlign = ContentAlignment.MiddleLeft;
+            lblTotalSum.BackColor = Color.Transparent;
+
+            panel.Controls.Add(lblTotalTitle);
+            panel.Controls.Add(lblTotalSum);
+
+            return panel;
+        }
+
+        // ===================== ЗАГРУЗКА ДЕТАЛЕЙ ЗАКАЗА =====================
 
         private List<OrderDetailItem> LoadOrderDetails(int orderId)
         {
@@ -981,139 +1254,6 @@ namespace dump
             return dt;
         }
 
-        private Panel CreateStatusPanel(int currentStatusId, string currentStatus, StatusState statusState)
-        {
-            Panel panel = new Panel();
-            panel.Size = new Size(765, 60);
-            panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.BackColor = Color.FromArgb(255, 255, 220);
-
-            Label lblCurrentStatus = new Label();
-            lblCurrentStatus.Text = "Текущий статус:";
-            lblCurrentStatus.Location = new Point(10, 18);
-            lblCurrentStatus.Size = new Size(100, 25);
-            lblCurrentStatus.Font = new Font("Times New Roman", 11, FontStyle.Bold);
-            lblCurrentStatus.TextAlign = ContentAlignment.MiddleLeft;
-            lblCurrentStatus.BackColor = Color.Transparent;
-
-            Label lblCurrentStatusValue = new Label();
-            lblCurrentStatusValue.Text = currentStatus;
-            lblCurrentStatusValue.Location = new Point(120, 18);
-            lblCurrentStatusValue.Size = new Size(150, 25);
-            lblCurrentStatusValue.Font = new Font("Times New Roman", 11, FontStyle.Bold);
-            lblCurrentStatusValue.ForeColor = Color.DarkBlue;
-            lblCurrentStatusValue.TextAlign = ContentAlignment.MiddleLeft;
-            lblCurrentStatusValue.BackColor = Color.Transparent;
-
-            Label lblNewStatus = new Label();
-            lblNewStatus.Text = "Новый статус:";
-            lblNewStatus.Location = new Point(280, 18);
-            lblNewStatus.Size = new Size(90, 25);
-            lblNewStatus.Font = new Font("Times New Roman", 11, FontStyle.Regular);
-            lblNewStatus.TextAlign = ContentAlignment.MiddleLeft;
-            lblNewStatus.BackColor = Color.Transparent;
-
-            ComboBox cmbNewStatus = new ComboBox();
-            cmbNewStatus.Location = new Point(380, 18);
-            cmbNewStatus.Size = new Size(200, 25);
-            cmbNewStatus.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbNewStatus.Font = new Font("Times New Roman", 11, FontStyle.Regular);
-            cmbNewStatus.BackColor = Color.White;
-
-            foreach (var status in statusDictionary)
-            {
-                cmbNewStatus.Items.Add(new StatusItem(status.Key, status.Value));
-            }
-            cmbNewStatus.DisplayMember = "Name";
-
-            foreach (StatusItem item in cmbNewStatus.Items)
-            {
-                if (item.Id == currentStatusId)
-                {
-                    cmbNewStatus.SelectedItem = item;
-                    statusState.SelectedStatusId = item.Id;
-                    statusState.SelectedStatusName = item.Name;
-                    break;
-                }
-            }
-
-            cmbNewStatus.SelectedIndexChanged += (s, e) =>
-            {
-                if (cmbNewStatus.SelectedItem is StatusItem selectedItem)
-                {
-                    statusState.SelectedStatusId = selectedItem.Id;
-                    statusState.SelectedStatusName = selectedItem.Name;
-                }
-            };
-
-            panel.Controls.Add(lblCurrentStatus);
-            panel.Controls.Add(lblCurrentStatusValue);
-            panel.Controls.Add(lblNewStatus);
-            panel.Controls.Add(cmbNewStatus);
-
-            return panel;
-        }
-
-        private Panel CreateCommentPanel(string comment)
-        {
-            Panel panel = new Panel();
-            panel.Size = new Size(765, 60);
-            panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.BackColor = Color.FromArgb(240, 255, 240);
-
-            Label lblCommentTitle = new Label();
-            lblCommentTitle.Text = "Комментарий к заказу:";
-            lblCommentTitle.Location = new Point(10, 5);
-            lblCommentTitle.Size = new Size(200, 20);
-            lblCommentTitle.Font = new Font("Times New Roman", 11, FontStyle.Bold);
-            lblCommentTitle.BackColor = Color.Transparent;
-
-            Label lblComment = new Label();
-            lblComment.Text = string.IsNullOrEmpty(comment) ? "(нет комментария)" : comment;
-            lblComment.Location = new Point(10, 30);
-            lblComment.Size = new Size(740, 25);
-            lblComment.Font = new Font("Times New Roman", 11, FontStyle.Regular);
-            lblComment.TextAlign = ContentAlignment.MiddleLeft;
-            lblComment.BackColor = Color.Transparent;
-            lblComment.AutoEllipsis = true;
-
-            panel.Controls.Add(lblCommentTitle);
-            panel.Controls.Add(lblComment);
-
-            return panel;
-        }
-
-        private Panel CreateTotalPanel(decimal totalSum)
-        {
-            Panel panel = new Panel();
-            panel.Size = new Size(765, 50);
-            panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.BackColor = Color.FromArgb(230, 255, 230);
-
-            Label lblTotalTitle = new Label();
-            lblTotalTitle.Text = "ИТОГО:";
-            lblTotalTitle.Location = new Point(10, 12);
-            lblTotalTitle.Size = new Size(80, 25);
-            lblTotalTitle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lblTotalTitle.ForeColor = Color.DarkGreen;
-            lblTotalTitle.TextAlign = ContentAlignment.MiddleLeft;
-            lblTotalTitle.BackColor = Color.Transparent;
-
-            Label lblTotalSum = new Label();
-            lblTotalSum.Text = $"{totalSum.ToString("N2", russianCulture)} ₽";
-            lblTotalSum.Location = new Point(100, 12);
-            lblTotalSum.Size = new Size(200, 25);
-            lblTotalSum.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lblTotalSum.ForeColor = Color.DarkRed;
-            lblTotalSum.TextAlign = ContentAlignment.MiddleLeft;
-            lblTotalSum.BackColor = Color.Transparent;
-
-            panel.Controls.Add(lblTotalTitle);
-            panel.Controls.Add(lblTotalSum);
-
-            return panel;
-        }
-
         private DataGridView CreateOrderDetailsDataGridView()
         {
             DataGridView dgv = new DataGridView();
@@ -1124,7 +1264,7 @@ namespace dump
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgv.BackgroundColor = Color.White;
             dgv.BorderStyle = BorderStyle.Fixed3D;
-            dgv.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            dgv.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dgv.AllowUserToDeleteRows = false;
             dgv.AllowUserToResizeRows = false;
             dgv.MultiSelect = false;
@@ -1134,15 +1274,16 @@ namespace dump
             dgv.EnableHeadersVisualStyles = false;
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(97, 173, 123);
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.ColumnHeadersHeight = 40;
+            dgv.ColumnHeadersHeight = 50;
 
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
             dgv.RowsDefaultCellStyle.ForeColor = Color.Black;
             dgv.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dgv.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
-            dgv.RowTemplate.Height = 35;
+            dgv.RowsDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dgv.RowTemplate.Height = 45;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
             DataGridViewTextBoxColumn colDishName = new DataGridViewTextBoxColumn();
@@ -1151,6 +1292,7 @@ namespace dump
             colDishName.DataPropertyName = "dish_name";
             colDishName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             colDishName.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            colDishName.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colDishName.FillWeight = 50;
             dgv.Columns.Add(colDishName);
 
@@ -1159,6 +1301,7 @@ namespace dump
             colQuantity.HeaderText = "Кол-во";
             colQuantity.DataPropertyName = "quantity";
             colQuantity.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colQuantity.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colQuantity.FillWeight = 15;
             dgv.Columns.Add(colQuantity);
 
@@ -1167,6 +1310,7 @@ namespace dump
             colPrice.HeaderText = "Цена";
             colPrice.DataPropertyName = "price";
             colPrice.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colPrice.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPrice.FillWeight = 15;
             dgv.Columns.Add(colPrice);
 
@@ -1175,6 +1319,7 @@ namespace dump
             colTotal.HeaderText = "Сумма";
             colTotal.DataPropertyName = "total_price";
             colTotal.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colTotal.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colTotal.FillWeight = 20;
             dgv.Columns.Add(colTotal);
 
@@ -1216,13 +1361,13 @@ namespace dump
                     {
                         row.DefaultCellStyle.BackColor = Color.LightYellow;
                         row.DefaultCellStyle.ForeColor = Color.DarkOrange;
-                        row.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                        row.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
 
                         foreach (DataGridViewCell cell in row.Cells)
                         {
                             cell.Style.BackColor = Color.LightYellow;
                             cell.Style.ForeColor = Color.DarkOrange;
-                            cell.Style.Font = new Font("Times New Roman", 10, FontStyle.Bold);
+                            cell.Style.Font = new Font("Times New Roman", 14, FontStyle.Bold);
                         }
                     }
                 }
@@ -1230,6 +1375,8 @@ namespace dump
 
             return dgv;
         }
+
+        // ===================== ОБНОВЛЕНИЕ СТАТУСА =====================
 
         private bool UpdateOrderStatus(int orderId, int newStatusId, string newStatusName)
         {
@@ -1276,6 +1423,8 @@ namespace dump
                 }
             }
         }
+
+        // ===================== ЗАГРУЗКА ДАННЫХ =====================
 
         private void RefreshOrdersData()
         {
@@ -1325,31 +1474,36 @@ namespace dump
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView1.RowTemplate.Height = 40;
-            dataGridView1.RowTemplate.MinimumHeight = 40;
+            dataGridView1.RowTemplate.Height = 50;
+            dataGridView1.RowTemplate.MinimumHeight = 45;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.EnableHeadersVisualStyles = false;
-            dataGridView1.ColumnHeadersHeight = 45;
+            dataGridView1.ColumnHeadersHeight = 55;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
             Color headerBackColor = Color.FromArgb(97, 173, 123);
 
+            // ===== НАСТРОЙКА ШРИФТОВ TIMES NEW ROMAN 14 =====
+            // Шрифт для заголовков колонок - Times New Roman 14 Bold
+            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 12, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridView1.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
+            dataGridView1.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 5, 0, 5);
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionBackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
-            dataGridView1.DefaultCellStyle.Padding = new Padding(0, 2, 0, 2);
+            // Шрифт для ячеек - Times New Roman 14 Regular
+            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            dataGridView1.DefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
             dataGridView1.DefaultCellStyle.BackColor = Color.White;
             dataGridView1.DefaultCellStyle.ForeColor = Color.Black;
             dataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.DefaultCellStyle.SelectionForeColor = Color.Black;
 
+            // Шрифт для строк
+            dataGridView1.RowsDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridView1.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
             dataGridView1.RowsDefaultCellStyle.BackColor = Color.White;
@@ -1365,10 +1519,11 @@ namespace dump
             colId.Name = "id_order";
             colId.HeaderText = "№";
             colId.DataPropertyName = "id_order";
-            colId.Width = 50;
+            colId.Width = 60;
             colId.MinimumWidth = 50;
             colId.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colId.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            colId.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colId.Resizable = DataGridViewTriState.True;
             colId.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colId);
@@ -1377,11 +1532,11 @@ namespace dump
             colPhone.Name = "phone_number";
             colPhone.HeaderText = "Телефон";
             colPhone.DataPropertyName = "phone_number";
-            colPhone.Width = 120;
+            colPhone.Width = 140;
             colPhone.MinimumWidth = 120;
             colPhone.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             colPhone.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPhone.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPhone.Resizable = DataGridViewTriState.True;
             colPhone.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPhone);
@@ -1390,11 +1545,11 @@ namespace dump
             colAddress.Name = "address";
             colAddress.HeaderText = "Адрес";
             colAddress.DataPropertyName = "address";
-            colAddress.Width = 300;
+            colAddress.Width = 320;
             colAddress.MinimumWidth = 250;
             colAddress.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colAddress.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colAddress.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colAddress.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colAddress.Resizable = DataGridViewTriState.True;
             colAddress.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colAddress);
@@ -1403,11 +1558,11 @@ namespace dump
             colPersons.Name = "number_persons";
             colPersons.HeaderText = "Персон";
             colPersons.DataPropertyName = "number_persons";
-            colPersons.Width = 70;
+            colPersons.Width = 80;
             colPersons.MinimumWidth = 70;
             colPersons.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colPersons.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            colPersons.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPersons.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPersons.Resizable = DataGridViewTriState.True;
             colPersons.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPersons);
@@ -1416,12 +1571,12 @@ namespace dump
             colDate.Name = "delivery_date";
             colDate.HeaderText = "Дата доставки";
             colDate.DataPropertyName = "delivery_date";
-            colDate.Width = 100;
-            colDate.MinimumWidth = 90;
+            colDate.Width = 120;
+            colDate.MinimumWidth = 100;
             colDate.DefaultCellStyle.Format = "dd.MM.yyyy";
             colDate.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colDate.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            colDate.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colDate.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colDate.Resizable = DataGridViewTriState.True;
             colDate.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colDate);
@@ -1430,11 +1585,11 @@ namespace dump
             colComment.Name = "comment";
             colComment.HeaderText = "Комментарий";
             colComment.DataPropertyName = "comment";
-            colComment.Width = 200;
+            colComment.Width = 220;
             colComment.MinimumWidth = 150;
             colComment.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colComment.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            colComment.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colComment.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colComment.Resizable = DataGridViewTriState.True;
             colComment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colComment);
@@ -1443,11 +1598,11 @@ namespace dump
             colPayment.Name = "payment_method";
             colPayment.HeaderText = "Оплата";
             colPayment.DataPropertyName = "payment_method";
-            colPayment.Width = 100;
+            colPayment.Width = 110;
             colPayment.MinimumWidth = 90;
             colPayment.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             colPayment.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colPayment.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colPayment.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colPayment.Resizable = DataGridViewTriState.True;
             colPayment.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colPayment);
@@ -1465,11 +1620,11 @@ namespace dump
             colStatusName.Name = "status_name";
             colStatusName.HeaderText = "Статус";
             colStatusName.DataPropertyName = "status_name";
-            colStatusName.Width = 120;
+            colStatusName.Width = 130;
             colStatusName.MinimumWidth = 100;
             colStatusName.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             colStatusName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 10, FontStyle.Regular);
+            colStatusName.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             colStatusName.Resizable = DataGridViewTriState.True;
             colStatusName.SortMode = DataGridViewColumnSortMode.NotSortable;
             dataGridView1.Columns.Add(colStatusName);
@@ -1638,8 +1793,6 @@ namespace dump
 
                     SetupColumnStyles();
                     AdjustDataGridViewAfterLoad();
-
-                    // Применяем масштабирование колонок после загрузки данных
                     ScaleDataGridViewColumns();
                 }
             }
@@ -1692,23 +1845,6 @@ namespace dump
             }
         }
 
-        public class StatusItem
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public StatusItem(int id, string name) { Id = id; Name = name; }
-            public override string ToString() { return Name; }
-        }
-
-        private void pictureBox2_Click(object sender, EventArgs e)
-        {
-            this.Visible = false;
-            ManagerForm Manager = new ManagerForm();
-            Manager.Show();
-        }
-
-        private void Orders_Load(object sender, EventArgs e) { }
-
         private void buttonReset_Click(object sender, EventArgs e)
         {
             ResetFilters();
@@ -1734,6 +1870,42 @@ namespace dump
         private void LoadOrders()
         {
             LoadOrders("", -1, false);
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            this.Visible = false;
+            ManagerForm Manager = new ManagerForm();
+            Manager.Show();
+        }
+
+        private void Orders_Load(object sender, EventArgs e) { }
+        private void Orders_Load_1(object sender, EventArgs e) { }
+
+        // ===================== ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ =====================
+
+        private class StatusState
+        {
+            public int SelectedStatusId { get; set; }
+            public string SelectedStatusName { get; set; }
+        }
+
+        private class OrderDetailItem
+        {
+            public string Name { get; set; }
+            public int Quantity { get; set; }
+            public decimal Price { get; set; }
+            public decimal TotalPrice { get; set; }
+            public bool IsGift { get; set; }
+            public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
+        }
+
+        public class StatusItem
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public StatusItem(int id, string name) { Id = id; Name = name; }
+            public override string ToString() { return Name; }
         }
     }
 }
