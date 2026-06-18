@@ -1,6 +1,6 @@
--- phpMyAdmin SQL Dump
--- Скрипт для восстановления структуры БД с пустыми таблицами
--- Все INSERT удалены, кроме таблицы roles (роли должны быть всегда)
+-- ============================================================
+-- ТОЛЬКО СТРУКТУРА БАЗЫ ДАННЫХ (БЕЗ ДАННЫХ)
+-- ============================================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -15,15 +15,17 @@ SET time_zone = "+00:00";
 --
 -- База данных: `da`
 --
-DROP DATABASE IF EXISTS `db98`;
-CREATE DATABASE `db98` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `db98`;
+
+DROP DATABASE IF EXISTS `da`;
+CREATE DATABASE `da` CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `da`;
 
 -- --------------------------------------------------------
 
 --
 -- Структура таблицы `categories`
 --
+
 CREATE TABLE `categories` (
   `id_category` int(11) NOT NULL,
   `category_name` varchar(255) NOT NULL
@@ -34,6 +36,7 @@ CREATE TABLE `categories` (
 --
 -- Структура таблицы `certificates`
 --
+
 CREATE TABLE `certificates` (
   `id_certificate` int(11) NOT NULL,
   `last_name` varchar(255) NOT NULL,
@@ -50,6 +53,7 @@ CREATE TABLE `certificates` (
 --
 -- Структура таблицы `dishes`
 --
+
 CREATE TABLE `dishes` (
   `id_dish` int(11) NOT NULL,
   `dish_name` varchar(100) NOT NULL,
@@ -66,9 +70,10 @@ CREATE TABLE `dishes` (
 --
 -- Структура таблицы `orders`
 --
+
 CREATE TABLE `orders` (
   `id_order` int(11) NOT NULL,
-  `name_client` varchar(255) NOT NULL,
+  `name_client` varchar(255) DEFAULT NULL,
   `phone_number` varchar(20) NOT NULL,
   `address` varchar(255) NOT NULL,
   `number_persons` int(11) DEFAULT NULL,
@@ -86,6 +91,7 @@ CREATE TABLE `orders` (
 --
 -- Структура таблицы `order_dish`
 --
+
 CREATE TABLE `order_dish` (
   `id_order_dish` int(11) NOT NULL,
   `id_order` int(11) NOT NULL,
@@ -101,6 +107,7 @@ CREATE TABLE `order_dish` (
 --
 -- Структура таблицы `order_statuses`
 --
+
 CREATE TABLE `order_statuses` (
   `id_status` int(11) NOT NULL,
   `status_name` varchar(255) DEFAULT NULL
@@ -111,6 +118,7 @@ CREATE TABLE `order_statuses` (
 --
 -- Структура таблицы `present`
 --
+
 CREATE TABLE `present` (
   `id_present` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
@@ -120,16 +128,18 @@ CREATE TABLE `present` (
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `roles` (СОДЕРЖИТ ДАННЫЕ - ОБЯЗАТЕЛЬНО)
+-- Структура таблицы `roles`
 --
+
 CREATE TABLE `roles` (
   `id_role` int(11) NOT NULL,
   `role_name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Дамп данных таблицы `roles` (ТОЛЬКО ЭТА ТАБЛИЦА СОДЕРЖИТ ДАННЫЕ)
+-- Дамп данных таблицы `roles` (ОБЯЗАТЕЛЬНО!!!)
 --
+
 INSERT INTO `roles` (`id_role`, `role_name`) VALUES
 (1, 'manager'),
 (2, 'director'),
@@ -140,6 +150,7 @@ INSERT INTO `roles` (`id_role`, `role_name`) VALUES
 --
 -- Структура таблицы `status_certificates`
 --
+
 CREATE TABLE `status_certificates` (
   `id_status_certificate` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL
@@ -150,6 +161,7 @@ CREATE TABLE `status_certificates` (
 --
 -- Структура таблицы `users`
 --
+
 CREATE TABLE `users` (
   `id_user` int(11) NOT NULL,
   `FIO` varchar(100) NOT NULL,
@@ -159,100 +171,175 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Индексы таблиц
+-- Индексы сохранённых таблиц
 --
 
+--
+-- Индексы таблицы `categories`
+--
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id_category`);
 
+--
+-- Индексы таблицы `certificates`
+--
 ALTER TABLE `certificates`
   ADD PRIMARY KEY (`id_certificate`),
   ADD KEY `FK_id_status_certificate` (`id_status_certificate`);
 
+--
+-- Индексы таблицы `dishes`
+--
 ALTER TABLE `dishes`
   ADD PRIMARY KEY (`id_dish`),
   ADD KEY `FK_id_category` (`id_category`);
 
+--
+-- Индексы таблицы `orders`
+--
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id_order`),
   ADD KEY `id_status` (`id_status`);
 
+--
+-- Индексы таблицы `order_dish`
+--
 ALTER TABLE `order_dish`
   ADD PRIMARY KEY (`id_order_dish`),
   ADD KEY `id_order` (`id_order`),
   ADD KEY `id_dish` (`id_dish`),
   ADD KEY `id_present` (`id_present`);
 
+--
+-- Индексы таблицы `order_statuses`
+--
 ALTER TABLE `order_statuses`
   ADD PRIMARY KEY (`id_status`);
 
+--
+-- Индексы таблицы `present`
+--
 ALTER TABLE `present`
   ADD PRIMARY KEY (`id_present`);
 
+--
+-- Индексы таблицы `roles`
+--
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`id_role`),
   ADD UNIQUE KEY `role_name` (`role_name`);
 
+--
+-- Индексы таблицы `status_certificates`
+--
 ALTER TABLE `status_certificates`
   ADD PRIMARY KEY (`id_status_certificate`);
 
+--
+-- Индексы таблицы `users`
+--
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id_user`),
   ADD UNIQUE KEY `login` (`login`),
   ADD KEY `id_role` (`id_role`);
 
 --
--- AUTO_INCREMENT для таблиц
+-- AUTO_INCREMENT для сохранённых таблиц
 --
 
+--
+-- AUTO_INCREMENT для таблицы `categories`
+--
 ALTER TABLE `categories`
   MODIFY `id_category` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `certificates`
+--
 ALTER TABLE `certificates`
   MODIFY `id_certificate` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `dishes`
+--
 ALTER TABLE `dishes`
   MODIFY `id_dish` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `orders`
+--
 ALTER TABLE `orders`
   MODIFY `id_order` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `order_dish`
+--
 ALTER TABLE `order_dish`
   MODIFY `id_order_dish` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `order_statuses`
+--
 ALTER TABLE `order_statuses`
   MODIFY `id_status` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `present`
+--
 ALTER TABLE `present`
   MODIFY `id_present` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `roles`
+--
 ALTER TABLE `roles`
   MODIFY `id_role` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
+--
+-- AUTO_INCREMENT для таблицы `status_certificates`
+--
 ALTER TABLE `status_certificates`
   MODIFY `id_status_certificate` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT для таблицы `users`
+--
 ALTER TABLE `users`
   MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- Ограничения внешнего ключа
+-- Ограничения внешнего ключа сохраненных таблиц
 --
 
+--
+-- Ограничения внешнего ключа таблицы `certificates`
+--
 ALTER TABLE `certificates`
   ADD CONSTRAINT `certificates_ibfk_1` FOREIGN KEY (`id_status_certificate`) REFERENCES `status_certificates` (`id_status_certificate`);
 
+--
+-- Ограничения внешнего ключа таблицы `dishes`
+--
 ALTER TABLE `dishes`
   ADD CONSTRAINT `dishes_ibfk_1` FOREIGN KEY (`id_category`) REFERENCES `categories` (`id_category`);
 
+--
+-- Ограничения внешнего ключа таблицы `orders`
+--
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`id_status`) REFERENCES `order_statuses` (`id_status`);
 
+--
+-- Ограничения внешнего ключа таблицы `order_dish`
+--
 ALTER TABLE `order_dish`
   ADD CONSTRAINT `order_dish_ibfk_1` FOREIGN KEY (`id_order`) REFERENCES `orders` (`id_order`) ON DELETE CASCADE,
   ADD CONSTRAINT `order_dish_ibfk_2` FOREIGN KEY (`id_dish`) REFERENCES `dishes` (`id_dish`),
   ADD CONSTRAINT `order_dish_ibfk_3` FOREIGN KEY (`id_present`) REFERENCES `present` (`id_present`);
 
+--
+-- Ограничения внешнего ключа таблицы `users`
+--
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id_role`);
 

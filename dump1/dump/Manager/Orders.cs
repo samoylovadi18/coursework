@@ -39,169 +39,21 @@ namespace dump
         }
         private SearchType currentSearchType = SearchType.ByOrderNumber;
 
-        // ===================== ПЕРЕМЕННЫЕ ДЛЯ МАСШТАБИРОВАНИЯ =====================
-        private float currentScale = 1.0f;
-        private Dictionary<Control, Font> originalFonts = new Dictionary<Control, Font>();
-        private Dictionary<Control, Size> originalSizes = new Dictionary<Control, Size>();
-        private Dictionary<Control, Point> originalLocations = new Dictionary<Control, Point>();
-        private Size originalFormSize;
-        private Dictionary<string, int> originalColumnWidths = new Dictionary<string, int>();
+        // ===================== ПЕРЕМЕННЫЕ ДЛЯ ПОСТРАНИЧНОГО ВЫВОДА =====================
+        private int currentPage = 1;
+        private int pageSize = 10;
+        private int totalRecords = 0;
+        private int totalPages = 0;
+        private DataTable fullDataTable = new DataTable();
+        private bool isPagingEnabled = true;
 
         public Orders()
         {
             InitializeComponent();
-
-            // Сохраняем оригинальный размер формы
-            originalFormSize = this.Size;
-
-            // Сохраняем оригинальные параметры всех элементов управления
-            SaveOriginalControlProperties(this);
-
             InitializeComponents();
             this.FormClosing += OrderDetailsForm_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
-
-            // Подписываемся на событие изменения размера формы
-            this.Resize += Orders_Resize;
-            this.ResizeEnd += Orders_ResizeEnd;
-        }
-
-        // ===================== МЕТОДЫ МАСШТАБИРОВАНИЯ =====================
-
-        private void SaveOriginalControlProperties(Control parent)
-        {
-            foreach (Control control in parent.Controls)
-            {
-                if (control.Font != null && !originalFonts.ContainsKey(control))
-                {
-                    originalFonts[control] = new Font(control.Font.FontFamily, control.Font.Size, control.Font.Style, control.Font.Unit);
-                }
-                if (!originalSizes.ContainsKey(control))
-                {
-                    originalSizes[control] = control.Size;
-                }
-                if (!originalLocations.ContainsKey(control))
-                {
-                    originalLocations[control] = control.Location;
-                }
-                if (control.HasChildren)
-                {
-                    SaveOriginalControlProperties(control);
-                }
-            }
-        }
-
-        private void Orders_Resize(object sender, EventArgs e)
-        {
-            UpdateScale();
-        }
-
-        private void Orders_ResizeEnd(object sender, EventArgs e)
-        {
-            UpdateScale();
-            RefreshOrdersData();
-        }
-
-        private void UpdateScale()
-        {
-            if (this.WindowState == FormWindowState.Minimized) return;
-
-            float scaleX = (float)this.ClientSize.Width / (float)originalFormSize.Width;
-            float scaleY = (float)this.ClientSize.Height / (float)originalFormSize.Height;
-            float newScale = Math.Min(scaleX, scaleY);
-
-            newScale = Math.Max(0.6f, Math.Min(1.5f, newScale));
-
-            if (Math.Abs(newScale - currentScale) < 0.01f) return;
-
-            currentScale = newScale;
-
-            ScaleControls(this);
-            ScaleDataGridViewColumns();
-        }
-
-        private void ScaleControls(Control parent)
-        {
-            foreach (Control control in parent.Controls)
-            {
-                if (originalSizes.ContainsKey(control))
-                {
-                    control.Size = new Size(
-                        (int)(originalSizes[control].Width * currentScale),
-                        (int)(originalSizes[control].Height * currentScale)
-                    );
-                }
-
-                if (originalLocations.ContainsKey(control))
-                {
-                    control.Location = new Point(
-                        (int)(originalLocations[control].X * currentScale),
-                        (int)(originalLocations[control].Y * currentScale)
-                    );
-                }
-
-                if (originalFonts.ContainsKey(control))
-                {
-                    float newFontSize = originalFonts[control].Size * currentScale;
-                    newFontSize = Math.Max(8, Math.Min(24, newFontSize));
-
-                    control.Font = new Font(
-                        originalFonts[control].FontFamily,
-                        newFontSize,
-                        originalFonts[control].Style,
-                        originalFonts[control].Unit
-                    );
-                }
-
-                if (control.HasChildren)
-                {
-                    ScaleControls(control);
-                }
-            }
-        }
-
-        private void ScaleDataGridViewColumns()
-        {
-            if (dataGridView1 == null || dataGridView1.Columns.Count == 0) return;
-
-            if (originalColumnWidths.Count == 0)
-            {
-                foreach (DataGridViewColumn col in dataGridView1.Columns)
-                {
-                    originalColumnWidths[col.Name] = col.Width;
-                }
-            }
-
-            foreach (DataGridViewColumn col in dataGridView1.Columns)
-            {
-                if (originalColumnWidths.ContainsKey(col.Name))
-                {
-                    int newWidth = (int)(originalColumnWidths[col.Name] * currentScale);
-                    newWidth = Math.Max(40, Math.Min(500, newWidth));
-                    col.Width = newWidth;
-                }
-            }
-
-            int newRowHeight = (int)(50 * currentScale);
-            newRowHeight = Math.Max(35, Math.Min(80, newRowHeight));
-            dataGridView1.RowTemplate.Height = newRowHeight;
-            dataGridView1.RowTemplate.MinimumHeight = newRowHeight;
-
-            int newHeaderHeight = (int)(55 * currentScale);
-            newHeaderHeight = Math.Max(40, Math.Min(80, newHeaderHeight));
-            dataGridView1.ColumnHeadersHeight = newHeaderHeight;
-
-            // Шрифт для заголовков - Times New Roman 14 Bold (с масштабированием)
-            int newHeaderFontSize = (int)(14 * currentScale);
-            newHeaderFontSize = Math.Max(10, Math.Min(20, newHeaderFontSize));
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", newHeaderFontSize, FontStyle.Bold);
-
-            // Шрифт для ячеек - Times New Roman 14 Regular (с масштабированием)
-            int newCellFontSize = (int)(14 * currentScale);
-            newCellFontSize = Math.Max(10, Math.Min(20, newCellFontSize));
-            dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", newCellFontSize, FontStyle.Regular);
-            dataGridView1.RowsDefaultCellStyle.Font = new Font("Times New Roman", newCellFontSize, FontStyle.Regular);
         }
 
         // ===================== МЕТОДЫ БЛОКИРОВКИ =====================
@@ -348,6 +200,71 @@ namespace dump
         {
             InitializeDataGridView();
 
+            // ============================================================
+            // ЗАГОЛОВОК "Текущие заказы:" — ПО ЦЕНТРУ СВЕРХУ
+            // ============================================================
+            if (lblTitle != null)
+            {
+                // Убираем все привязки и делаем фиксированное позиционирование
+                lblTitle.Dock = DockStyle.None;
+                lblTitle.Text = "Текущие заказы:";
+                lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+                // Фиксируем размер шрифта
+                lblTitle.Font = new Font("Times New Roman", 26, FontStyle.Bold, GraphicsUnit.Point);
+                // Растягиваем по ширине формы
+                lblTitle.Width = this.ClientSize.Width;
+                lblTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            }
+
+            // ============================================================
+            // DATA GRID VIEW — РАСПОЛАГАЕМ НИЖЕ С ГОРИЗОНТАЛЬНЫМ СКРОЛЛОМ
+            // ============================================================
+            if (dataGridView1 != null)
+            {
+                // ВКЛЮЧАЕМ ОБА СКРОЛЛА — вертикальный И горизонтальный
+                dataGridView1.ScrollBars = ScrollBars.Both;
+                dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+                dataGridView1.Location = new Point(dataGridView1.Location.X, 150);
+                // Разрешаем горизонтальный скролл при нехватке места
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            }
+
+            // Кнопка детальной информации - правый нижний угол
+            if (buttonDetail != null)
+            {
+                buttonDetail.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+                buttonDetail.Text = "Детальная инф.";
+                buttonDetail.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+                buttonDetail.FlatStyle = FlatStyle.Flat;
+                buttonDetail.FlatAppearance.BorderSize = 1;
+                buttonDetail.FlatAppearance.BorderColor = Color.Black;
+                buttonDetail.BackColor = Color.DarkSeaGreen;
+                buttonDetail.ForeColor = Color.Black;
+                buttonDetail.Click += ButtonDetail_Click;
+            }
+
+            // Кнопки пагинации - просто подписываемся на события
+            if (btnFirstPage != null)
+            {
+                btnFirstPage.Click += BtnFirstPage_Click;
+            }
+            if (btnPrevPage != null)
+            {
+                btnPrevPage.Click += BtnPrevPage_Click;
+            }
+            if (btnNextPage != null)
+            {
+                btnNextPage.Click += BtnNextPage_Click;
+            }
+            if (btnLastPage != null)
+            {
+                btnLastPage.Click += BtnLastPage_Click;
+            }
+            if (lblPageInfo != null)
+            {
+                lblPageInfo.Text = "Страница 1 из 1";
+            }
+
             if (comboBoxSearchType != null)
             {
                 comboBoxSearchType.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -356,19 +273,6 @@ namespace dump
                 comboBoxSearchType.Items.Add("Поиск по номеру телефона");
                 comboBoxSearchType.SelectedIndex = 0;
                 comboBoxSearchType.SelectedIndexChanged += ComboBoxSearchType_SelectedIndexChanged;
-
-                if (!originalFonts.ContainsKey(comboBoxSearchType))
-                {
-                    originalFonts[comboBoxSearchType] = new Font(comboBoxSearchType.Font.FontFamily, comboBoxSearchType.Font.Size, comboBoxSearchType.Font.Style, comboBoxSearchType.Font.Unit);
-                }
-                if (!originalSizes.ContainsKey(comboBoxSearchType))
-                {
-                    originalSizes[comboBoxSearchType] = comboBoxSearchType.Size;
-                }
-                if (!originalLocations.ContainsKey(comboBoxSearchType))
-                {
-                    originalLocations[comboBoxSearchType] = comboBoxSearchType.Location;
-                }
             }
 
             SetupSearchPlaceholder();
@@ -376,50 +280,13 @@ namespace dump
             textBoxSearch.KeyPress += textBoxSearch_KeyPress;
             textBoxSearch.Click += TextBoxSearch_Click;
 
-            if (!originalFonts.ContainsKey(textBoxSearch))
-            {
-                originalFonts[textBoxSearch] = new Font(textBoxSearch.Font.FontFamily, textBoxSearch.Font.Size, textBoxSearch.Font.Style, textBoxSearch.Font.Unit);
-            }
-            if (!originalSizes.ContainsKey(textBoxSearch))
-            {
-                originalSizes[textBoxSearch] = textBoxSearch.Size;
-            }
-            if (!originalLocations.ContainsKey(textBoxSearch))
-            {
-                originalLocations[textBoxSearch] = textBoxSearch.Location;
-            }
-
             comboBoxOrderStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxOrderStatus.SelectedIndexChanged += comboBoxStatus_SelectedIndexChanged;
-
-            if (!originalFonts.ContainsKey(comboBoxOrderStatus))
-            {
-                originalFonts[comboBoxOrderStatus] = new Font(comboBoxOrderStatus.Font.FontFamily, comboBoxOrderStatus.Font.Size, comboBoxOrderStatus.Font.Style, comboBoxOrderStatus.Font.Unit);
-            }
-            if (!originalSizes.ContainsKey(comboBoxOrderStatus))
-            {
-                originalSizes[comboBoxOrderStatus] = comboBoxOrderStatus.Size;
-            }
-            if (!originalLocations.ContainsKey(comboBoxOrderStatus))
-            {
-                originalLocations[comboBoxOrderStatus] = comboBoxOrderStatus.Location;
-            }
 
             buttonReset.Click += buttonReset_Click;
             StyleButton(buttonReset);
 
-            buttonDetail.Click += ButtonDetail_Click;
-            StyleButton(buttonDetail);
-
             dataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
-
-            foreach (DataGridViewColumn col in dataGridView1.Columns)
-            {
-                if (!originalColumnWidths.ContainsKey(col.Name))
-                {
-                    originalColumnWidths[col.Name] = col.Width;
-                }
-            }
 
             LoadStatusesToComboBox();
             LoadOrders();
@@ -440,19 +307,6 @@ namespace dump
             btn.MouseDown += (s, e) => btn.FlatAppearance.BorderColor = Color.DarkBlue;
             btn.MouseUp += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
-
-            if (!originalFonts.ContainsKey(btn))
-            {
-                originalFonts[btn] = new Font(btn.Font.FontFamily, btn.Font.Size, btn.Font.Style, btn.Font.Unit);
-            }
-            if (!originalSizes.ContainsKey(btn))
-            {
-                originalSizes[btn] = btn.Size;
-            }
-            if (!originalLocations.ContainsKey(btn))
-            {
-                originalLocations[btn] = btn.Location;
-            }
         }
 
         // ===================== МЕТОДЫ ПОИСКА И ФИЛЬТРАЦИИ =====================
@@ -531,7 +385,6 @@ namespace dump
 
             string inputText = textBoxSearch.Text;
             int cursorPos = textBoxSearch.SelectionStart;
-            int oldLength = prevTextLength;
             prevTextLength = inputText.Length;
 
             if (currentSearchType == SearchType.ByOrderNumber)
@@ -659,27 +512,6 @@ namespace dump
             return formattedText.Length;
         }
 
-        private string FormatPhoneNumberForDisplay(string digits)
-        {
-            if (string.IsNullOrEmpty(digits) || digits.Length < 2)
-                return digits;
-
-            string result = "+7 (" + digits.Substring(1, Math.Min(3, digits.Length - 1));
-
-            if (digits.Length > 4)
-                result += ") " + digits.Substring(4, Math.Min(3, digits.Length - 4));
-            else
-                result += ")";
-
-            if (digits.Length > 7)
-                result += "-" + digits.Substring(7, Math.Min(2, digits.Length - 7));
-
-            if (digits.Length > 9)
-                result += "-" + digits.Substring(9, Math.Min(2, digits.Length - 9));
-
-            return result;
-        }
-
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
@@ -698,42 +530,305 @@ namespace dump
             }
         }
 
+        // ===================== ОБРАБОТЧИКИ ПАГИНАЦИИ =====================
+
+        private void BtnFirstPage_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage = 1;
+                ApplyPagination();
+            }
+        }
+
+        private void BtnPrevPage_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+                ApplyPagination();
+            }
+        }
+
+        private void BtnNextPage_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+                ApplyPagination();
+            }
+        }
+
+        private void BtnLastPage_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage = totalPages;
+                ApplyPagination();
+            }
+        }
+
+        // ===================== ПРИМЕНЕНИЕ ПАГИНАЦИИ =====================
+
+        private void ApplyPagination()
+        {
+            if (!isPagingEnabled || fullDataTable == null || fullDataTable.Rows.Count == 0)
+            {
+                UpdatePaginationControls();
+                return;
+            }
+
+            try
+            {
+                totalRecords = fullDataTable.Rows.Count;
+                totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                if (currentPage > totalPages)
+                    currentPage = totalPages;
+
+                if (currentPage < 1)
+                    currentPage = 1;
+
+                int startIndex = (currentPage - 1) * pageSize;
+                int endIndex = Math.Min(startIndex + pageSize, totalRecords);
+
+                DataTable pageTable = fullDataTable.Clone();
+
+                for (int i = startIndex; i < endIndex; i++)
+                {
+                    pageTable.ImportRow(fullDataTable.Rows[i]);
+                }
+
+                if (bindingSource == null)
+                {
+                    bindingSource = new BindingSource();
+                    dataGridView1.DataSource = bindingSource;
+                }
+                bindingSource.DataSource = pageTable;
+
+                UpdatePaginationControls();
+                SetupColumnStyles();
+                AdjustDataGridViewAfterLoad();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при применении пагинации: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void UpdatePaginationControls()
+        {
+            if (lblPageInfo != null)
+            {
+                if (fullDataTable == null || fullDataTable.Rows.Count == 0)
+                {
+                    lblPageInfo.Text = "Нет данных";
+                    btnFirstPage.Enabled = false;
+                    btnPrevPage.Enabled = false;
+                    btnNextPage.Enabled = false;
+                    btnLastPage.Enabled = false;
+                }
+                else
+                {
+                    lblPageInfo.Text = $"Страница {currentPage} из {totalPages} (всего {totalRecords} записей)";
+                    btnFirstPage.Enabled = currentPage > 1;
+                    btnPrevPage.Enabled = currentPage > 1;
+                    btnNextPage.Enabled = currentPage < totalPages;
+                    btnLastPage.Enabled = currentPage < totalPages;
+                }
+            }
+        }
+
+        // ===================== ЗАГРУЗКА ДАННЫХ =====================
+
+        private void RefreshOrdersData()
+        {
+            string searchText = textBoxSearch.Text;
+
+            if (string.IsNullOrWhiteSpace(searchText) || textBoxSearch.ForeColor == Color.Gray)
+            {
+                LoadOrdersWithFilter("", false);
+            }
+            else
+            {
+                if (currentSearchType == SearchType.ByOrderNumber)
+                {
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length > 0)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
+                }
+                else
+                {
+                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
+                    if (digits.Length >= 3)
+                        LoadOrdersWithFilter(digits, false);
+                    else
+                        LoadOrdersWithFilter("", false);
+                }
+            }
+        }
+
+        private void LoadOrdersWithFilter(string searchValue = "", bool exactMatch = false)
+        {
+            int statusId = -1;
+            if (comboBoxOrderStatus.SelectedIndex > 0 && comboBoxOrderStatus.SelectedItem is StatusItem statusItem)
+            {
+                statusId = statusItem.Id;
+            }
+            LoadOrders(searchValue, statusId, exactMatch);
+        }
+
+        private void LoadOrders(string searchValue = "", int statusId = -1, bool exactMatch = false)
+        {
+            try
+            {
+                string query = @"
+                    SELECT o.id_order, o.phone_number, o.address, 
+                           o.number_persons, o.delivery_date, o.comment, 
+                           o.payment_method, o.id_status,
+                           s.status_name
+                    FROM orders o
+                    LEFT JOIN order_statuses s ON o.id_status = s.id_status
+                    WHERE 1=1";
+
+                query += " AND o.id_status != 6";
+
+                List<MySqlParameter> parameters = new List<MySqlParameter>();
+
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    if (currentSearchType == SearchType.ByOrderNumber)
+                    {
+                        if (exactMatch)
+                        {
+                            query += " AND o.id_order = @SearchValue";
+                            parameters.Add(new MySqlParameter("@SearchValue", searchValue));
+                        }
+                        else
+                        {
+                            query += " AND CAST(o.id_order AS CHAR) LIKE @SearchValue";
+                            parameters.Add(new MySqlParameter("@SearchValue", searchValue + "%"));
+                        }
+                    }
+                    else
+                    {
+                        query += " AND REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '(', ''), ')', '') LIKE @SearchValue";
+                        parameters.Add(new MySqlParameter("@SearchValue", "%" + searchValue + "%"));
+                    }
+                }
+
+                if (statusId > 0)
+                {
+                    query += " AND o.id_status = @StatusId";
+                    parameters.Add(new MySqlParameter("@StatusId", statusId));
+                }
+
+                query += " ORDER BY o.delivery_date DESC, o.id_order DESC";
+
+                using (MySqlConnection connection = SettingsBD.GetConnection())
+                {
+                    connection.Open();
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    foreach (var param in parameters)
+                    {
+                        cmd.Parameters.Add(param);
+                    }
+
+                    dataAdapter = new MySqlDataAdapter(cmd);
+                    fullDataTable = new DataTable();
+                    dataAdapter.Fill(fullDataTable);
+
+                    totalRecords = fullDataTable.Rows.Count;
+                    totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                    if (currentPage > totalPages)
+                        currentPage = totalPages > 0 ? totalPages : 1;
+
+                    ApplyPagination();
+
+                    SetupColumnStyles();
+                    AdjustDataGridViewAfterLoad();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки заказов: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadOrders()
+        {
+            LoadOrders("", -1, false);
+        }
+
+        private void LoadStatusesToComboBox()
+        {
+            try
+            {
+                string query = "SELECT id_status, status_name FROM order_statuses ORDER BY id_status";
+                using (MySqlConnection connection = SettingsBD.GetConnection())
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    {
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            comboBoxOrderStatus.Items.Clear();
+                            comboBoxOrderStatus.Items.Add("Все статусы");
+                            statusDictionary.Clear();
+
+                            while (reader.Read())
+                            {
+                                int id = reader.GetInt32("id_status");
+                                string name = reader.GetString("status_name");
+                                statusDictionary.Add(id, name);
+                                if (id != DELIVERED_STATUS_ID)
+                                {
+                                    comboBoxOrderStatus.Items.Add(new StatusItem(id, name));
+                                }
+                            }
+                        }
+                    }
+                }
+                comboBoxOrderStatus.DisplayMember = "Name";
+                comboBoxOrderStatus.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки статусов: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // ===================== ОСНОВНАЯ ЛОГИКА СТАТУСОВ =====================
 
-        /// <summary>
-        /// Получает список разрешенных ID статусов для перехода из текущего статуса
-        /// </summary>
         private List<int> GetAllowedStatuses(int currentStatusId)
         {
             List<int> allowedStatuses = new List<int>();
 
             switch (currentStatusId)
             {
-                case 2: // Принят
-                    // Можно изменить на: Готов, В пути, Доставлен, Отменён
+                case 2:
                     allowedStatuses.AddRange(new[] { 4, 5, 6, 7 });
                     break;
 
-                case 4: // Готов
-                    // Можно изменить на: В пути, Доставлен (НЕЛЬЗЯ на Отменён)
+                case 4:
                     allowedStatuses.AddRange(new[] { 5, 6 });
                     break;
 
-                case 5: // В пути
-                    // Можно изменить на: Доставлен (НЕЛЬЗЯ на Отменён)
+                case 5:
                     allowedStatuses.AddRange(new[] { 6 });
                     break;
 
-                case 6: // Доставлен
-                    // Нельзя менять статус - возвращаем пустой список
-                    break;
-
-                case 7: // Отменён
-                    // Нельзя менять статус - возвращаем пустой список
+                case 6:
+                case 7:
                     break;
 
                 default:
-                    // Для неизвестных статусов разрешаем все кроме 6 и 7
                     allowedStatuses.AddRange(new[] { 2, 4, 5 });
                     break;
             }
@@ -741,31 +836,21 @@ namespace dump
             return allowedStatuses;
         }
 
-        /// <summary>
-        /// Проверяет, разрешен ли переход в новый статус
-        /// </summary>
         private bool IsStatusTransitionAllowed(int currentStatusId, int newStatusId)
         {
-            // Если статусы совпадают - разрешаем (ничего не меняется)
             if (currentStatusId == newStatusId)
                 return true;
 
-            // Если новый статус - "Доставлен" (6) или "Отменён" (7), проверяем особые условия
             if (newStatusId == 6 || newStatusId == 7)
             {
-                // Проверяем, разрешен ли этот статус для текущего
                 List<int> allowed = GetAllowedStatuses(currentStatusId);
                 return allowed.Contains(newStatusId);
             }
 
-            // Для остальных статусов проверяем через GetAllowedStatuses
             List<int> allowedStatuses = GetAllowedStatuses(currentStatusId);
             return allowedStatuses.Contains(newStatusId);
         }
 
-        /// <summary>
-        /// Получает сообщение с объяснением, почему переход запрещен
-        /// </summary>
         private string GetStatusTransitionErrorMessage(int currentStatusId, string currentStatusName, int newStatusId, string newStatusName)
         {
             if (currentStatusId == newStatusId)
@@ -839,8 +924,6 @@ namespace dump
                 detailForm.AutoScroll = true;
                 detailForm.Font = new Font("Times New Roman", 12, FontStyle.Regular);
 
-                float detailScale = currentScale;
-
                 Panel infoPanel = CreateInfoPanel(orderId, phoneNumber, address, persons, orderDate, paymentMethod);
                 Panel statusPanel = CreateStatusPanelWithRestrictions(currentStatusId, currentStatus, statusState);
                 Panel commentPanel = CreateCommentPanel(comment);
@@ -870,37 +953,12 @@ namespace dump
                 totalPanel.Location = new Point(15, currentY);
                 detailForm.Controls.Add(totalPanel);
 
-                // Применяем масштабирование
-                if (detailScale != 1.0f)
-                {
-                    foreach (Control ctrl in detailForm.Controls)
-                    {
-                        ctrl.Size = new Size(
-                            (int)(ctrl.Size.Width * detailScale),
-                            (int)(ctrl.Size.Height * detailScale)
-                        );
-                        ctrl.Location = new Point(
-                            (int)(ctrl.Location.X * detailScale),
-                            (int)(ctrl.Location.Y * detailScale)
-                        );
-                        if (ctrl.Font != null)
-                        {
-                            float newFontSize = ctrl.Font.Size * detailScale;
-                            newFontSize = Math.Max(8, Math.Min(24, newFontSize));
-                            ctrl.Font = new Font(ctrl.Font.FontFamily, newFontSize, ctrl.Font.Style);
-                        }
-                    }
-                    detailForm.Size = new Size(
-                        (int)(detailForm.Size.Width * detailScale),
-                        (int)(detailForm.Size.Height * detailScale)
-                    );
-                }
+                // КНОПКА "ЗАКРЫТЬ" УБРАНА — используется крестик в правом верхнем углу
 
                 detailForm.FormClosing += (s, args) =>
                 {
                     if (statusState.SelectedStatusId != currentStatusId)
                     {
-                        // Проверяем, разрешен ли переход
                         if (!IsStatusTransitionAllowed(currentStatusId, statusState.SelectedStatusId))
                         {
                             string errorMsg = GetStatusTransitionErrorMessage(
@@ -975,9 +1033,6 @@ namespace dump
             return panel;
         }
 
-        /// <summary>
-        /// Создает панель выбора статуса с ограничениями
-        /// </summary>
         private Panel CreateStatusPanelWithRestrictions(int currentStatusId, string currentStatus, StatusState statusState)
         {
             Panel panel = new Panel();
@@ -1017,13 +1072,10 @@ namespace dump
             cmbNewStatus.Font = new Font("Times New Roman", 11, FontStyle.Regular);
             cmbNewStatus.BackColor = Color.White;
 
-            // Получаем разрешенные статусы для перехода
             List<int> allowedStatusIds = GetAllowedStatuses(currentStatusId);
 
-            // Заполняем комбобокс только разрешенными статусами
             foreach (var status in statusDictionary)
             {
-                // Всегда добавляем текущий статус, даже если он не в списке разрешенных
                 if (status.Key == currentStatusId || allowedStatusIds.Contains(status.Key))
                 {
                     cmbNewStatus.Items.Add(new StatusItem(status.Key, status.Value));
@@ -1032,7 +1084,6 @@ namespace dump
 
             cmbNewStatus.DisplayMember = "Name";
 
-            // Выбираем текущий статус
             foreach (StatusItem item in cmbNewStatus.Items)
             {
                 if (item.Id == currentStatusId)
@@ -1044,8 +1095,6 @@ namespace dump
                 }
             }
 
-            // Если текущий статус не найден (например, статус 6 или 7 не добавлен в список),
-            // добавляем его отдельно
             if (cmbNewStatus.SelectedItem == null)
             {
                 StatusItem currentItem = new StatusItem(currentStatusId, currentStatus);
@@ -1055,13 +1104,11 @@ namespace dump
                 statusState.SelectedStatusName = currentItem.Name;
             }
 
-            // Если нет доступных статусов для изменения, делаем комбобокс неактивным
             if (cmbNewStatus.Items.Count <= 1)
             {
                 cmbNewStatus.Enabled = false;
                 cmbNewStatus.BackColor = Color.LightGray;
 
-                // Добавляем поясняющую надпись
                 Label lblNoChanges = new Label();
                 lblNoChanges.Text = "✖ Изменение статуса невозможно";
                 lblNoChanges.Location = new Point(590, 18);
@@ -1074,7 +1121,6 @@ namespace dump
             }
             else
             {
-                // Добавляем подсказку о доступных статусах
                 string allowedNames = string.Join(", ", allowedStatusIds
                     .Where(id => statusDictionary.ContainsKey(id))
                     .Select(id => statusDictionary[id]));
@@ -1424,36 +1470,7 @@ namespace dump
             }
         }
 
-        // ===================== ЗАГРУЗКА ДАННЫХ =====================
-
-        private void RefreshOrdersData()
-        {
-            string searchText = textBoxSearch.Text;
-
-            if (string.IsNullOrWhiteSpace(searchText) || textBoxSearch.ForeColor == Color.Gray)
-            {
-                LoadOrdersWithFilter("", false);
-            }
-            else
-            {
-                if (currentSearchType == SearchType.ByOrderNumber)
-                {
-                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
-                    if (digits.Length > 0)
-                        LoadOrdersWithFilter(digits, false);
-                    else
-                        LoadOrdersWithFilter("", false);
-                }
-                else
-                {
-                    string digits = new string(searchText.Where(char.IsDigit).ToArray());
-                    if (digits.Length >= 3)
-                        LoadOrdersWithFilter(digits, false);
-                    else
-                        LoadOrdersWithFilter("", false);
-                }
-            }
-        }
+        // ===================== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW =====================
 
         private void InitializeDataGridView()
         {
@@ -1471,6 +1488,7 @@ namespace dump
             dataGridView1.MultiSelect = false;
             dataGridView1.AllowUserToDeleteRows = false;
             dataGridView1.AllowUserToResizeRows = false;
+            // ВКЛЮЧАЕМ ОБА СКРОЛЛА
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
@@ -1480,11 +1498,11 @@ namespace dump
             dataGridView1.EnableHeadersVisualStyles = false;
             dataGridView1.ColumnHeadersHeight = 55;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            // ЯВНО ВКЛЮЧАЕМ ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ
+            dataGridView1.ScrollBars = ScrollBars.Both;
 
             Color headerBackColor = Color.FromArgb(97, 173, 123);
 
-            // ===== НАСТРОЙКА ШРИФТОВ TIMES NEW ROMAN 14 =====
-            // Шрифт для заголовков колонок - Times New Roman 14 Bold
             dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
@@ -1494,7 +1512,6 @@ namespace dump
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionBackColor = headerBackColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black;
 
-            // Шрифт для ячеек - Times New Roman 14 Regular
             dataGridView1.DefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridView1.DefaultCellStyle.Padding = new Padding(0, 3, 0, 3);
             dataGridView1.DefaultCellStyle.BackColor = Color.White;
@@ -1502,7 +1519,6 @@ namespace dump
             dataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            // Шрифт для строк
             dataGridView1.RowsDefaultCellStyle.Font = new Font("Times New Roman", 14, FontStyle.Regular);
             dataGridView1.RowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(233, 242, 236);
             dataGridView1.RowsDefaultCellStyle.SelectionForeColor = Color.Black;
@@ -1675,134 +1691,6 @@ namespace dump
             }
         }
 
-        private void LoadStatusesToComboBox()
-        {
-            try
-            {
-                string query = "SELECT id_status, status_name FROM order_statuses ORDER BY id_status";
-                using (MySqlConnection connection = SettingsBD.GetConnection())
-                {
-                    connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
-                    {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            comboBoxOrderStatus.Items.Clear();
-                            comboBoxOrderStatus.Items.Add("Все статусы");
-                            statusDictionary.Clear();
-
-                            while (reader.Read())
-                            {
-                                int id = reader.GetInt32("id_status");
-                                string name = reader.GetString("status_name");
-                                statusDictionary.Add(id, name);
-                                if (id != DELIVERED_STATUS_ID)
-                                {
-                                    comboBoxOrderStatus.Items.Add(new StatusItem(id, name));
-                                }
-                            }
-                        }
-                    }
-                }
-                comboBoxOrderStatus.DisplayMember = "Name";
-                comboBoxOrderStatus.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки статусов: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void LoadOrdersWithFilter(string searchValue = "", bool exactMatch = false)
-        {
-            int statusId = -1;
-            if (comboBoxOrderStatus.SelectedIndex > 0 && comboBoxOrderStatus.SelectedItem is StatusItem statusItem)
-            {
-                statusId = statusItem.Id;
-            }
-            LoadOrders(searchValue, statusId, exactMatch);
-        }
-
-        private void LoadOrders(string searchValue = "", int statusId = -1, bool exactMatch = false)
-        {
-            try
-            {
-                string query = @"
-                    SELECT o.id_order, o.phone_number, o.address, 
-                           o.number_persons, o.delivery_date, o.comment, 
-                           o.payment_method, o.id_status,
-                           s.status_name
-                    FROM orders o
-                    LEFT JOIN order_statuses s ON o.id_status = s.id_status
-                    WHERE 1=1";
-
-                query += " AND o.id_status != 6";
-
-                List<MySqlParameter> parameters = new List<MySqlParameter>();
-
-                if (!string.IsNullOrEmpty(searchValue))
-                {
-                    if (currentSearchType == SearchType.ByOrderNumber)
-                    {
-                        if (exactMatch)
-                        {
-                            query += " AND o.id_order = @SearchValue";
-                            parameters.Add(new MySqlParameter("@SearchValue", searchValue));
-                        }
-                        else
-                        {
-                            query += " AND CAST(o.id_order AS CHAR) LIKE @SearchValue";
-                            parameters.Add(new MySqlParameter("@SearchValue", searchValue + "%"));
-                        }
-                    }
-                    else
-                    {
-                        query += " AND REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '(', ''), ')', '') LIKE @SearchValue";
-                        parameters.Add(new MySqlParameter("@SearchValue", "%" + searchValue + "%"));
-                    }
-                }
-
-                if (statusId > 0)
-                {
-                    query += " AND o.id_status = @StatusId";
-                    parameters.Add(new MySqlParameter("@StatusId", statusId));
-                }
-
-                query += " ORDER BY o.delivery_date DESC, o.id_order DESC";
-
-                using (MySqlConnection connection = SettingsBD.GetConnection())
-                {
-                    connection.Open();
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    foreach (var param in parameters)
-                    {
-                        cmd.Parameters.Add(param);
-                    }
-
-                    dataAdapter = new MySqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    dataAdapter.Fill(dt);
-
-                    if (bindingSource == null)
-                    {
-                        bindingSource = new BindingSource();
-                        dataGridView1.DataSource = bindingSource;
-                    }
-                    bindingSource.DataSource = dt;
-
-                    SetupColumnStyles();
-                    AdjustDataGridViewAfterLoad();
-                    ScaleDataGridViewColumns();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки заказов: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private void AdjustDataGridViewAfterLoad()
         {
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
@@ -1857,6 +1745,7 @@ namespace dump
                 textBoxSearch.Text = "";
                 SetupSearchPlaceholder();
                 comboBoxOrderStatus.SelectedIndex = 0;
+                currentPage = 1;
                 LoadOrders();
                 textBoxSearch.Focus();
             }
@@ -1865,11 +1754,6 @@ namespace dump
                 MessageBox.Show($"Ошибка при сбросе фильтров: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void LoadOrders()
-        {
-            LoadOrders("", -1, false);
         }
 
         private void pictureBox2_Click(object sender, EventArgs e)

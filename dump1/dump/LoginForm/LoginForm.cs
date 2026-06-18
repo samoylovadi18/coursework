@@ -22,10 +22,14 @@ namespace dump
         private int failedAttempts = 0;              // Счетчик неудачных попыток
         private DateTime blockUntil = DateTime.MinValue; // Время до блокировки
         private bool captchaRequired = false;        // Флаг необходимости капчи
+        private bool isCaptchaFailed = false;        // Флаг неудачной капчи
 
         // Таймер для обратного отсчета на кнопке
         private Timer blockTimer = new Timer();
         private int remainingSeconds = 0;
+
+        // Флаг для предотвращения рекурсии
+        private bool isClosing = false;
 
         private void SetupUnderlineTextBox(TextBox textBox)
         {
@@ -57,6 +61,9 @@ namespace dump
         public LoginForm()
         {
             InitializeComponent();
+
+            // Подписываемся на событие закрытия формы
+            this.FormClosing += LoginForm_FormClosing;
 
             SetMaxLengthLimits();
             SetupInputValidation();
@@ -107,6 +114,47 @@ namespace dump
             blockTimer.Tick += BlockTimer_Tick;
         }
 
+        // ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ
+        private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Если уже выполняется закрытие - выходим, чтобы избежать рекурсии
+            if (isClosing)
+            {
+                return;
+            }
+
+            // Проверяем, что закрытие инициировано пользователем (нажатие на крестик)
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                DialogResult result = MessageBox.Show("Вы действительно хотите закрыть приложение?",
+                    "Подтверждение закрытия",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Устанавливаем флаг, чтобы предотвратить повторный вызов
+                    isClosing = true;
+
+                    // Останавливаем все таймеры
+                    blockTimer.Stop();
+
+                    // Полностью завершаем приложение
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    // Отменяем закрытие, если пользователь выбрал "Нет"
+                    e.Cancel = true;
+                }
+            }
+            else
+            {
+                // Для других причин закрытия (например, перезагрузка системы)
+                base.OnFormClosing(e);
+            }
+        }
+
         private void BlockTimer_Tick(object sender, EventArgs e)
         {
             if (DateTime.Now >= blockUntil)
@@ -119,6 +167,7 @@ namespace dump
 
                 // Сбрасываем счетчик неудачных попыток после блокировки
                 failedAttempts = 0;
+                isCaptchaFailed = false;
             }
             else
             {
@@ -287,7 +336,7 @@ namespace dump
 
         private void btnLog_Click(object sender, EventArgs e)
         {
-            // Проверка блокировки (дополнительная защита)
+            // Проверка блокировки
             if (DateTime.Now < blockUntil)
             {
                 int secondsLeft = (int)(blockUntil - DateTime.Now).TotalSeconds;
@@ -310,6 +359,7 @@ namespace dump
                 // УСПЕШНЫЙ ВХОД СИСТЕМНОГО АДМИНИСТРАТОРА
                 failedAttempts = 0;
                 captchaRequired = false;
+                isCaptchaFailed = false;
 
                 // Инициализируем CurrentUser с данными системного администратора
                 CurrentUser.Initialize(0, "sisadmin", "Системный Администратор", 99, "Системный администратор");
@@ -347,6 +397,7 @@ namespace dump
                                     // УСПЕШНЫЙ ВХОД
                                     failedAttempts = 0;
                                     captchaRequired = false;
+                                    isCaptchaFailed = false;
 
                                     int userId = reader.GetInt32("id_user");
                                     string fio = reader.GetString("FIO");
@@ -387,7 +438,8 @@ namespace dump
                                     {
                                         // Капча пройдена - показываем форму логина
                                         this.Show();
-                                        failedAttempts = 1; // Сбрасываем до 1
+                                        failedAttempts = 1; // Сбрасываем до 1, чтобы при следующей попытке снова показать капчу
+                                        isCaptchaFailed = false;
                                         Login.Clear();
                                         Password.Clear();
                                         Login.Focus();
@@ -395,6 +447,7 @@ namespace dump
                                     else
                                     {
                                         // Капча НЕ пройдена - БЛОКИРОВКА НА 10 СЕКУНД
+                                        isCaptchaFailed = true;
                                         blockUntil = DateTime.Now.AddSeconds(10);
 
                                         // Запускаем таймер для обновления кнопки
@@ -407,9 +460,7 @@ namespace dump
                                         // Показываем форму логина
                                         this.Show();
 
-                                        MessageBox.Show("Неверный ввод CAPTCHA!\nВход заблокирован на 10 секунд.",
-                                            "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+                                        // Сохраняем логин, чтобы при разблокировке сразу показать капчу
                                         // Очищаем поля
                                         Login.Clear();
                                         Password.Clear();
@@ -619,7 +670,8 @@ namespace dump
 
             if (result == DialogResult.Yes)
             {
-                Application.Exit();
+                // Используем Environment.Exit вместо Application.Exit
+                Environment.Exit(0);
             }
         }
 
@@ -630,7 +682,7 @@ namespace dump
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -643,7 +695,8 @@ namespace dump
 
             if (keyData == Keys.Escape)
             {
-                Application.Exit();
+                // Используем Environment.Exit вместо Application.Exit
+                Environment.Exit(0);
                 return true;
             }
 

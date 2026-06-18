@@ -27,6 +27,12 @@ namespace dump
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
         private bool isLockDialogOpen = false;
 
+        // ID статусов
+        private int activeStatusId = 1;
+        private int usedStatusId = 2;
+        private int returnedStatusId = 3;
+        private int expiredStatusId = 4;
+
         public EmloyForm()
         {
             InitializeComponent();
@@ -35,6 +41,10 @@ namespace dump
             this.FormClosing += EmloyForm_FormClosing;
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
+            textBox1.Enabled = false;
+            textBox2.Enabled = false;
+            textBox3.Enabled = false;
+            textBox4.Enabled = false;
         }
 
         private void LockSystem()
@@ -208,6 +218,58 @@ namespace dump
             LoadCertificates();
         }
 
+        // ===== ОБНОВЛЕНИЕ СТАТУСОВ СЕРТИФИКАТОВ (ПРОСРОЧКА) =====
+        private void UpdateExpiredCertificates()
+        {
+            try
+            {
+                // Получаем ID статуса "Просрочен" из словаря
+                int expiredStatusId = -1;
+                foreach (var status in statusDictionary)
+                {
+                    if (status.Value == "Просрочен")
+                    {
+                        expiredStatusId = status.Key;
+                        break;
+                    }
+                }
+
+                if (expiredStatusId == -1)
+                {
+                    // Статус "Просрочен" не найден
+                    return;
+                }
+
+                string query = @"
+                    UPDATE certificates 
+                    SET id_status_certificate = @expiredStatusId 
+                    WHERE id_status_certificate = @activeStatusId 
+                    AND DATE_ADD(date, INTERVAL 1 YEAR) < CURDATE()";
+
+                using (MySqlConnection connection = SettingsBD.GetConnection())
+                {
+                    connection.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@expiredStatusId", expiredStatusId);
+                        cmd.Parameters.AddWithValue("@activeStatusId", activeStatusId);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            // Обновляем данные в таблице
+                            LoadCertificates();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Игнорируем ошибку, чтобы не мешать работе
+                Console.WriteLine($"Ошибка обновления просроченных сертификатов: {ex.Message}");
+            }
+        }
+
         // ===== КОНТЕКСТНОЕ МЕНЮ =====
         private void DataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -224,23 +286,22 @@ namespace dump
             // Пункт "Поставить статус 'Возвращён'"
             ToolStripMenuItem changeStatusItem = new ToolStripMenuItem("Поставить статус 'Возвращён'");
 
-            // ОТКЛЮЧАЕМ ПУНКТ МЕНЮ, ЕСЛИ СТАТУС "ВОЗВРАЩЁН" ИЛИ "ИСПОЛЬЗОВАН"
-            if (currentStatus == "Возвращён" || currentStatus == "Использован")
+            // ОТКЛЮЧАЕМ ПУНКТ МЕНЮ, ЕСЛИ СТАТУС "ВОЗВРАЩЁН" ИЛИ "ИСПОЛЬЗОВАН" ИЛИ "ПРОСРОЧЕН"
+            if (currentStatus == "Возвращён" || currentStatus == "Использован" || currentStatus == "Просрочен")
             {
                 changeStatusItem.Enabled = false;
                 if (currentStatus == "Возвращён")
                     changeStatusItem.ToolTipText = "Сертификат уже имеет статус 'Возвращён'";
                 else if (currentStatus == "Использован")
                     changeStatusItem.ToolTipText = "Сертификат уже использован! Возврат невозможен";
+                else if (currentStatus == "Просрочен")
+                    changeStatusItem.ToolTipText = "Сертификат просрочен! Возврат невозможен";
             }
 
             changeStatusItem.Click += (s, ev) => ChangeStatusToReturned(certificateId, currentStatus);
             contextMenu.Items.Add(changeStatusItem);
 
-            // Пункт "Детальная информация"
-            ToolStripMenuItem detailsItem = new ToolStripMenuItem("Детальная информация");
-            detailsItem.Click += (s, ev) => ShowCertificateDetails(certificateId);
-            contextMenu.Items.Add(detailsItem);
+            // Пункт "Детальная информация" - УДАЛЕН
 
             contextMenu.Show(dataGridView1, dataGridView1.PointToClient(Cursor.Position));
         }
@@ -333,125 +394,7 @@ namespace dump
             }
         }
 
-        // ===== ПОКАЗ ДЕТАЛЬНОЙ ИНФОРМАЦИИ (БЕЗ ФИО, НО С ПОЛНЫМ ТЕЛЕФОНОМ) =====
-        private void ShowCertificateDetails(int certificateId)
-        {
-            try
-            {
-                string query = @"
-                    SELECT c.id_certificate, c.phone_number, c.price, c.date, 
-                           sc.name as status_name
-                    FROM certificates c
-                    LEFT JOIN status_certificates sc ON c.id_status_certificate = sc.id_status_certificate
-                    WHERE c.id_certificate = @id";
-
-                using (MySqlConnection connection = SettingsBD.GetConnection())
-                {
-                    connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id", certificateId);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string phone = reader["phone_number"]?.ToString() ?? "";
-                                // В детальной информации показываем ПОЛНЫЙ номер телефона (без маскировки)
-                                string fullPhone = FormatPhoneNumber(phone);
-                                decimal price = Convert.ToDecimal(reader["price"]);
-                                DateTime date = Convert.ToDateTime(reader["date"]);
-                                string status = reader["status_name"]?.ToString() ?? "";
-
-                                Form detailsForm = new Form();
-                                detailsForm.Text = $"Детальная информация о сертификате №{certificateId}";
-                                detailsForm.Size = new Size(400, 350);
-                                detailsForm.StartPosition = FormStartPosition.CenterParent;
-                                detailsForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                                detailsForm.MaximizeBox = false;
-                                detailsForm.MinimizeBox = false;
-                                detailsForm.BackColor = Color.White;
-                                detailsForm.Font = new Font("Times New Roman", 14, FontStyle.Regular);
-
-                                TableLayoutPanel tlp = new TableLayoutPanel();
-                                tlp.Dock = DockStyle.Fill;
-                                tlp.ColumnCount = 2;
-                                tlp.RowCount = 5;
-                                tlp.Padding = new Padding(10);
-                                tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-                                tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
-
-                                AddDetailRow(tlp, "Номер сертификата:", certificateId.ToString());
-                                AddDetailRow(tlp, "Телефон:", fullPhone);
-                                AddDetailRow(tlp, "Стоимость:", price.ToString("N2", russianCulture) + " ₽");
-                                AddDetailRow(tlp, "Дата выдачи:", date.ToString("dd.MM.yyyy"));
-                                AddDetailRow(tlp, "Статус:", status);
-
-                                Button btnOk = new Button();
-                                btnOk.Text = "OK";
-                                btnOk.Size = new Size(80, 35);
-                                btnOk.Location = new Point(150, 270);
-                                btnOk.DialogResult = DialogResult.OK;
-                                btnOk.FlatStyle = FlatStyle.Flat;
-                                btnOk.FlatAppearance.BorderSize = 1;
-                                btnOk.FlatAppearance.BorderColor = Color.Black;
-                                btnOk.BackColor = Color.DarkSeaGreen;
-                                btnOk.ForeColor = Color.Black;
-                                btnOk.Font = new Font("Times New Roman", 14, FontStyle.Regular);
-
-                                detailsForm.Controls.Add(tlp);
-                                detailsForm.Controls.Add(btnOk);
-                                detailsForm.ShowDialog();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // Форматирование полного номера телефона для отображения
-        private string FormatPhoneNumber(string phone)
-        {
-            if (string.IsNullOrEmpty(phone)) return phone;
-
-            try
-            {
-                string digits = new string(phone.Where(char.IsDigit).ToArray());
-                if (digits.Length >= 11)
-                {
-                    // Формат: +7 (999) 123-45-67
-                    return $"+7 ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits.Substring(7, 2)}-{digits.Substring(9, 2)}";
-                }
-                return phone;
-            }
-            catch
-            {
-                return phone;
-            }
-        }
-
-        private void AddDetailRow(TableLayoutPanel tlp, string label, string value)
-        {
-            Label lbl = new Label();
-            lbl.Text = label;
-            lbl.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lbl.TextAlign = ContentAlignment.MiddleLeft;
-            lbl.Dock = DockStyle.Fill;
-
-            Label val = new Label();
-            val.Text = value;
-            val.Font = new Font("Times New Roman", 14, FontStyle.Regular);
-            val.TextAlign = ContentAlignment.MiddleLeft;
-            val.Dock = DockStyle.Fill;
-
-            int row = tlp.RowCount;
-            tlp.RowCount++;
-            tlp.Controls.Add(lbl, 0, row);
-            tlp.Controls.Add(val, 1, row);
-        }
+        // ===== МЕТОДЫ SHOWCertificateDetails И ВСПОМОГАТЕЛЬНЫЕ УДАЛЕНЫ =====
 
         // ===== МАСКИРОВАНИЕ ТЕЛЕФОНА В ТАБЛИЦЕ (скрываем 4 цифры в середине) =====
         private string MaskPhoneNumber(string phone)
@@ -737,6 +680,9 @@ namespace dump
                 }
                 comboBoxStatusSert.DisplayMember = "Name";
                 comboBoxStatusSert.SelectedIndex = 0;
+
+                // Обновляем ID статусов из базы
+                UpdateStatusIds();
             }
             catch (Exception ex)
             {
@@ -745,11 +691,29 @@ namespace dump
             }
         }
 
+        private void UpdateStatusIds()
+        {
+            foreach (var status in statusDictionary)
+            {
+                if (status.Value == "Активен")
+                    activeStatusId = status.Key;
+                else if (status.Value == "Использован")
+                    usedStatusId = status.Key;
+                else if (status.Value == "Возвращён")
+                    returnedStatusId = status.Key;
+                else if (status.Value == "Просрочен")
+                    expiredStatusId = status.Key;
+            }
+        }
+
         private void LoadCertificatesWithFilter(string certificateNumber = "", bool exactMatch = false)
         {
             int statusId = -1;
             if (comboBoxStatusSert.SelectedIndex > 0 && comboBoxStatusSert.SelectedItem is StatusItem statusItem)
                 statusId = statusItem.Id;
+
+            // Сначала обновляем просроченные сертификаты
+            UpdateExpiredCertificates();
 
             LoadCertificates(certificateNumber, statusId, exactMatch);
         }
@@ -853,6 +817,8 @@ namespace dump
 
         private void LoadCertificates()
         {
+            // Сначала обновляем просроченные сертификаты
+            UpdateExpiredCertificates();
             LoadCertificates("", -1, false);
         }
 

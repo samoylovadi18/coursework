@@ -964,7 +964,7 @@ namespace dump
             }
         }
 
-        // ===================== ЭКСПОРТ ВЫРУЧКИ =====================
+        // ===================== ЭКСПОРТ ВЫРУЧКИ (ИСПРАВЛЕННЫЙ) =====================
 
         private void BtnExportRevenue_Click(object sender, EventArgs e)
         {
@@ -1096,6 +1096,7 @@ namespace dump
                 worksheet = workbook.Worksheets[1];
                 worksheet.Name = "Выручка";
 
+                // ===== ЗАГОЛОВОК =====
                 if (filterByPeriod)
                 {
                     worksheet.Cells[1, 1] = $"Отчет по выручке за период с {startDate:dd.MM.yyyy} по {endDate:dd.MM.yyyy}";
@@ -1107,11 +1108,16 @@ namespace dump
                 worksheet.Cells[1, 1].Font.Bold = true;
                 worksheet.Cells[1, 1].Font.Size = 14;
                 worksheet.Cells[1, 1].Font.Name = "Times New Roman";
+                worksheet.Cells[1, 1].WrapText = true;
+
+                // Расширяем область для заголовка
                 Excel.Range titleRange = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 4]];
                 titleRange.Merge();
                 titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                titleRange.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                titleRange.RowHeight = 40;
 
-                // Заголовки колонок
+                // ===== ЗАГОЛОВКИ КОЛОНОК =====
                 string[] headers = { "Дата", "Выручка (₽)", "Кол-во заказов", "Кол-во блюд" };
                 for (int i = 0; i < headers.Length; i++)
                 {
@@ -1123,35 +1129,53 @@ namespace dump
                     headerCell.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(97, 173, 123));
                     headerCell.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                     headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                    headerCell.WrapText = true;
                 }
 
-                // Данные
-                for (int row = 0; row < data.Rows.Count; row++)
-                {
-                    worksheet.Cells[row + 4, 1] = Convert.ToDateTime(data.Rows[row]["Дата"]).ToString("dd.MM.yyyy");
+                // ===== УСТАНАВЛИВАЕМ ШИРИНУ СТОЛБЦОВ =====
+                worksheet.Columns[1].ColumnWidth = 18;  // Дата
+                worksheet.Columns[2].ColumnWidth = 25;  // Выручка (₽)
+                worksheet.Columns[3].ColumnWidth = 22;  // Кол-во заказов
+                worksheet.Columns[4].ColumnWidth = 20;  // Кол-во блюд
 
-                    Excel.Range revenueCell = worksheet.Cells[row + 4, 2];
-                    revenueCell.Value = Convert.ToDouble(data.Rows[row]["Выручка"]);
+                // ===== ДАННЫЕ =====
+                int currentRow = 4;
+                foreach (DataRow row in data.Rows)
+                {
+                    // Дата
+                    worksheet.Cells[currentRow, 1] = Convert.ToDateTime(row["Дата"]).ToString("dd.MM.yyyy");
+                    worksheet.Cells[currentRow, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    worksheet.Cells[currentRow, 1].Font.Name = "Times New Roman";
+
+                    // Выручка
+                    Excel.Range revenueCell = worksheet.Cells[currentRow, 2];
+                    revenueCell.Value = Convert.ToDouble(row["Выручка"]);
                     revenueCell.NumberFormat = "#,##0.00";
                     revenueCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                     revenueCell.Font.Bold = true;
                     revenueCell.Font.Name = "Times New Roman";
                     revenueCell.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
 
-                    worksheet.Cells[row + 4, 3] = data.Rows[row]["Кол-во заказов"].ToString();
-                    worksheet.Cells[row + 4, 3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                    worksheet.Cells[row + 4, 3].Font.Name = "Times New Roman";
+                    // Кол-во заказов
+                    worksheet.Cells[currentRow, 3] = row["Кол-во заказов"].ToString();
+                    worksheet.Cells[currentRow, 3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    worksheet.Cells[currentRow, 3].Font.Name = "Times New Roman";
 
-                    worksheet.Cells[row + 4, 4] = data.Rows[row]["Кол-во блюд"].ToString();
-                    worksheet.Cells[row + 4, 4].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                    worksheet.Cells[row + 4, 4].Font.Name = "Times New Roman";
+                    // Кол-во блюд
+                    worksheet.Cells[currentRow, 4] = row["Кол-во блюд"].ToString();
+                    worksheet.Cells[currentRow, 4].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    worksheet.Cells[currentRow, 4].Font.Name = "Times New Roman";
 
-                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[row + 4, 1], worksheet.Cells[row + 4, 4]];
+                    // Границы
+                    Excel.Range dataRange = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 4]];
                     dataRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+
+                    currentRow++;
                 }
 
-                // Итоги
-                int lastRow = data.Rows.Count + 5;
+                // ===== ИТОГИ =====
+                int lastRow = currentRow + 1;
                 decimal totalRevenue = 0;
                 int totalOrders = 0;
                 int totalDishes = 0;
@@ -1163,47 +1187,75 @@ namespace dump
                     totalDishes += Convert.ToInt32(row["Кол-во блюд"]);
                 }
 
+                // Заголовок "ИТОГИ:"
                 Excel.Range totalTitleCell = worksheet.Cells[lastRow, 1];
                 totalTitleCell.Value = "ИТОГИ:";
                 totalTitleCell.Font.Bold = true;
                 totalTitleCell.Font.Size = 12;
                 totalTitleCell.Font.Name = "Times New Roman";
-                Excel.Range totalTitleRange = worksheet.Range[worksheet.Cells[lastRow, 1], worksheet.Cells[lastRow, 2]];
+                Excel.Range totalTitleRange = worksheet.Range[worksheet.Cells[lastRow, 1], worksheet.Cells[lastRow, 4]];
                 totalTitleRange.Merge();
+                totalTitleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                totalTitleRange.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(200, 230, 200));
+                totalTitleRange.RowHeight = 30;
 
-                worksheet.Cells[lastRow + 1, 1] = "Общая выручка:";
-                worksheet.Cells[lastRow + 1, 1].Font.Bold = true;
-                worksheet.Cells[lastRow + 1, 1].Font.Name = "Times New Roman";
-                Excel.Range revenueCell2 = worksheet.Cells[lastRow + 1, 2];
+                int summaryRow = lastRow + 1;
+
+                // Общая выручка
+                worksheet.Cells[summaryRow, 1] = "Общая выручка:";
+                worksheet.Cells[summaryRow, 1].Font.Bold = true;
+                worksheet.Cells[summaryRow, 1].Font.Name = "Times New Roman";
+                Excel.Range revenueCell2 = worksheet.Cells[summaryRow, 2];
                 revenueCell2.Value = Convert.ToDouble(totalRevenue);
                 revenueCell2.NumberFormat = "#,##0.00";
                 revenueCell2.Font.Bold = true;
                 revenueCell2.Font.Name = "Times New Roman";
                 revenueCell2.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.DarkGreen);
+                Excel.Range summaryRange1 = worksheet.Range[worksheet.Cells[summaryRow, 1], worksheet.Cells[summaryRow, 4]];
+                summaryRange1.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
 
-                worksheet.Cells[lastRow + 2, 1] = "Всего заказов:";
-                worksheet.Cells[lastRow + 2, 1].Font.Bold = true;
-                worksheet.Cells[lastRow + 2, 1].Font.Name = "Times New Roman";
-                worksheet.Cells[lastRow + 2, 2] = totalOrders;
+                summaryRow++;
 
-                worksheet.Cells[lastRow + 3, 1] = "Всего блюд:";
-                worksheet.Cells[lastRow + 3, 1].Font.Bold = true;
-                worksheet.Cells[lastRow + 3, 1].Font.Name = "Times New Roman";
-                worksheet.Cells[lastRow + 3, 2] = totalDishes;
+                // Всего заказов
+                worksheet.Cells[summaryRow, 1] = "Всего заказов:";
+                worksheet.Cells[summaryRow, 1].Font.Bold = true;
+                worksheet.Cells[summaryRow, 1].Font.Name = "Times New Roman";
+                worksheet.Cells[summaryRow, 2] = totalOrders;
+                worksheet.Cells[summaryRow, 2].Font.Name = "Times New Roman";
+                Excel.Range summaryRange2 = worksheet.Range[worksheet.Cells[summaryRow, 1], worksheet.Cells[summaryRow, 4]];
+                summaryRange2.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
 
+                summaryRow++;
+
+                // Всего блюд
+                worksheet.Cells[summaryRow, 1] = "Всего блюд:";
+                worksheet.Cells[summaryRow, 1].Font.Bold = true;
+                worksheet.Cells[summaryRow, 1].Font.Name = "Times New Roman";
+                worksheet.Cells[summaryRow, 2] = totalDishes;
+                worksheet.Cells[summaryRow, 2].Font.Name = "Times New Roman";
+                Excel.Range summaryRange3 = worksheet.Range[worksheet.Cells[summaryRow, 1], worksheet.Cells[summaryRow, 4]];
+                summaryRange3.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+
+                summaryRow++;
+
+                // Средний чек
                 if (totalOrders > 0)
                 {
-                    worksheet.Cells[lastRow + 4, 1] = "Средний чек:";
-                    worksheet.Cells[lastRow + 4, 1].Font.Bold = true;
-                    worksheet.Cells[lastRow + 4, 1].Font.Name = "Times New Roman";
-                    Excel.Range avgCell = worksheet.Cells[lastRow + 4, 2];
+                    worksheet.Cells[summaryRow, 1] = "Средний чек:";
+                    worksheet.Cells[summaryRow, 1].Font.Bold = true;
+                    worksheet.Cells[summaryRow, 1].Font.Name = "Times New Roman";
+                    Excel.Range avgCell = worksheet.Cells[summaryRow, 2];
                     avgCell.Value = Convert.ToDouble(totalRevenue / totalOrders);
                     avgCell.NumberFormat = "#,##0.00";
                     avgCell.Font.Bold = true;
                     avgCell.Font.Name = "Times New Roman";
+                    Excel.Range summaryRange4 = worksheet.Range[worksheet.Cells[summaryRow, 1], worksheet.Cells[summaryRow, 4]];
+                    summaryRange4.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                 }
 
+                // Автоподбор ширины колонок
                 worksheet.Columns.AutoFit();
+
                 workbook.SaveAs(filePath);
             }
             finally

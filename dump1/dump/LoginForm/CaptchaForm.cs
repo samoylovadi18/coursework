@@ -26,6 +26,7 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -162,6 +163,29 @@ namespace dump
 
             // Настройка поля ввода
             txtCaptcha.MaxLength = 4;
+
+            // Настройка кнопки закрытия (крестик)
+            this.FormClosing += CaptchaForm_FormClosing;
+
+            // Добавляем подсказку о регистрозависимости
+            Label lblCaseSensitive = new Label();
+            lblCaseSensitive.Text = "Регистр имеет значение!";
+            lblCaseSensitive.ForeColor = Color.Red;
+            lblCaseSensitive.Font = new Font("Microsoft Sans Serif", 8, FontStyle.Bold);
+            lblCaseSensitive.Location = new Point(190, 160);
+            lblCaseSensitive.Size = new Size(150, 20);
+            this.Controls.Add(lblCaseSensitive);
+        }
+
+        // Обработчик закрытия формы через крестик
+        private void CaptchaForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Если капча не была подтверждена - считаем, что пользователь закрыл окно
+            if (!IsVerified)
+            {
+                IsVerified = false;
+                this.DialogResult = DialogResult.Cancel;
+            }
         }
 
         private void SetupButtonStyle(Button btn)
@@ -181,7 +205,8 @@ namespace dump
         private void GenerateCaptcha()
         {
             // Набор символов (без путающихся: O, 0, I, 1, L)
-            string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            // Добавляем как заглавные, так и строчные буквы для регистрозависимости
+            string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz23456789";
 
             // Генерируем 4 случайных символа
             currentCaptcha = "";
@@ -287,7 +312,8 @@ namespace dump
 
         private void BtnVerify_Click(object sender, EventArgs e)
         {
-            string input = txtCaptcha.Text.Trim().ToUpper();
+            // НЕ ПРИМЕНЯЕМ ToUpper() - сохраняем регистр
+            string input = txtCaptcha.Text.Trim();
 
             if (string.IsNullOrEmpty(input))
             {
@@ -306,6 +332,7 @@ namespace dump
                 return;
             }
 
+            // Сравниваем с учетом регистра (по умолчанию StringComparison.Ordinal - регистрозависимое)
             if (input == currentCaptcha)
             {
                 IsVerified = true;
@@ -314,9 +341,13 @@ namespace dump
             }
             else
             {
-                MessageBox.Show("Неверный код!", "Ошибка",
+                MessageBox.Show("Неверный код CAPTCHA!\nОбратите внимание на регистр букв!", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                GenerateCaptcha();
+
+                // При неправильной капче - закрываем форму и возвращаем Cancel
+                IsVerified = false;
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
             }
         }
 

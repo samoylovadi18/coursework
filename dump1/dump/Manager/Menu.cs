@@ -12,6 +12,9 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    // ============================================================
+    // 1. ФОРМА MENU (ГЛАВНАЯ ФОРМА С МЕНЮ)
+    // ============================================================
     public partial class Menu : Form
     {
         private List<Dish> dishesList = new List<Dish>();
@@ -768,7 +771,9 @@ namespace dump
         }
     }
 
-    // ========== ФОРМА СОСТАВА ЗАКАЗА ==========
+    // ============================================================
+    // 2. ФОРМА СОСТАВ ЗАКАЗА (OrderCompositionForm)
+    // ============================================================
     public class OrderCompositionForm : Form
     {
         private Label lblTitle;
@@ -952,7 +957,7 @@ namespace dump
             btnBack.Click += (s, e) =>
             {
                 this.Close();
-                new Menu().Show();
+                parentMenu.Show();
             };
             SetupPanelButtonStyle(btnBack);
             this.Controls.Add(btnBack);
@@ -1229,7 +1234,7 @@ namespace dump
                                 MessageBox.Show("Корзина пуста. Возврат в меню.",
                                     "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 this.Close();
-                                new Menu().Show();
+                                parentMenu.Show();
                             }
                         }
                     }
@@ -1282,7 +1287,7 @@ namespace dump
                             MessageBox.Show("Корзина пуста. Возврат в меню.",
                                 "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             this.Close();
-                            new Menu().Show();
+                            parentMenu.Show();
                         }
                     }
                 }
@@ -1302,8 +1307,9 @@ namespace dump
         }
     }
 
-    // ========== ФОРМА ДЕТАЛЕЙ ЗАКАЗА (С ИСПРАВЛЕННЫМИ ОГРАНИЧЕНИЯМИ) ==========
-    // ========== ФОРМА ДЕТАЛЕЙ ЗАКАЗА (С ИСПРАВЛЕННЫМИ ОГРАНИЧЕНИЯМИ) ==========
+    // ============================================================
+    // 3. ФОРМА ДЕТАЛИ ЗАКАЗА (OrderDetailsForm) - ИСПРАВЛЕННАЯ
+    // ============================================================
     public class OrderDetailsForm : Form
     {
         private Label lblTitle;
@@ -1351,6 +1357,8 @@ namespace dump
         private Color selectionColor = Color.FromArgb(233, 242, 236);
         private System.Windows.Forms.Timer updateTimer;
 
+        private bool isUpdatingTime = false;
+
         public OrderDetailsForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts)
         {
             cartItems = items;
@@ -1368,7 +1376,6 @@ namespace dump
         {
             DateTime now = DateTime.Now;
 
-            // ЗАПРЕЩАЕМ ВЫБОР ДАТЫ В ПРОШЛОМ
             dtpDate.MinDate = DateTime.Now.Date;
             dtpDate.MaxDate = DateTime.Now.Date.AddDays(7);
 
@@ -1377,15 +1384,12 @@ namespace dump
                 dtpDate.Value = DateTime.Now.Date;
             }
 
-            // НАСТРАИВАЕМ ВРЕМЯ
             dtpTime.Format = DateTimePickerFormat.Custom;
             dtpTime.CustomFormat = "HH:mm";
             dtpTime.ShowUpDown = true;
 
-            // МИНИМАЛЬНОЕ ВРЕМЯ - СЕЙЧАС + 1 ЧАС (НО НЕ РАНЬШЕ 8:00 И НЕ ПОЗЖЕ 22:00)
             DateTime minTime = now.AddHours(1);
 
-            // ЕСЛИ СЕЙЧАС ПОЗЖЕ 21:00 ИЛИ РАНЬШЕ 8:00 - ПЕРЕНОСИМ НА ЗАВТРА
             if (now.Hour >= 21 || now.Hour < 8)
             {
                 dtpDate.Value = now.Date.AddDays(1);
@@ -1396,10 +1400,8 @@ namespace dump
             }
             else
             {
-                // Округляем время до следующего часа
                 DateTime roundedMinTime = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0);
 
-                // Проверяем, что время не выходит за 22:00
                 if (roundedMinTime.Hour >= 22)
                 {
                     dtpDate.Value = now.Date.AddDays(1);
@@ -1433,110 +1435,137 @@ namespace dump
 
         private void DtpDate_ValueChanged(object sender, EventArgs e)
         {
-            if (dtpDate.Value.Date < DateTime.Now.Date)
+            if (isUpdatingTime) return;
+            isUpdatingTime = true;
+
+            try
             {
-                MessageBox.Show("Нельзя выбрать дату в прошлом!",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                dtpDate.Value = DateTime.Now.Date;
-                return;
+                if (dtpDate.Value.Date < DateTime.Now.Date)
+                {
+                    MessageBox.Show("Нельзя выбрать дату в прошлом!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpDate.Value = DateTime.Now.Date;
+                    return;
+                }
+                UpdateTimeRestrictions();
             }
-            UpdateTimeRestrictions();
+            finally
+            {
+                isUpdatingTime = false;
+            }
         }
 
         private void DtpTime_ValueChanged(object sender, EventArgs e)
         {
-            TimeSpan time = dtpTime.Value.TimeOfDay;
+            if (isUpdatingTime) return;
+            isUpdatingTime = true;
 
-            // ПРОВЕРКА - НЕ РАНЬШЕ 8:00
-            if (time < new TimeSpan(8, 0, 0))
+            try
             {
-                MessageBox.Show("Заказы принимаются с 08:00!",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
-                return;
-            }
+                TimeSpan time = dtpTime.Value.TimeOfDay;
 
-            // ПРОВЕРКА - НЕ ПОЗЖЕ 22:00
-            if (time > new TimeSpan(22, 0, 0))
-            {
-                MessageBox.Show("Заказы принимаются до 22:00!",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
-                return;
-            }
-
-            // ПРОВЕРКА ДЛЯ СЕГОДНЯШНЕЙ ДАТЫ - НЕ РАНЬШЕ ТЕКУЩЕГО ВРЕМЕНИ + 1 ЧАС
-            if (dtpDate.Value.Date == DateTime.Now.Date)
-            {
-                DateTime minTime = DateTime.Now.AddHours(1);
-                if (dtpTime.Value < minTime)
+                if (time < new TimeSpan(8, 0, 0))
                 {
-                    MessageBox.Show($"Время не может быть раньше {minTime:HH:mm}!\n" +
-                                  "Минимальное время заказа - через час от текущего времени.",
-                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    dtpTime.Value = minTime;
+                    MessageBox.Show("Заказы принимаются с 08:00!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
                     return;
                 }
+
+                if (time > new TimeSpan(22, 0, 0))
+                {
+                    MessageBox.Show("Заказы принимаются до 22:00!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
+                    return;
+                }
+
+                if (dtpDate.Value.Date == DateTime.Now.Date)
+                {
+                    DateTime minTime = DateTime.Now.AddHours(1);
+                    if (dtpTime.Value < minTime)
+                    {
+                        MessageBox.Show($"Время не может быть раньше {minTime:HH:mm}!\n" +
+                                      "Минимальное время заказа - через час от текущего времени.",
+                                      "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        dtpTime.Value = minTime;
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка при изменении времени: " + ex.Message);
+            }
+            finally
+            {
+                isUpdatingTime = false;
             }
         }
 
         private void UpdateTimeRestrictions()
         {
-            DateTime selectedDate = dtpDate.Value.Date;
-            DateTime now = DateTime.Now;
+            if (isUpdatingTime) return;
+            isUpdatingTime = true;
 
-            if (selectedDate == now.Date)
+            try
             {
-                // ЕСЛИ СЕГОДНЯ ПОЗЖЕ 21:00 - ПЕРЕНОСИМ НА ЗАВТРА
-                if (now.Hour >= 21)
+                DateTime selectedDate = dtpDate.Value.Date;
+                DateTime now = DateTime.Now;
+
+                if (selectedDate == now.Date)
                 {
-                    MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
-                                  "Будет установлена завтрашняя дата на 08:00.",
-                                  "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    dtpDate.Value = now.Date.AddDays(1);
-                    dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
-                    return;
+                    if (now.Hour >= 21)
+                    {
+                        MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
+                                      "Будет установлена завтрашняя дата на 08:00.",
+                                      "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        dtpDate.Value = now.Date.AddDays(1);
+                        dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                        return;
+                    }
+
+                    DateTime minTime = now.AddHours(1);
+
+                    if (minTime.Hour >= 22)
+                    {
+                        MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
+                                      "Будет установлена завтрашняя дата на 08:00.",
+                                      "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        dtpDate.Value = now.Date.AddDays(1);
+                        dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                        return;
+                    }
+
+                    DateTime roundedMinTime = new DateTime(now.Year, now.Month, now.Day, minTime.Hour, 0, 0);
+
+                    if (dtpTime.Value < roundedMinTime)
+                    {
+                        dtpTime.Value = roundedMinTime;
+                    }
                 }
-
-                DateTime minTime = now.AddHours(1);
-
-                // ЕСЛИ МИНИМАЛЬНОЕ ВРЕМЯ ВЫХОДИТ ЗА 22:00
-                if (minTime.Hour >= 22)
+                else
                 {
-                    MessageBox.Show("Сегодня уже нельзя заказать (после 22:00).\n" +
-                                  "Будет установлена завтрашняя дата на 08:00.",
-                                  "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    dtpDate.Value = now.Date.AddDays(1);
-                    dtpTime.Value = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
-                    return;
-                }
-
-                // ОКРУГЛЯЕМ ДО СЛЕДУЮЩЕГО ЧАСА
-                DateTime roundedMinTime = new DateTime(now.Year, now.Month, now.Day, minTime.Hour, 0, 0);
-
-                if (dtpTime.Value < roundedMinTime)
-                {
-                    dtpTime.Value = roundedMinTime;
+                    if (dtpTime.Value.TimeOfDay < new TimeSpan(8, 0, 0))
+                    {
+                        dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
+                    }
+                    else if (dtpTime.Value.TimeOfDay > new TimeSpan(22, 0, 0))
+                    {
+                        dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
+                    }
                 }
             }
-            else
+            finally
             {
-                // ДЛЯ БУДУЩИХ ДНЕЙ - ВРЕМЯ ОТ 8:00 ДО 22:00
-                if (dtpTime.Value.TimeOfDay < new TimeSpan(8, 0, 0))
-                {
-                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 8, 0, 0);
-                }
-                else if (dtpTime.Value.TimeOfDay > new TimeSpan(22, 0, 0))
-                {
-                    dtpTime.Value = new DateTime(dtpTime.Value.Year, dtpTime.Value.Month, dtpTime.Value.Day, 22, 0, 0);
-                }
+                isUpdatingTime = false;
             }
         }
 
         private void InitializeComponent()
         {
             this.Text = "";
-            this.Size = new Size(1000, 800);
+            this.Size = new Size(1000, 820);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.Font = new Font("Times New Roman", 14, FontStyle.Regular);
@@ -1546,25 +1575,27 @@ namespace dump
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
+            // ЗАГОЛОВОК
             lblTitle = new Label();
             lblTitle.Text = "ДЕТАЛИ ЗАКАЗА";
             lblTitle.Font = new Font("Times New Roman", 20, FontStyle.Bold);
             lblTitle.Size = new Size(300, 40);
-            lblTitle.Location = new Point(350, 20);
+            lblTitle.Location = new Point(350, 15);
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblTitle);
 
+            // ===== СТРОКА 1: ДАТА И ВРЕМЯ =====
             lblDateTime = new Label();
             lblDateTime.Text = "Дата и время:";
             lblDateTime.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lblDateTime.Location = new Point(50, 80);
-            lblDateTime.Size = new Size(120, 30);
+            lblDateTime.Size = new Size(140, 30);
             this.Controls.Add(lblDateTime);
 
             dtpDate = new DateTimePicker();
             dtpDate.Font = new Font("Times New Roman", 14);
-            dtpDate.Location = new Point(180, 77);
-            dtpDate.Size = new Size(120, 30);
+            dtpDate.Location = new Point(200, 77);
+            dtpDate.Size = new Size(140, 30);
             dtpDate.Value = DateTime.Now;
             dtpDate.MinDate = DateTime.Now.Date;
             dtpDate.MaxDate = DateTime.Now.Date.AddDays(7);
@@ -1572,108 +1603,120 @@ namespace dump
 
             dtpTime = new DateTimePicker();
             dtpTime.Font = new Font("Times New Roman", 14);
-            dtpTime.Location = new Point(310, 77);
+            dtpTime.Location = new Point(350, 77);
             dtpTime.Size = new Size(100, 30);
             dtpTime.Format = DateTimePickerFormat.Custom;
             dtpTime.CustomFormat = "HH:mm";
             dtpTime.ShowUpDown = true;
             this.Controls.Add(dtpTime);
 
+            // ===== СТРОКА 2: ТЕЛЕФОН И КОЛ-ВО ПЕРСОН =====
             lblPhone = new Label();
             lblPhone.Text = "Телефон:";
             lblPhone.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             lblPhone.Location = new Point(50, 130);
-            lblPhone.Size = new Size(80, 30);
+            lblPhone.Size = new Size(90, 30);
             this.Controls.Add(lblPhone);
 
             mtxtPhone = new MaskedTextBox();
             mtxtPhone.Mask = "+7 (999) 000-00-00";
             mtxtPhone.Font = new Font("Times New Roman", 14);
-            mtxtPhone.Location = new Point(140, 127);
-            mtxtPhone.Size = new Size(220, 30);
+            mtxtPhone.Location = new Point(150, 127);
+            mtxtPhone.Size = new Size(200, 30);
             this.Controls.Add(mtxtPhone);
 
             lblPersons = new Label();
             lblPersons.Text = "Кол-во персон:";
             lblPersons.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lblPersons.Location = new Point(420, 130);
-            lblPersons.Size = new Size(140, 30);
+            lblPersons.Location = new Point(380, 130);
+            lblPersons.Size = new Size(150, 30);
             this.Controls.Add(lblPersons);
 
             cmbPersons = new ComboBox();
             cmbPersons.Font = new Font("Times New Roman", 14);
-            cmbPersons.Location = new Point(570, 127);
+            cmbPersons.Location = new Point(540, 127);
             cmbPersons.Size = new Size(80, 30);
             cmbPersons.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPersons.Items.AddRange(new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
             cmbPersons.SelectedIndex = 0;
             this.Controls.Add(cmbPersons);
 
+            // ===== ГРУППА СЕРТИФИКАТ =====
             grbCertificate = new GroupBox();
             grbCertificate.Text = "Оплата сертификатом";
             grbCertificate.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            grbCertificate.Size = new Size(900, 130);
+            grbCertificate.Size = new Size(900, 150);
             grbCertificate.Location = new Point(50, 180);
             grbCertificate.BackColor = Color.FromArgb(255, 255, 220);
             this.Controls.Add(grbCertificate);
 
+            // Чекбокс "Оплатить" - отдельно сверху
             rbCertificate = new RadioButton();
-            rbCertificate.Text = "Оплатить сертификатом";
+            rbCertificate.Text = "Оплатить";
             rbCertificate.Font = new Font("Times New Roman", 14);
             rbCertificate.Location = new Point(15, 25);
-            rbCertificate.Size = new Size(200, 30);
+            rbCertificate.Size = new Size(120, 30);
             rbCertificate.CheckedChanged += RbCertificate_CheckedChanged;
             grbCertificate.Controls.Add(rbCertificate);
 
+            // Panel для второй строки (Номер + Проверить + Отменить оплату)
+            Panel panelCertRow2 = new Panel();
+            panelCertRow2.Location = new Point(15, 60);
+            panelCertRow2.Size = new Size(860, 35);
+            panelCertRow2.BackColor = Color.Transparent;
+            grbCertificate.Controls.Add(panelCertRow2);
+
             Label lblCertNum = new Label();
-            lblCertNum.Text = "Номер сертификата:";
+            lblCertNum.Text = "Номер:";
             lblCertNum.Font = new Font("Times New Roman", 14);
-            lblCertNum.Location = new Point(15, 60);
-            lblCertNum.Size = new Size(160, 30);
-            grbCertificate.Controls.Add(lblCertNum);
+            lblCertNum.Location = new Point(0, 3);
+            lblCertNum.Size = new Size(70, 30);
+            panelCertRow2.Controls.Add(lblCertNum);
 
             txtCertificateNumber = new TextBox();
             txtCertificateNumber.Font = new Font("Times New Roman", 14);
-            txtCertificateNumber.Location = new Point(180, 60);
-            txtCertificateNumber.Size = new Size(120, 30);
+            txtCertificateNumber.Location = new Point(75, 3);
+            txtCertificateNumber.Size = new Size(150, 30);
             txtCertificateNumber.Enabled = false;
             txtCertificateNumber.KeyPress += TxtCertificateNumber_KeyPress;
-            grbCertificate.Controls.Add(txtCertificateNumber);
+            panelCertRow2.Controls.Add(txtCertificateNumber);
 
             btnCheckCertificate = new Button();
             btnCheckCertificate.Text = "Проверить";
             btnCheckCertificate.Font = new Font("Times New Roman", 14);
             btnCheckCertificate.Size = new Size(120, 30);
-            btnCheckCertificate.Location = new Point(310, 60);
+            btnCheckCertificate.Location = new Point(235, 3);
             btnCheckCertificate.Enabled = false;
             btnCheckCertificate.Click += BtnCheckCertificate_Click;
             SetupPanelButtonStyle(btnCheckCertificate);
-            grbCertificate.Controls.Add(btnCheckCertificate);
+            panelCertRow2.Controls.Add(btnCheckCertificate);
 
             btnCancelCertificate = new Button();
-            btnCancelCertificate.Text = "Отменить оплату сертификатом";
+            btnCancelCertificate.Text = "Отменить оплату";
             btnCancelCertificate.Font = new Font("Times New Roman", 14);
-            btnCancelCertificate.Size = new Size(220, 30);
-            btnCancelCertificate.Location = new Point(440, 60);
+            btnCancelCertificate.Size = new Size(180, 30);
+            btnCancelCertificate.Location = new Point(365, 3);
             btnCancelCertificate.Enabled = false;
             btnCancelCertificate.BackColor = Color.LightCoral;
             btnCancelCertificate.Click += BtnCancelCertificate_Click;
             SetupPanelButtonStyle(btnCancelCertificate);
-            grbCertificate.Controls.Add(btnCancelCertificate);
+            panelCertRow2.Controls.Add(btnCancelCertificate);
 
+            // Строка с информацией о сертификате (остаток, статус)
             lblCertificateAmount = new Label();
             lblCertificateAmount.Text = "";
             lblCertificateAmount.Font = new Font("Times New Roman", 12);
             lblCertificateAmount.ForeColor = Color.Blue;
-            lblCertificateAmount.Location = new Point(15, 95);
+            lblCertificateAmount.Location = new Point(15, 105);
             lblCertificateAmount.Size = new Size(860, 25);
             grbCertificate.Controls.Add(lblCertificateAmount);
 
+            // ===== ГРУППА СПОСОБ ПОЛУЧЕНИЯ =====
             grbDelivery = new GroupBox();
             grbDelivery.Text = "Способ получения";
             grbDelivery.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             grbDelivery.Size = new Size(900, 110);
-            grbDelivery.Location = new Point(50, 330);
+            grbDelivery.Location = new Point(50, 350);
             grbDelivery.BackColor = Color.FromArgb(240, 240, 240);
             this.Controls.Add(grbDelivery);
 
@@ -1706,43 +1749,47 @@ namespace dump
             txtAddress.Size = new Size(700, 30);
             grbDelivery.Controls.Add(txtAddress);
 
+            // ===== СПОСОБ ОПЛАТЫ =====
             lblPayment = new Label();
-            lblPayment.Text = "Выберите способ оплаты для доплаты:";
+            lblPayment.Text = "Выберите способ оплаты для оплаты:";
             lblPayment.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lblPayment.Location = new Point(50, 460);
+            lblPayment.Location = new Point(50, 480);
             lblPayment.Size = new Size(380, 30);
             this.Controls.Add(lblPayment);
 
             cmbPayment = new ComboBox();
             cmbPayment.Font = new Font("Times New Roman", 14);
-            cmbPayment.Location = new Point(440, 457);
+            cmbPayment.Location = new Point(440, 477);
             cmbPayment.Size = new Size(220, 30);
             cmbPayment.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPayment.Items.AddRange(new string[] { "Наличные", "Карта", "Перевод" });
             cmbPayment.SelectedIndex = 0;
             this.Controls.Add(cmbPayment);
 
+            // ===== КОММЕНТАРИЙ =====
             lblComment = new Label();
             lblComment.Text = "Комментарий:";
             lblComment.Font = new Font("Times New Roman", 14, FontStyle.Bold);
-            lblComment.Location = new Point(50, 510);
+            lblComment.Location = new Point(50, 530);
             lblComment.Size = new Size(130, 30);
             this.Controls.Add(lblComment);
 
             txtComment = new TextBox();
             txtComment.Font = new Font("Times New Roman", 14);
-            txtComment.Location = new Point(190, 507);
+            txtComment.Location = new Point(190, 527);
             txtComment.Size = new Size(700, 30);
             this.Controls.Add(txtComment);
 
+            // ===== СПИСОК БЛЮД =====
             lstOrderItems = new ListBox();
             lstOrderItems.Font = new Font("Times New Roman", 14);
-            lstOrderItems.Location = new Point(50, 560);
-            lstOrderItems.Size = new Size(900, 120);
+            lstOrderItems.Location = new Point(50, 580);
+            lstOrderItems.Size = new Size(900, 100);
             lstOrderItems.BackColor = Color.FromArgb(240, 240, 240);
             lstOrderItems.BorderStyle = BorderStyle.FixedSingle;
             this.Controls.Add(lstOrderItems);
 
+            // ===== ИТОГО =====
             lblTotal = new Label();
             lblTotal.Text = "ИТОГО:";
             lblTotal.Font = new Font("Times New Roman", 20, FontStyle.Bold);
@@ -1757,11 +1804,12 @@ namespace dump
             lblTotalValue.ForeColor = Color.Red;
             this.Controls.Add(lblTotalValue);
 
+            // ===== КНОПКИ (с отступом от края) =====
             btnBack = new Button();
             btnBack.Text = "Назад";
             btnBack.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             btnBack.Size = new Size(160, 50);
-            btnBack.Location = new Point(150, 750);
+            btnBack.Location = new Point(120, 740);
             btnBack.Click += (s, e) =>
             {
                 this.Close();
@@ -1774,7 +1822,7 @@ namespace dump
             btnSave.Text = "Оформить заказ";
             btnSave.Font = new Font("Times New Roman", 14, FontStyle.Bold);
             btnSave.Size = new Size(200, 50);
-            btnSave.Location = new Point(600, 750);
+            btnSave.Location = new Point(620, 740);
             btnSave.Click += BtnSave_Click;
             SetupPanelButtonStyle(btnSave);
             this.Controls.Add(btnSave);
@@ -1788,7 +1836,7 @@ namespace dump
             btn.FlatAppearance.BorderSize = 1;
             btn.FlatAppearance.BorderColor = Color.Black;
 
-            if (btn.Text == "Отменить оплату сертификатом")
+            if (btn.Text == "Отменить оплату" || btn.Text == "Отменить оплату сертификатом")
                 btn.BackColor = Color.LightCoral;
             else
                 btn.BackColor = Color.DarkSeaGreen;
@@ -2019,7 +2067,6 @@ namespace dump
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            // ===== ПРОВЕРКА - НЕЛЬЗЯ ВЫБИРАТЬ ДАТУ В ПРОШЛОМ =====
             if (dtpDate.Value.Date < DateTime.Now.Date)
             {
                 MessageBox.Show("Нельзя выбрать дату в прошлом!\nВыберите сегодняшнюю или будущую дату.",
@@ -2028,7 +2075,6 @@ namespace dump
                 return;
             }
 
-            // ===== ПРОВЕРКА - ВРЕМЯ ОТ 8:00 ДО 22:00 =====
             TimeSpan time = dtpTime.Value.TimeOfDay;
             if (time < new TimeSpan(8, 0, 0))
             {
@@ -2045,7 +2091,6 @@ namespace dump
                 return;
             }
 
-            // ===== ПРОВЕРКА - НЕЛЬЗЯ ВЫБИРАТЬ ВРЕМЯ В ПРОШЛОМ =====
             if (dtpDate.Value.Date == DateTime.Now.Date)
             {
                 DateTime minTime = DateTime.Now.AddHours(1);

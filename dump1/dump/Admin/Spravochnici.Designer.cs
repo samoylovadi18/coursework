@@ -48,8 +48,9 @@
             this.button8 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
             this.dataGridViewCategories = new System.Windows.Forms.DataGridView();
-            this.tabConrol1 = new System.Windows.Forms.TabControl();
+            this.tabConrolPresent = new System.Windows.Forms.TabControl();
             this.tabStatus = new System.Windows.Forms.TabPage();
+            this.buttonSave = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.textBoxStatusName = new System.Windows.Forms.TextBox();
             this.button4 = new System.Windows.Forms.Button();
@@ -57,12 +58,11 @@
             this.button6 = new System.Windows.Forms.Button();
             this.dataGridViewStatus = new System.Windows.Forms.DataGridView();
             this.buttonEdit = new System.Windows.Forms.Button();
-            this.buttonSave = new System.Windows.Forms.Button();
             this.tabPresent.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPresents)).BeginInit();
             this.tabCategories.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCategories)).BeginInit();
-            this.tabConrol1.SuspendLayout();
+            this.tabConrolPresent.SuspendLayout();
             this.tabStatus.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatus)).BeginInit();
             this.SuspendLayout();
@@ -82,18 +82,17 @@
             // buttonDelete
             // 
             this.buttonDelete.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonDelete.Location = new System.Drawing.Point(475, 555);
+            this.buttonDelete.Location = new System.Drawing.Point(120, 542);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(170, 44);
             this.buttonDelete.TabIndex = 29;
             this.buttonDelete.Text = "Удалить";
             this.buttonDelete.UseVisualStyleBackColor = false;
-
             // 
             // AddButton
             // 
             this.AddButton.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.AddButton.Location = new System.Drawing.Point(122, 555);
+            this.AddButton.Location = new System.Drawing.Point(477, 542);
             this.AddButton.Name = "AddButton";
             this.AddButton.Size = new System.Drawing.Size(170, 44);
             this.AddButton.TabIndex = 27;
@@ -269,21 +268,20 @@
             this.dataGridViewCategories.Size = new System.Drawing.Size(562, 257);
             this.dataGridViewCategories.TabIndex = 0;
             // 
-            // tabConrol1
+            // tabConrolPresent
             // 
-            this.tabConrol1.Controls.Add(this.tabStatus);
-            this.tabConrol1.Controls.Add(this.tabCategories);
-            this.tabConrol1.Controls.Add(this.tabPresent);
-            this.tabConrol1.Location = new System.Drawing.Point(120, 57);
-            this.tabConrol1.Name = "tabConrol1";
-            this.tabConrol1.SelectedIndex = 0;
-            this.tabConrol1.Size = new System.Drawing.Size(627, 463);
-            this.tabConrol1.TabIndex = 23;
-            this.tabConrol1.Tag = "";
+            this.tabConrolPresent.Controls.Add(this.tabStatus);
+            this.tabConrolPresent.Controls.Add(this.tabCategories);
+            this.tabConrolPresent.Controls.Add(this.tabPresent);
+            this.tabConrolPresent.Location = new System.Drawing.Point(120, 57);
+            this.tabConrolPresent.Name = "tabConrolPresent";
+            this.tabConrolPresent.SelectedIndex = 0;
+            this.tabConrolPresent.Size = new System.Drawing.Size(627, 463);
+            this.tabConrolPresent.TabIndex = 23;
+            this.tabConrolPresent.Tag = "";
             // 
             // tabStatus
             // 
-            this.tabStatus.Controls.Add(this.buttonSave);
             this.tabStatus.Controls.Add(this.label3);
             this.tabStatus.Controls.Add(this.textBoxStatusName);
             this.tabStatus.Controls.Add(this.button4);
@@ -296,7 +294,16 @@
             this.tabStatus.TabIndex = 1;
             this.tabStatus.Text = "Статусы заказов";
             this.tabStatus.UseVisualStyleBackColor = true;
-   
+            // 
+            // buttonSave
+            // 
+            this.buttonSave.BackColor = System.Drawing.Color.DarkSeaGreen;
+            this.buttonSave.Location = new System.Drawing.Point(477, 542);
+            this.buttonSave.Name = "buttonSave";
+            this.buttonSave.Size = new System.Drawing.Size(170, 44);
+            this.buttonSave.TabIndex = 31;
+            this.buttonSave.Text = "Сохранить ";
+            this.buttonSave.UseVisualStyleBackColor = false;
             // 
             // label3
             // 
@@ -361,22 +368,12 @@
             // buttonEdit
             // 
             this.buttonEdit.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonEdit.Location = new System.Drawing.Point(299, 555);
+            this.buttonEdit.Location = new System.Drawing.Point(301, 542);
             this.buttonEdit.Name = "buttonEdit";
             this.buttonEdit.Size = new System.Drawing.Size(170, 44);
             this.buttonEdit.TabIndex = 30;
             this.buttonEdit.Text = "Редактировать";
             this.buttonEdit.UseVisualStyleBackColor = false;
-            // 
-            // buttonSave
-            // 
-            this.buttonSave.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.buttonSave.Location = new System.Drawing.Point(425, 350);
-            this.buttonSave.Name = "buttonSave";
-            this.buttonSave.Size = new System.Drawing.Size(170, 44);
-            this.buttonSave.TabIndex = 31;
-            this.buttonSave.Text = "Сохранить ";
-            this.buttonSave.UseVisualStyleBackColor = false;
             // 
             // Spravochnici
             // 
@@ -384,10 +381,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(856, 628);
+            this.Controls.Add(this.buttonSave);
             this.Controls.Add(this.buttonEdit);
             this.Controls.Add(this.buttonDelete);
             this.Controls.Add(this.AddButton);
-            this.Controls.Add(this.tabConrol1);
+            this.Controls.Add(this.tabConrolPresent);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -404,7 +402,7 @@
             this.tabCategories.ResumeLayout(false);
             this.tabCategories.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCategories)).EndInit();
-            this.tabConrol1.ResumeLayout(false);
+            this.tabConrolPresent.ResumeLayout(false);
             this.tabStatus.ResumeLayout(false);
             this.tabStatus.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatus)).EndInit();
@@ -434,7 +432,7 @@
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.DataGridView dataGridViewCategories;
-        private System.Windows.Forms.TabControl tabConrol1;
+        private System.Windows.Forms.TabControl tabConrolPresent;
         private System.Windows.Forms.TabPage tabStatus;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxStatusName;

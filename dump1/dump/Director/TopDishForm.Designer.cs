@@ -62,7 +62,7 @@
             // comboBoxCategory
             // 
             this.comboBoxCategory.FormattingEnabled = true;
-            this.comboBoxCategory.Location = new System.Drawing.Point(784, 119);
+            this.comboBoxCategory.Location = new System.Drawing.Point(788, 111);
             this.comboBoxCategory.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.comboBoxCategory.Name = "comboBoxCategory";
             this.comboBoxCategory.Size = new System.Drawing.Size(199, 29);
@@ -132,12 +132,12 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(658, 127);
+            this.label2.Location = new System.Drawing.Point(680, 119);
             this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(123, 21);
+            this.label2.Size = new System.Drawing.Size(98, 21);
             this.label2.TabIndex = 32;
-            this.label2.Text = "Статус заказа:";
+            this.label2.Text = "Категория:";
             // 
             // label3
             // 

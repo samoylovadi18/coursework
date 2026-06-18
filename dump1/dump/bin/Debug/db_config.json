@@ -1,6 +1,6 @@
 {
-  "Server": "10.207.106.12",
-  "Username": "user98",
-  "Password": "kn70",
-  "Database": "db98"
+  "Server": "localhost",
+  "Username": "root",
+  "Password": "",
+  "Database": "da"
 }

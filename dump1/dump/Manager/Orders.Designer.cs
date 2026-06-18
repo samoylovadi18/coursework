@@ -32,12 +32,17 @@
             this.label2 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblTitle = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxOrderStatus = new System.Windows.Forms.ComboBox();
             this.buttonReset = new System.Windows.Forms.Button();
             this.buttonDetail = new System.Windows.Forms.Button();
             this.comboBoxSearchType = new System.Windows.Forms.ComboBox();
+            this.btnFirstPage = new System.Windows.Forms.Button();
+            this.btnPrevPage = new System.Windows.Forms.Button();
+            this.lblPageInfo = new System.Windows.Forms.Label();
+            this.btnLastPage = new System.Windows.Forms.Button();
+            this.btnNextPage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -71,16 +76,18 @@
             this.textBoxSearch.Size = new System.Drawing.Size(347, 29);
             this.textBoxSearch.TabIndex = 28;
             // 
-            // label1
+            // lblTitle
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Times New Roman", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.ForeColor = System.Drawing.Color.DarkSeaGreen;
-            this.label1.Location = new System.Drawing.Point(417, 2);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(288, 40);
-            this.label1.TabIndex = 27;
-            this.label1.Text = "Текущие заказы:";
+            this.lblTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Times New Roman", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblTitle.ForeColor = System.Drawing.Color.DarkSeaGreen;
+            this.lblTitle.Location = new System.Drawing.Point(417, 2);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(288, 40);
+            this.lblTitle.TabIndex = 27;
+            this.lblTitle.Text = "Текущие заказы:";
             // 
             // label3
             // 
@@ -128,12 +135,67 @@
             this.comboBoxSearchType.Size = new System.Drawing.Size(242, 29);
             this.comboBoxSearchType.TabIndex = 47;
             // 
+            // btnFirstPage
+            // 
+            this.btnFirstPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnFirstPage.Location = new System.Drawing.Point(52, 791);
+            this.btnFirstPage.Name = "btnFirstPage";
+            this.btnFirstPage.Size = new System.Drawing.Size(44, 35);
+            this.btnFirstPage.TabIndex = 48;
+            this.btnFirstPage.Text = "⏮";
+            this.btnFirstPage.UseVisualStyleBackColor = true;
+            // 
+            // btnPrevPage
+            // 
+            this.btnPrevPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPrevPage.Location = new System.Drawing.Point(102, 791);
+            this.btnPrevPage.Name = "btnPrevPage";
+            this.btnPrevPage.Size = new System.Drawing.Size(44, 35);
+            this.btnPrevPage.TabIndex = 49;
+            this.btnPrevPage.Text = "◀";
+            this.btnPrevPage.UseVisualStyleBackColor = true;
+            // 
+            // lblPageInfo
+            // 
+            this.lblPageInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblPageInfo.AutoSize = true;
+            this.lblPageInfo.Location = new System.Drawing.Point(191, 798);
+            this.lblPageInfo.Name = "lblPageInfo";
+            this.lblPageInfo.Size = new System.Drawing.Size(138, 21);
+            this.lblPageInfo.TabIndex = 50;
+            this.lblPageInfo.Text = "Страница 1 из 1";
+            // 
+            // btnLastPage
+            // 
+            this.btnLastPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnLastPage.Location = new System.Drawing.Point(563, 791);
+            this.btnLastPage.Name = "btnLastPage";
+            this.btnLastPage.Size = new System.Drawing.Size(44, 35);
+            this.btnLastPage.TabIndex = 52;
+            this.btnLastPage.Text = "⏭";
+            this.btnLastPage.UseVisualStyleBackColor = true;
+            // 
+            // btnNextPage
+            // 
+            this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnNextPage.Location = new System.Drawing.Point(513, 791);
+            this.btnNextPage.Name = "btnNextPage";
+            this.btnNextPage.Size = new System.Drawing.Size(44, 35);
+            this.btnNextPage.TabIndex = 51;
+            this.btnNextPage.Text = "▶";
+            this.btnNextPage.UseVisualStyleBackColor = true;
+            // 
             // Orders
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1100, 856);
+            this.Controls.Add(this.btnLastPage);
+            this.Controls.Add(this.btnNextPage);
+            this.Controls.Add(this.lblPageInfo);
+            this.Controls.Add(this.btnPrevPage);
+            this.Controls.Add(this.btnFirstPage);
             this.Controls.Add(this.comboBoxSearchType);
             this.Controls.Add(this.buttonDetail);
             this.Controls.Add(this.buttonReset);
@@ -142,12 +204,11 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.textBoxSearch);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblTitle);
             this.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5);
-            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Orders";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -163,11 +224,16 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.TextBox textBoxSearch;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBoxOrderStatus;
         private System.Windows.Forms.Button buttonReset;
         private System.Windows.Forms.Button buttonDetail;
         private System.Windows.Forms.ComboBox comboBoxSearchType;
+        private System.Windows.Forms.Button btnFirstPage;
+        private System.Windows.Forms.Button btnPrevPage;
+        private System.Windows.Forms.Label lblPageInfo;
+        private System.Windows.Forms.Button btnLastPage;
+        private System.Windows.Forms.Button btnNextPage;
     }
 }

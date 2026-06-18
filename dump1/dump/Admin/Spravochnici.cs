@@ -24,9 +24,9 @@ namespace dump
         {
             InitializeComponent();
 
-            if (tabConrol1 != null)
+            if (tabConrolPresent != null)
             {
-                tabConrol1.SelectedIndexChanged += tabConrol1_SelectedIndexChanged;
+                tabConrolPresent.SelectedIndexChanged += tabConrol1_SelectedIndexChanged;
             }
 
             // КНОПКА ДОБАВИТЬ
@@ -633,8 +633,8 @@ namespace dump
         private void ResetEditMode()
         {
             isEditMode = false;
-            ClearInputFields(tabConrol1.SelectedTab?.Name);
-            ClearTags(tabConrol1.SelectedTab?.Name);
+            ClearInputFields(tabConrolPresent.SelectedTab?.Name);
+            ClearTags(tabConrolPresent.SelectedTab?.Name);
 
             AddButton.Visible = true;
             buttonSave.Visible = false;
@@ -643,7 +643,7 @@ namespace dump
 
         private void LoadDataForSelectedTab()
         {
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
 
             if (string.IsNullOrEmpty(selectedTab))
                 return;
@@ -792,7 +792,7 @@ namespace dump
 
         private void AddNewRecord()
         {
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
 
             try
             {
@@ -958,7 +958,7 @@ namespace dump
 
         private void SaveChanges()
         {
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
 
             try
             {
@@ -1178,7 +1178,7 @@ namespace dump
                 return;
             }
 
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
             DataGridViewRow selectedRow = activeDGV.SelectedRows[0];
 
             int id = 0;
@@ -1411,7 +1411,7 @@ namespace dump
 
         private DataGridView GetActiveDataGridView()
         {
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
 
             if (selectedTab == "tabStatus")
                 return dataGridViewStatus;
@@ -1453,7 +1453,7 @@ namespace dump
                 return;
             }
 
-            string selectedTab = tabConrol1.SelectedTab?.Name;
+            string selectedTab = tabConrolPresent.SelectedTab?.Name;
             DataGridViewRow selectedRow = activeDGV.SelectedRows[0];
 
             switch (selectedTab)
