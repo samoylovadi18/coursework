@@ -16,6 +16,10 @@ using Action = System.Action;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма "Топ блюд" для директора.
+    /// Отображает топ-10 блюд по выручке за выбранный период с возможностью фильтрации по категории.
+    /// </summary>
     public partial class TopDishForm : Form
     {
         private DataTable dishesData;
@@ -23,6 +27,10 @@ namespace dump
         private bool isLockDialogOpen = false;
         private DateTime minDate = new DateTime(2024, 1, 1);
 
+        /// <summary>
+        /// Конструктор формы "Топ блюд".
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public TopDishForm()
         {
             InitializeComponent();
@@ -56,19 +64,30 @@ namespace dump
 
             comboBoxCategory.Font = new Font("Times New Roman", 14);
 
-           
+
         }
 
+        /// <summary>
+        /// Обработчик изменения даты в календарях.
+        /// Автоматически обновляет список топ-блюд.
+        /// </summary>
         private void DateTimePicker_ValueChanged(object sender, EventArgs e)
         {
             LoadTopDishesAutomatically();
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранной категории.
+        /// Автоматически обновляет список топ-блюд.
+        /// </summary>
         private void ComboBoxCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadTopDishesAutomatically();
         }
 
+        /// <summary>
+        /// Загружает топ-блюда автоматически при изменении параметров.
+        /// </summary>
         private void LoadTopDishesAutomatically()
         {
             try
@@ -104,6 +123,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт пустую таблицу для отображения, когда нет данных.
+        /// </summary>
         private void CreateEmptyTable()
         {
             DataTable emptyTable = new DataTable();
@@ -114,6 +136,10 @@ namespace dump
             dataGridViewTopDish.DataSource = emptyTable;
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму директора.
+        /// </summary>
         private void TopDishForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -126,6 +152,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -181,6 +210,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(System.Windows.Forms.TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -217,6 +251,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -232,6 +270,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -245,12 +288,20 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Настраивает стили кнопок на форме.
+        /// </summary>
         private void SetupButtonStyles()
         {
             buttonExport.FlatStyle = FlatStyle.Flat;
@@ -276,6 +327,9 @@ namespace dump
             LoadTopDishesAutomatically();
         }
 
+        /// <summary>
+        /// Настраивает внешний вид DataGridView для отображения топ-блюд.
+        /// </summary>
         private void SetupDataGridView()
         {
             dataGridViewTopDish.ReadOnly = true;
@@ -343,6 +397,9 @@ namespace dump
             });
         }
 
+        /// <summary>
+        /// Загружает список категорий в выпадающий список.
+        /// </summary>
         private void LoadCategories()
         {
             try
@@ -375,6 +432,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает топ-10 блюд по выручке из базы данных.
+        /// </summary>
         private void LoadTopDishes()
         {
             int selectedCategory = Convert.ToInt32(comboBoxCategory.SelectedValue);
@@ -417,6 +477,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет сводную информацию (общая выручка и количество продаж).
+        /// </summary>
         private void UpdateSummaryInfo()
         {
             decimal totalRevenue = 0;
@@ -433,6 +496,10 @@ namespace dump
             labelTotalSold.Font = new Font("Times New Roman", 14, FontStyle.Bold);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// Сбрасывает даты и категорию к значениям по умолчанию.
+        /// </summary>
         private void ButtonReset_Click(object sender, EventArgs e)
         {
             dateTimePickerStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -446,6 +513,10 @@ namespace dump
             labelTotalSold.Text = "Всего продано: 0 шт.";
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки экспорта.
+        /// Экспортирует данные в Excel с диаграммой.
+        /// </summary>
         private void ButtonExport_Click(object sender, EventArgs e)
         {
             try
@@ -483,6 +554,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Экспортирует данные в Excel-файл с диаграммой.
+        /// </summary>
+        /// <param name="filePath">Путь к сохраняемому файлу.</param>
         private void ExportToExcelWithChart(string filePath)
         {
             Excel.Application excelApp = null;
@@ -689,6 +764,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки возврата (крестик).
+        /// Скрывает текущую форму и открывает форму директора.
+        /// </summary>
         private void pictureBoxBack_Click(object sender, EventArgs e)
         {
             this.Visible = false;

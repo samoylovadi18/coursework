@@ -6,20 +6,45 @@ using System.Text.Json;
 
 namespace dump
 {
+    /// <summary>
+    /// Статический класс для управления настройками подключения к базе данных.
+    /// Обеспечивает сохранение, загрузку и проверку параметров подключения к MySQL.
+    /// </summary>
     public static class SettingsBD
     {
         private const string CONFIG_FILE = "db_config.json";
 
+        /// <summary>
+        /// Класс конфигурации подключения к базе данных.
+        /// </summary>
         public class ConnectionConfig
         {
+            /// <summary>
+            /// Адрес сервера базы данных.
+            /// </summary>
             public string Server { get; set; } = "localhost";
+
+            /// <summary>
+            /// Имя пользователя для подключения.
+            /// </summary>
             public string Username { get; set; } = "root";
+
+            /// <summary>
+            /// Пароль пользователя.
+            /// </summary>
             public string Password { get; set; } = "";
+
+            /// <summary>
+            /// Имя базы данных.
+            /// </summary>
             public string Database { get; set; } = "da";
 
+            /// <summary>
+            /// Формирует строку подключения к MySQL.
+            /// </summary>
+            /// <returns>Строка подключения с параметрами.</returns>
             public string GetConnectionString()
             {
-                // КЛЮЧЕВОЕ: добавили Charset и Allow User Variables
                 return $"server={Server};username={Username};password={Password};database={Database};Charset=utf8mb4;Allow User Variables=True;";
             }
         }
@@ -27,11 +52,18 @@ namespace dump
         private static ConnectionConfig _currentConfig;
         private static string _activeConnectionString;
 
+        /// <summary>
+        /// Статический конструктор, загружающий конфигурацию при первом обращении.
+        /// </summary>
         static SettingsBD()
         {
             LoadConfig();
         }
 
+        /// <summary>
+        /// Загружает конфигурацию из JSON-файла.
+        /// Если файл отсутствует, создаёт конфигурацию по умолчанию.
+        /// </summary>
         private static void LoadConfig()
         {
             try
@@ -54,6 +86,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Сохраняет текущую конфигурацию в JSON-файл.
+        /// </summary>
+        /// <exception cref="Exception">Выбрасывается при ошибке сохранения.</exception>
         public static void SaveConfig()
         {
             try
@@ -68,6 +104,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает копию текущей конфигурации подключения.
+        /// </summary>
+        /// <returns>Объект ConnectionConfig с текущими настройками.</returns>
         public static ConnectionConfig GetCurrentConfig()
         {
             return new ConnectionConfig
@@ -79,17 +119,30 @@ namespace dump
             };
         }
 
+        /// <summary>
+        /// Обновляет конфигурацию подключения и сохраняет её.
+        /// </summary>
+        /// <param name="newConfig">Новые настройки подключения.</param>
         public static void UpdateConfig(ConnectionConfig newConfig)
         {
             _currentConfig = newConfig;
             SaveConfig();
         }
 
+        /// <summary>
+        /// Получает строку подключения на основе текущей конфигурации.
+        /// </summary>
+        /// <returns>Строка подключения.</returns>
         public static string GetConnectionString()
         {
             return _currentConfig.GetConnectionString();
         }
 
+        /// <summary>
+        /// Свойство, возвращающее проверенную строку подключения.
+        /// При первом обращении проверяет работоспособность подключения.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Выбрасывается при невозможности подключения.</exception>
         public static string ConnectionString
         {
             get
@@ -106,6 +159,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет возможность подключения к базе данных.
+        /// </summary>
+        /// <param name="connectionString">Строка подключения для проверки. Если null, используется текущая конфигурация.</param>
+        /// <returns>True если подключение успешно, иначе False.</returns>
         public static bool TestConnection(string connectionString = null)
         {
             string testString = connectionString ?? _currentConfig.GetConnectionString();
@@ -123,6 +181,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт и возвращает новое подключение к базе данных.
+        /// </summary>
+        /// <returns>Открытое подключение к MySQL.</returns>
         public static MySqlConnection GetConnection()
         {
             return new MySqlConnection(ConnectionString);

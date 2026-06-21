@@ -7,6 +7,10 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма для ввода CAPTCHA при подозрительной активности.
+    /// Используется для подтверждения, что пользователь не является роботом.
+    /// </summary>
     public partial class CaptchaForm : Form
     {
         private string currentCaptcha = "";
@@ -14,10 +18,14 @@ namespace dump
         private bool isLockDialogOpen = false;
 
         /// <summary>
-        /// Результат проверки капчи
+        /// Результат проверки капчи.
         /// </summary>
         public bool IsVerified { get; private set; } = false;
 
+        /// <summary>
+        /// Конструктор формы CAPTCHA.
+        /// Инициализирует компоненты и генерирует новую капчу.
+        /// </summary>
         public CaptchaForm()
         {
             InitializeComponent();
@@ -27,6 +35,10 @@ namespace dump
             InactivityManager.OnLockRequest += LockSystem;
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -82,6 +94,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -118,6 +135,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -133,6 +154,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -146,12 +172,20 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Настраивает внешний вид и компоненты формы.
+        /// </summary>
         private void SetupForm()
         {
             SetupButtonStyle(btnVerify);
@@ -177,7 +211,10 @@ namespace dump
             this.Controls.Add(lblCaseSensitive);
         }
 
-        // Обработчик закрытия формы через крестик
+        /// <summary>
+        /// Обработчик закрытия формы через крестик.
+        /// Если капча не подтверждена - результат отмены.
+        /// </summary>
         private void CaptchaForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Если капча не была подтверждена - считаем, что пользователь закрыл окно
@@ -188,6 +225,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="btn">Кнопка для стилизации.</param>
         private void SetupButtonStyle(Button btn)
         {
             btn.FlatStyle = FlatStyle.Flat;
@@ -200,7 +241,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Генерация изображения CAPTCHA
+        /// Генерирует изображение CAPTCHA с случайными символами, шумом и искажениями.
         /// </summary>
         private void GenerateCaptcha()
         {
@@ -305,11 +346,19 @@ namespace dump
             txtCaptcha.Focus();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки обновления капчи.
+        /// Генерирует новую капчу.
+        /// </summary>
         private void BtnRefresh_Click(object sender, EventArgs e)
         {
             GenerateCaptcha();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки проверки капчи.
+        /// Сравнивает введённый код с сгенерированным (регистрозависимо).
+        /// </summary>
         private void BtnVerify_Click(object sender, EventArgs e)
         {
             // НЕ ПРИМЕНЯЕМ ToUpper() - сохраняем регистр
@@ -351,6 +400,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле ввода капчи.
+        /// Разрешает ввод только букв и цифр. Enter - проверка.
+        /// </summary>
         private void TxtCaptcha_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Разрешаем только буквы и цифры
@@ -367,6 +420,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки закрытия (крестик).
+        /// Отменяет проверку капчи.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             IsVerified = false;

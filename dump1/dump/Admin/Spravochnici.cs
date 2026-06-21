@@ -10,6 +10,10 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма управления справочниками системы.
+    /// Предоставляет функционал для управления статусами заказов, категориями блюд и подарками.
+    /// </summary>
     public partial class Spravochnici : Form
     {
         private bool isEditMode = false;
@@ -20,6 +24,10 @@ namespace dump
         // Цвет шапки как на других формах
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
 
+        /// <summary>
+        /// Конструктор формы справочников.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public Spravochnici()
         {
             InitializeComponent();
@@ -68,7 +76,7 @@ namespace dump
             buttonDelete.Click += DeleteButton_Click;
             buttonDelete.Font = new Font("Times New Roman", 14, FontStyle.Regular);
 
-         
+
             // Настройка DataGridView
             InitializeDataGridViews();
 
@@ -97,6 +105,9 @@ namespace dump
 
         // ===================== НАСТРОЙКА DATA GRID VIEW =====================
 
+        /// <summary>
+        /// Инициализирует все DataGridView на форме.
+        /// </summary>
         private void InitializeDataGridViews()
         {
             // Настраиваем каждый DataGridView
@@ -105,6 +116,10 @@ namespace dump
             SetupDataGridViewStyleForPresents(dataGridViewPresents);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к DataGridView.
+        /// </summary>
+        /// <param name="dgv">DataGridView для стилизации.</param>
         private void SetupDataGridViewStyle(DataGridView dgv)
         {
             if (dgv == null) return;
@@ -150,6 +165,10 @@ namespace dump
             dgv.CellBorderStyle = DataGridViewCellBorderStyle.Single;
         }
 
+        /// <summary>
+        /// Применяет стиль к DataGridView подарков с форматированием цены.
+        /// </summary>
+        /// <param name="dgv">DataGridView для стилизации.</param>
         private void SetupDataGridViewStyleForPresents(DataGridView dgv)
         {
             if (dgv == null) return;
@@ -216,6 +235,9 @@ namespace dump
 
         // ===================== БЛОКИРОВКА =====================
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -272,6 +294,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -308,6 +335,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -323,6 +354,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -336,12 +372,21 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму администратора.
+        /// </summary>
         private void Spravochnici_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -355,6 +400,10 @@ namespace dump
 
         // ===================== ОБРАБОТЧИКИ =====================
 
+        /// <summary>
+        /// Обработчик клика по ячейке DataGridView.
+        /// Выделяет строку целиком.
+        /// </summary>
         private void DataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -368,6 +417,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Редактировать".
+        /// Подготавливает выбранную запись для редактирования.
+        /// </summary>
         private void ButtonEdit_Click(object sender, EventArgs e)
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -382,11 +435,18 @@ namespace dump
             PrepareForEdit();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Сохранить".
+        /// Сохраняет изменения в базе данных.
+        /// </summary>
         private void ButtonSave_Click(object sender, EventArgs e)
         {
             SaveChanges();
         }
 
+        /// <summary>
+        /// Настраивает режим выделения строк в DataGridView.
+        /// </summary>
         private void SetupDataGridViewRowSelection()
         {
             dataGridViewStatus.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -399,6 +459,9 @@ namespace dump
             dataGridViewPresents.MultiSelect = false;
         }
 
+        /// <summary>
+        /// Устанавливает максимальную длину для текстовых полей.
+        /// </summary>
         private void SetMaxLengthLimits()
         {
             textBoxStatusName.MaxLength = 255;
@@ -413,6 +476,10 @@ namespace dump
             textBoxFromPrice.Font = new Font("Times New Roman", 14);
         }
 
+        /// <summary>
+        /// Настраивает текстовое поле для ввода цены.
+        /// </summary>
+        /// <param name="textBox">Текстовое поле для настройки.</param>
         private void SetupPriceTextBox(TextBox textBox)
         {
             textBox.KeyPress += TextBoxPrice_KeyPress;
@@ -422,6 +489,10 @@ namespace dump
             textBox.TextAlign = HorizontalAlignment.Right;
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле ввода цены.
+        /// Разрешает ввод только цифр и запятой.
+        /// </summary>
         private void TextBoxPrice_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -445,6 +516,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле цены.
+        /// Фильтрует ввод и ограничивает количество символов.
+        /// </summary>
         private void TextBoxPrice_TextChanged(object sender, EventArgs e)
         {
             if (isFormatting) return;
@@ -525,6 +600,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик получения фокуса полем цены.
+        /// Убирает символ ₽ для редактирования.
+        /// </summary>
         private void TextBoxPrice_Enter(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -539,12 +618,19 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик потери фокуса полем цены.
+        /// Форматирует цену с символом ₽.
+        /// </summary>
         private void TextBoxPrice_Leave(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
             FormatPriceTextBoxOnLeave(textBox);
         }
 
+        /// <summary>
+        /// Форматирует текст в поле цены при потере фокуса.
+        /// </summary>
         private void FormatPriceTextBoxOnLeave(TextBox textBox)
         {
             if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -603,6 +689,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Извлекает числовое значение из отформатированного текста цены.
+        /// </summary>
+        /// <param name="formattedText">Отформатированный текст с символом ₽.</param>
+        /// <returns>Числовое значение цены.</returns>
         private decimal GetPriceFromFormattedText(string formattedText)
         {
             if (string.IsNullOrWhiteSpace(formattedText))
@@ -612,6 +703,10 @@ namespace dump
             return decimal.TryParse(cleanText, NumberStyles.Any, russianCulture, out decimal value) ? Math.Round(value, 2) : 0;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму администратора.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -624,12 +719,19 @@ namespace dump
             LoadDataForSelectedTab();
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранной вкладки.
+        /// Загружает данные для соответствующего справочника.
+        /// </summary>
         private void tabConrol1_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadDataForSelectedTab();
             ResetEditMode();
         }
 
+        /// <summary>
+        /// Сбрасывает режим редактирования и очищает поля ввода.
+        /// </summary>
         private void ResetEditMode()
         {
             isEditMode = false;
@@ -641,6 +743,9 @@ namespace dump
             AddButton.Text = "Добавить";
         }
 
+        /// <summary>
+        /// Загружает данные для выбранной вкладки.
+        /// </summary>
         private void LoadDataForSelectedTab()
         {
             string selectedTab = tabConrolPresent.SelectedTab?.Name;
@@ -733,6 +838,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие дубликата статуса в базе данных.
+        /// </summary>
         private bool IsStatusDuplicate(string statusName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM order_statuses WHERE LOWER(status_name) = LOWER(@statusName)";
@@ -752,6 +860,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие дубликата категории в базе данных.
+        /// </summary>
         private bool IsCategoryDuplicate(string categoryName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM categories WHERE LOWER(category_name) = LOWER(@categoryName)";
@@ -771,6 +882,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие дубликата подарка в базе данных.
+        /// </summary>
         private bool IsPresentDuplicate(string presentName, MySqlConnection connection, int? excludeId = null)
         {
             string query = "SELECT COUNT(*) FROM present WHERE LOWER(name) = LOWER(@presentName)";
@@ -790,6 +904,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Добавляет новую запись в выбранный справочник.
+        /// </summary>
         private void AddNewRecord()
         {
             string selectedTab = tabConrolPresent.SelectedTab?.Name;
@@ -956,6 +1073,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Сохраняет изменения в выбранной записи.
+        /// </summary>
         private void SaveChanges()
         {
             string selectedTab = tabConrolPresent.SelectedTab?.Name;
@@ -1150,6 +1270,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Очищает поля ввода для выбранной вкладки.
+        /// </summary>
         private void ClearInputFields(string selectedTab)
         {
             switch (selectedTab)
@@ -1167,6 +1290,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Удалить".
+        /// Удаляет выбранную запись с проверкой наличия связей.
+        /// </summary>
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -1307,6 +1434,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие связанных записей для удаляемой записи.
+        /// </summary>
         private bool HasRelatedRecords(int id, string tableName, string tabName)
         {
             try
@@ -1348,6 +1478,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает детальную информацию о связанных записях.
+        /// </summary>
         private string GetRelatedRecordsDetails(int id, string tableName, string tabName)
         {
             try
@@ -1409,6 +1542,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает активный DataGridView в зависимости от выбранной вкладки.
+        /// </summary>
         private DataGridView GetActiveDataGridView()
         {
             string selectedTab = tabConrolPresent.SelectedTab?.Name;
@@ -1423,11 +1559,19 @@ namespace dump
                 return null;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки обновления.
+        /// Перезагружает данные для выбранной вкладки.
+        /// </summary>
         private void RefreshButton_Click(object sender, EventArgs e)
         {
             LoadDataForSelectedTab();
         }
 
+        /// <summary>
+        /// Обработчик двойного клика по ячейке DataGridView.
+        /// Подготавливает запись для редактирования.
+        /// </summary>
         private void DataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -1442,6 +1586,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Подготавливает выбранную запись для редактирования.
+        /// Загружает данные в поля ввода.
+        /// </summary>
         private void PrepareForEdit()
         {
             DataGridView activeDGV = GetActiveDataGridView();
@@ -1498,11 +1646,18 @@ namespace dump
                 MessageBoxIcon.Information);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки очистки.
+        /// Сбрасывает режим редактирования.
+        /// </summary>
         private void ClearButton_Click(object sender, EventArgs e)
         {
             ResetEditMode();
         }
 
+        /// <summary>
+        /// Очищает теги (ID записей) для выбранной вкладки.
+        /// </summary>
         private void ClearTags(string selectedTab)
         {
             switch (selectedTab)
@@ -1519,6 +1674,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает текстовое поле для ввода только русских букв.
+        /// </summary>
         private void SetupRussianOnlyTextBox(TextBox textBox)
         {
             textBox.KeyPress += TextBoxRussianOnly_KeyPress;
@@ -1526,6 +1684,10 @@ namespace dump
             textBox.Leave += TextBoxRussianOnly_Leave;
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш для поля с русским вводом.
+        /// Разрешает только русские буквы, дефис и пробел.
+        /// </summary>
         private void TextBoxRussianOnly_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (char.IsLetter(e.KeyChar) && IsRussianLetter(e.KeyChar) ||
@@ -1541,6 +1703,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста для поля с русским вводом.
+        /// Фильтрует недопустимые символы.
+        /// </summary>
         private void TextBoxRussianOnly_TextChanged(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -1558,6 +1724,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик потери фокуса для поля с русским вводом.
+        /// Приводит текст к формату с заглавной буквы.
+        /// </summary>
         private void TextBoxRussianOnly_Leave(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -1571,11 +1741,17 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ русской буквой.
+        /// </summary>
         private bool IsRussianLetter(char c)
         {
             return (c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё';
         }
 
+        /// <summary>
+        /// Фильтрует строку, оставляя только русские буквы, дефис и пробел.
+        /// </summary>
         private string FilterRussianOnly(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -1592,11 +1768,19 @@ namespace dump
             return result;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Добавить".
+        /// Добавляет новую запись в справочник.
+        /// </summary>
         private void AddButton_Click(object sender, EventArgs e)
         {
             AddNewRecord();
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш на форме.
+        /// Поддерживает клавишу Delete для удаления записи.
+        /// </summary>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Delete)

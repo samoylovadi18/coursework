@@ -11,9 +11,18 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма главного меню менеджера.
+    /// Предоставляет доступ к управлению заказами, сертификатами и текущими заказами.
+    /// </summary>
     public partial class ManagerForm : Form
     {
         private bool isLockDialogOpen = false;
+
+        /// <summary>
+        /// Конструктор формы менеджера.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public ManagerForm()
         {
             InitializeComponent();
@@ -28,6 +37,11 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -83,6 +97,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -119,6 +138,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -134,6 +157,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -147,13 +175,21 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
-        // ОБРАБОТЧИК - при нажатии на крестик
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму входа.
+        /// </summary>
         private void ManagerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Проверяем, что закрытие не было вызвано из кода
@@ -171,6 +207,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает стили всех кнопок на форме.
+        /// </summary>
         private void SetupButtonStyles()
         {
             buttonOrder.FlatStyle = FlatStyle.Flat;
@@ -224,7 +263,10 @@ namespace dump
             buttonUse.MouseLeave += (s, e) => buttonUse.FlatAppearance.BorderColor = Color.Black;
         }
 
-        // ОБРАБОТЧИК - при открытии панели отключаем ControlBox
+        /// <summary>
+        /// Обработчик нажатия кнопки "Сертификаты".
+        /// Отображает панель с дополнительными кнопками и отключает системную кнопку закрытия.
+        /// </summary>
         private void buttonCerts_Click(object sender, EventArgs e)
         {
             panel1.Visible = true;
@@ -247,7 +289,10 @@ namespace dump
             this.ControlBox = false;
         }
 
-        // ОБРАБОТЧИК - при закрытии панели включаем ControlBox обратно
+        /// <summary>
+        /// Обработчик нажатия кнопки возврата из панели сертификатов.
+        /// Скрывает панель и включает системную кнопку закрытия.
+        /// </summary>
         private void btnBackFromPanel_Click(object sender, EventArgs e)
         {
             panel1.Visible = false;
@@ -256,6 +301,10 @@ namespace dump
             this.ControlBox = true;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик в правом верхнем углу).
+        /// Выполняет выход из системы и открывает форму входа.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -275,6 +324,10 @@ namespace dump
             manager.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Заказы".
+        /// Открывает форму создания заказа (меню).
+        /// </summary>
         private void buttonOrder_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -282,6 +335,10 @@ namespace dump
             Menu1.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Текущие заказы".
+        /// Открывает форму управления текущими заказами.
+        /// </summary>
         private void buttonCurrentOrders_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -293,6 +350,10 @@ namespace dump
         {
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Выдать сертификат".
+        /// Открывает форму выдачи подарочных сертификатов.
+        /// </summary>
         private void buttonIssue_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -300,6 +361,10 @@ namespace dump
             add.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Использовать сертификат".
+        /// Открывает форму управления существующими сертификатами.
+        /// </summary>
         private void buttonUse_Click(object sender, EventArgs e)
         {
             this.Visible = false;

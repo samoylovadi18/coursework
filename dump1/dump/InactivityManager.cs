@@ -9,6 +9,10 @@ using System.Text.Json;
 
 namespace dump
 {
+    /// <summary>
+    /// Статический класс для управления автоматической блокировкой системы при бездействии пользователя.
+    /// Отслеживает активность пользователя на зарегистрированных формах и инициирует блокировку по истечении заданного времени.
+    /// </summary>
     public static class InactivityManager
     {
         private static Timer inactivityTimer;
@@ -22,8 +26,14 @@ namespace dump
 
         private const string SETTINGS_FILE = "inactivity_settings.json";
 
+        /// <summary>
+        /// Событие, возникающее при запросе блокировки системы.
+        /// </summary>
         public static event Action OnLockRequest;
 
+        /// <summary>
+        /// Статический конструктор, инициализирующий таймер и загружающий настройки.
+        /// </summary>
         static InactivityManager()
         {
             LoadSettings();
@@ -39,7 +49,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Загрузка настроек блокировки из файла
+        /// Загружает настройки блокировки из JSON-файла.
         /// </summary>
         private static void LoadSettings()
         {
@@ -63,7 +73,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Сохранение настроек блокировки в файл
+        /// Сохраняет текущие настройки блокировки в JSON-файл.
         /// </summary>
         public static void SaveSettings()
         {
@@ -84,8 +94,10 @@ namespace dump
         }
 
         /// <summary>
-        /// Установка настроек блокировки
+        /// Устанавливает настройки автоматической блокировки.
         /// </summary>
+        /// <param name="enabled">True если блокировка включена.</param>
+        /// <param name="seconds">Время бездействия в секундах до блокировки.</param>
         public static void SetSecuritySettings(bool enabled, int seconds)
         {
             autoLockEnabled = enabled;
@@ -104,11 +116,19 @@ namespace dump
         }
 
         /// <summary>
-        /// Получение текущих настроек
+        /// Возвращает состояние автоматической блокировки.
         /// </summary>
         public static bool GetAutoLockEnabled() => autoLockEnabled;
+
+        /// <summary>
+        /// Возвращает время бездействия в секундах до блокировки.
+        /// </summary>
         public static int GetInactivityTime() => inactivityTimeSeconds;
 
+        /// <summary>
+        /// Регистрирует форму для отслеживания активности пользователя.
+        /// </summary>
+        /// <param name="form">Форма для регистрации.</param>
         public static void RegisterForm(Form form)
         {
             if (!registeredForms.Contains(form))
@@ -125,6 +145,10 @@ namespace dump
             ResetActivity();
         }
 
+        /// <summary>
+        /// Отменяет регистрацию формы и отписывается от её событий.
+        /// </summary>
+        /// <param name="form">Форма для отмены регистрации. Если null, отменяет регистрацию всех форм.</param>
         public static void UnregisterForm(Form form = null)
         {
             if (form != null)
@@ -137,6 +161,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик закрытия формы. Автоматически отменяет регистрацию формы.
+        /// </summary>
         private static void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (sender is Form form)
@@ -145,11 +172,17 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик активности пользователя. Сбрасывает таймер бездействия.
+        /// </summary>
         private static void OnUserActivity(object sender, EventArgs e)
         {
             ResetActivity();
         }
 
+        /// <summary>
+        /// Сбрасывает время последней активности пользователя.
+        /// </summary>
         public static void ResetActivity()
         {
             if (!isLocked)
@@ -158,6 +191,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик тика таймера. Проверяет время бездействия и инициирует блокировку при необходимости.
+        /// </summary>
         private static void InactivityTimer_Tick(object sender, EventArgs e)
         {
             if (!autoLockEnabled) return;
@@ -171,18 +207,27 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициирует запрос на блокировку системы.
+        /// </summary>
         private static void RequestLock()
         {
             isLocked = true;
             OnLockRequest?.Invoke();
         }
 
+        /// <summary>
+        /// Разблокирует систему после ввода правильного пароля.
+        /// </summary>
         public static void Unlock()
         {
             isLocked = false;
             ResetActivity();
         }
 
+        /// <summary>
+        /// Внутренний класс для сериализации настроек блокировки в JSON.
+        /// </summary>
         private class InactivitySettings
         {
             public bool AutoLockEnabled { get; set; }

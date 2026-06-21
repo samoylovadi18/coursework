@@ -12,6 +12,10 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма авторизации пользователя.
+    /// Предоставляет функционал входа в систему с защитой от перебора паролей (CAPTCHA).
+    /// </summary>
     public partial class LoginForm : Form
     {
         public static string UserLogin = "";
@@ -31,6 +35,10 @@ namespace dump
         // Флаг для предотвращения рекурсии
         private bool isClosing = false;
 
+        /// <summary>
+        /// Настраивает подчёркивание для текстового поля.
+        /// </summary>
+        /// <param name="textBox">Текстовое поле для настройки.</param>
         private void SetupUnderlineTextBox(TextBox textBox)
         {
             Panel underline = new Panel();
@@ -58,6 +66,10 @@ namespace dump
             };
         }
 
+        /// <summary>
+        /// Конструктор формы авторизации.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public LoginForm()
         {
             InitializeComponent();
@@ -114,7 +126,9 @@ namespace dump
             blockTimer.Tick += BlockTimer_Tick;
         }
 
-        // ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик закрывает приложение.
+        /// </summary>
         private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Если уже выполняется закрытие - выходим, чтобы избежать рекурсии
@@ -155,6 +169,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик тика таймера блокировки.
+        /// Обновляет текст кнопки и разблокирует её по истечении времени.
+        /// </summary>
         private void BlockTimer_Tick(object sender, EventArgs e)
         {
             if (DateTime.Now >= blockUntil)
@@ -178,6 +196,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт простую иконку глаза для отображения/скрытия пароля.
+        /// </summary>
+        /// <param name="open">True для открытого глаза, False для закрытого.</param>
+        /// <returns>Изображение иконки глаза.</returns>
         private Image CreateSimpleEyeIcon(bool open)
         {
             Bitmap bmp = new Bitmap(32, 32);
@@ -202,12 +225,18 @@ namespace dump
             return bmp;
         }
 
+        /// <summary>
+        /// Устанавливает максимальную длину для полей ввода.
+        /// </summary>
         private void SetMaxLengthLimits()
         {
             Login.MaxLength = 50;
             Password.MaxLength = 50;
         }
 
+        /// <summary>
+        /// Настраивает валидацию полей ввода.
+        /// </summary>
         private void SetupInputValidation()
         {
             Login.KeyPress += TextBox_KeyPress;
@@ -223,6 +252,10 @@ namespace dump
             Password.ContextMenuStrip = new ContextMenuStrip();
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в полях ввода.
+        /// Блокирует ввод недопустимых символов.
+        /// </summary>
         private void TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (char.IsControl(e.KeyChar))
@@ -237,6 +270,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ допустимым для логина/пароля.
+        /// </summary>
         private bool IsValidCharacter(char c)
         {
             if ((c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я'))
@@ -267,6 +303,10 @@ namespace dump
             return false;
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле логина.
+        /// Фильтрует недопустимые символы.
+        /// </summary>
         private void Login_TextChanged(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -298,6 +338,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле пароля.
+        /// Фильтрует недопустимые символы.
+        /// </summary>
         private void Password_TextChanged(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -334,6 +378,10 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Войти".
+        /// Выполняет авторизацию пользователя с проверкой CAPTCHA при необходимости.
+        /// </summary>
         private void btnLog_Click(object sender, EventArgs e)
         {
             // Проверка блокировки
@@ -500,6 +548,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет корректность введённых логина и пароля.
+        /// </summary>
+        /// <param name="login">Логин пользователя.</param>
+        /// <param name="password">Пароль пользователя.</param>
+        /// <returns>True если данные корректны, иначе False.</returns>
         private bool ValidateLoginInput(string login, string password)
         {
             if (string.IsNullOrEmpty(login))
@@ -569,6 +623,9 @@ namespace dump
             return true;
         }
 
+        /// <summary>
+        /// Проверяет, содержит ли строка недопустимые символы.
+        /// </summary>
         private bool ContainsInvalidCharacters(string text)
         {
             foreach (char c in text)
@@ -581,6 +638,10 @@ namespace dump
             return false;
         }
 
+        /// <summary>
+        /// Открывает соответствующую форму в зависимости от роли пользователя.
+        /// </summary>
+        /// <param name="roleId">ID роли пользователя.</param>
         private void OpenFormByRole(int roleId)
         {
             switch (roleId)
@@ -607,6 +668,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -628,6 +694,10 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки показа/скрытия пароля.
+        /// Переключает видимость пароля.
+        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             isPasswordVisible = !isPasswordVisible;
@@ -662,6 +732,9 @@ namespace dump
             Password.Focus();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки закрытия приложения (крестик).
+        /// </summary>
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Вы действительно хотите закрыть приложение?", "Подтверждение закрытия",
@@ -685,6 +758,10 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш на форме.
+        /// Поддерживает клавиши Enter (вход) и Escape (выход).
+        /// </summary>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Enter)

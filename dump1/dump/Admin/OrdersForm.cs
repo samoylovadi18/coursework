@@ -10,6 +10,10 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма управления заказами для администратора.
+    /// Предоставляет функционал для просмотра, поиска, фильтрации и изменения статусов заказов.
+    /// </summary>
     public partial class OrdersForm : Form
     {
         private bool isLockDialogOpen = false;
@@ -29,7 +33,9 @@ namespace dump
         // Культура для форматирования
         private CultureInfo russianCulture = new CultureInfo("ru-RU");
 
-        // Типы поиска
+        /// <summary>
+        /// Типы поиска заказов.
+        /// </summary>
         private enum SearchType
         {
             ByOrderNumber,
@@ -37,7 +43,9 @@ namespace dump
         }
         private SearchType currentSearchType = SearchType.ByOrderNumber;
 
-        // Класс для хранения информации о блюде/подарке в деталях заказа
+        /// <summary>
+        /// Класс для хранения информации о блюде/подарке в деталях заказа.
+        /// </summary>
         private class OrderDetailItem
         {
             public string Name { get; set; }
@@ -48,6 +56,10 @@ namespace dump
             public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
         }
 
+        /// <summary>
+        /// Конструктор формы управления заказами.
+        /// Инициализирует компоненты и загружает данные.
+        /// </summary>
         public OrdersForm()
         {
             InitializeComponent();
@@ -56,6 +68,11 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -111,6 +128,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -147,6 +169,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -162,6 +188,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -175,11 +206,23 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
+
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму администратора.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         private void OrdersForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -191,6 +234,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует все компоненты формы.
+        /// Настраивает DataGridView, поля поиска, комбобоксы и кнопки.
+        /// </summary>
         private void InitializeComponents()
         {
             InitializeDataGridView();
@@ -235,6 +282,10 @@ namespace dump
             LoadOrders();
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="btn">Кнопка для стилизации.</param>
         private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
@@ -253,7 +304,11 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
-        // ===== МАСКИРОВАНИЕ НОМЕРА ТЕЛЕФОНА =====
+        /// <summary>
+        /// Маскирует номер телефона для отображения (защита персональных данных).
+        /// </summary>
+        /// <param name="phone">Исходный номер телефона.</param>
+        /// <returns>Замаскированный номер телефона.</returns>
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
@@ -272,7 +327,9 @@ namespace dump
             }
         }
 
-        // ===== НАСТРОЙКА PLACEHOLDER ДЛЯ ПОЛЯ ПОИСКА =====
+        /// <summary>
+        /// Настраивает текст-заполнитель (placeholder) для поля поиска.
+        /// </summary>
         private void SetupSearchPlaceholder()
         {
             if (currentSearchType == SearchType.ByOrderNumber)
@@ -289,6 +346,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения типа поиска.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ComboBoxSearchType_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxSearchType.SelectedIndex == 0)
@@ -301,6 +363,10 @@ namespace dump
             LoadOrders();
         }
 
+        /// <summary>
+        /// Обработчик клика по полю поиска.
+        /// Очищает placeholder при фокусе.
+        /// </summary>
         private void TextBoxSearch_Click(object sender, EventArgs e)
         {
             if (textBoxSearch.ForeColor == Color.Gray)
@@ -311,6 +377,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле поиска.
+        /// Разрешает ввод только цифр.
+        /// </summary>
         private void textBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (textBoxSearch.ForeColor == Color.Gray)
@@ -337,7 +407,10 @@ namespace dump
             }
         }
 
-        // ===== ИСПРАВЛЕННЫЙ ОБРАБОТЧИК С ПРАВИЛЬНОЙ РАБОТОЙ КУРСОРА =====
+        /// <summary>
+        /// Обработчик изменения текста в поле поиска.
+        /// Применяет фильтрацию с учётом типа поиска.
+        /// </summary>
         private void textBoxSearch_TextChanged(object sender, EventArgs e)
         {
             if (textBoxSearch.ForeColor == Color.Gray)
@@ -407,7 +480,12 @@ namespace dump
             isFormatting = false;
         }
 
-        // ===== ПОЛУЧАЕМ КОЛИЧЕСТВО ЦИФР ДО ПОЗИЦИИ КУРСОРА =====
+        /// <summary>
+        /// Получает количество цифр до позиции курсора.
+        /// </summary>
+        /// <param name="text">Текст для анализа.</param>
+        /// <param name="cursorPos">Позиция курсора.</param>
+        /// <returns>Количество цифр до позиции курсора.</returns>
         private int GetDigitPositionBeforeCursor(string text, int cursorPos)
         {
             int digitCount = 0;
@@ -419,7 +497,12 @@ namespace dump
             return digitCount;
         }
 
-        // ===== ПОЛУЧАЕМ ПОЗИЦИЮ КУРСОРА ПО КОЛИЧЕСТВУ ЦИФР =====
+        /// <summary>
+        /// Получает позицию курсора по количеству цифр.
+        /// </summary>
+        /// <param name="formattedText">Отформатированный текст.</param>
+        /// <param name="digitPos">Количество цифр.</param>
+        /// <returns>Позиция курсора.</returns>
         private int GetCursorPositionFromDigitPosition(string formattedText, int digitPos)
         {
             if (digitPos <= 0) return 0;
@@ -432,7 +515,6 @@ namespace dump
                     digitCount++;
                     if (digitCount >= digitPos)
                     {
-                        // Возвращаем позицию после цифры
                         return i + 1;
                     }
                 }
@@ -440,6 +522,11 @@ namespace dump
             return formattedText.Length;
         }
 
+        /// <summary>
+        /// Форматирует номер телефона в маску +7 (XXX) XXX-XX-XX.
+        /// </summary>
+        /// <param name="digits">Строка с цифрами.</param>
+        /// <returns>Отформатированный номер телефона.</returns>
         private string FormatPhoneNumber(string digits)
         {
             if (string.IsNullOrEmpty(digits))
@@ -481,24 +568,37 @@ namespace dump
             return result;
         }
 
+        /// <summary>
+        /// Класс для хранения состояния выбранного статуса.
+        /// </summary>
         private class StatusState
         {
             public int SelectedStatusId { get; set; }
             public string SelectedStatusName { get; set; }
         }
 
-        // ===== ПРОСМОТР ДЕТАЛЕЙ ЗАКАЗА =====
+        /// <summary>
+        /// Обработчик нажатия кнопки "Детали заказа".
+        /// Открывает форму с подробной информацией о заказе.
+        /// </summary>
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
             ShowOrderDetails();
         }
 
+        /// <summary>
+        /// Обработчик двойного клика по строке в DataGridView.
+        /// Открывает форму с деталями заказа.
+        /// </summary>
         private void DgvOrders_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
             ShowOrderDetails();
         }
 
+        /// <summary>
+        /// Отображает форму с подробной информацией о выбранном заказе.
+        /// </summary>
         private void ShowOrderDetails()
         {
             try
@@ -604,6 +704,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает список блюд и подарков для указанного заказа.
+        /// </summary>
+        /// <param name="orderId">ID заказа.</param>
+        /// <returns>Список позиций заказа.</returns>
         private List<OrderDetailItem> LoadOrderDetails(int orderId)
         {
             List<OrderDetailItem> items = new List<OrderDetailItem>();
@@ -663,6 +768,11 @@ namespace dump
             return items;
         }
 
+        /// <summary>
+        /// Создаёт DataTable для деталей заказа.
+        /// </summary>
+        /// <param name="items">Список позиций заказа.</param>
+        /// <returns>DataTable с данными.</returns>
         private DataTable CreateOrderDetailsDataTable(List<OrderDetailItem> items)
         {
             DataTable dt = new DataTable();
@@ -686,6 +796,9 @@ namespace dump
             return dt;
         }
 
+        /// <summary>
+        /// Создаёт панель с информацией о заказе.
+        /// </summary>
         private Panel CreateInfoPanel(int orderId, string phoneNumber, string address,
             int persons, DateTime orderDate, string paymentMethod)
         {
@@ -694,7 +807,6 @@ namespace dump
             panel.BorderStyle = BorderStyle.FixedSingle;
             panel.BackColor = Color.FromArgb(240, 240, 240);
 
-            // Маскируем номер телефона
             string maskedPhone = MaskPhone(phoneNumber);
 
             Label lblInfo = new Label();
@@ -712,6 +824,9 @@ namespace dump
             return panel;
         }
 
+        /// <summary>
+        /// Создаёт панель для изменения статуса заказа.
+        /// </summary>
         private Panel CreateStatusPanel(int currentStatusId, string currentStatus, StatusState statusState)
         {
             Panel panel = new Panel();
@@ -781,6 +896,9 @@ namespace dump
             return panel;
         }
 
+        /// <summary>
+        /// Создаёт панель с комментарием к заказу.
+        /// </summary>
         private Panel CreateCommentPanel(string comment)
         {
             Panel panel = new Panel();
@@ -808,6 +926,9 @@ namespace dump
             return panel;
         }
 
+        /// <summary>
+        /// Создаёт панель с итоговой суммой заказа.
+        /// </summary>
         private Panel CreateTotalPanel(decimal totalSum)
         {
             Panel panel = new Panel();
@@ -837,6 +958,9 @@ namespace dump
             return panel;
         }
 
+        /// <summary>
+        /// Создаёт DataGridView для отображения деталей заказа.
+        /// </summary>
         private DataGridView CreateOrderDetailsDataGridView()
         {
             DataGridView dgv = new DataGridView();
@@ -957,6 +1081,13 @@ namespace dump
             return dgv;
         }
 
+        /// <summary>
+        /// Обновляет статус заказа в базе данных.
+        /// </summary>
+        /// <param name="orderId">ID заказа.</param>
+        /// <param name="newStatusId">ID нового статуса.</param>
+        /// <param name="newStatusName">Название нового статуса.</param>
+        /// <returns>True если обновление успешно.</returns>
         private bool UpdateOrderStatus(int orderId, int newStatusId, string newStatusName)
         {
             try
@@ -989,6 +1120,9 @@ namespace dump
             return false;
         }
 
+        /// <summary>
+        /// Обновляет статус заказа в DataGridView.
+        /// </summary>
         private void UpdateOrderStatusInGrid(int orderId, int newStatusId, string newStatusName)
         {
             foreach (DataGridViewRow row in dgvOrders.Rows)
@@ -1003,6 +1137,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет данные заказов в DataGridView.
+        /// </summary>
         private void RefreshOrdersData()
         {
             string searchText = textBoxSearch.Text;
@@ -1032,7 +1169,9 @@ namespace dump
             }
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (С TIMES NEW ROMAN 14PT) =====
+        /// <summary>
+        /// Настраивает внешний вид и колонки DataGridView для отображения заказов.
+        /// </summary>
         private void InitializeDataGridView()
         {
             dgvOrders.ShowCellToolTips = false;
@@ -1212,7 +1351,10 @@ namespace dump
             dgvOrders.CellFormatting += DgvOrders_CellFormatting;
         }
 
-        // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК (МАСКИРОВАНИЕ ТЕЛЕФОНА И ДАТЫ) =====
+        /// <summary>
+        /// Обработчик форматирования ячеек DataGridView.
+        /// Маскирует телефон и форматирует дату.
+        /// </summary>
         private void DgvOrders_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvOrders.Columns[e.ColumnIndex].Name == "delivery_date" && e.RowIndex >= 0)
@@ -1238,6 +1380,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает список статусов заказов в выпадающий список.
+        /// </summary>
         private void LoadStatusesToComboBox()
         {
             try
@@ -1275,6 +1420,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает заказы с применением фильтра по поисковому запросу.
+        /// </summary>
+        /// <param name="searchValue">Значение для поиска.</param>
+        /// <param name="exactMatch">True для точного совпадения.</param>
         private void LoadOrdersWithFilter(string searchValue = "", bool exactMatch = false)
         {
             int statusId = -1;
@@ -1285,6 +1435,12 @@ namespace dump
             LoadOrders(searchValue, statusId, exactMatch);
         }
 
+        /// <summary>
+        /// Загружает заказы из базы данных с применением фильтров.
+        /// </summary>
+        /// <param name="searchValue">Значение для поиска.</param>
+        /// <param name="statusId">ID статуса для фильтрации (-1 = все статусы).</param>
+        /// <param name="exactMatch">True для точного совпадения.</param>
         private void LoadOrders(string searchValue = "", int statusId = -1, bool exactMatch = false)
         {
             try
@@ -1362,6 +1518,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает DataGridView после загрузки данных.
+        /// </summary>
         private void AdjustDataGridViewAfterLoad()
         {
             dgvOrders.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
@@ -1376,6 +1535,9 @@ namespace dump
             dgvOrders.Refresh();
         }
 
+        /// <summary>
+        /// Настраивает стили колонок DataGridView.
+        /// </summary>
         private void SetupColumnStyles()
         {
             if (dgvOrders.Columns.Count > 0)
@@ -1392,6 +1554,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранного статуса в фильтре.
+        /// Обновляет список заказов.
+        /// </summary>
         private void comboBoxStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
             string searchText = textBoxSearch.Text;
@@ -1421,6 +1587,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Класс для представления статуса в выпадающем списке.
+        /// </summary>
         public class StatusItem
         {
             public int Id { get; set; }
@@ -1429,6 +1598,10 @@ namespace dump
             public override string ToString() { return Name; }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму администратора.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -1438,6 +1611,10 @@ namespace dump
 
         private void OrdersForm_Load(object sender, EventArgs e) { }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// Очищает поиск и сбрасывает статус.
+        /// </summary>
         private void buttonReset_Click(object sender, EventArgs e)
         {
             textBoxSearch.Text = "";
@@ -1447,6 +1624,9 @@ namespace dump
             textBoxSearch.Focus();
         }
 
+        /// <summary>
+        /// Загружает все заказы без фильтров.
+        /// </summary>
         private void LoadOrders()
         {
             LoadOrders("", -1, false);

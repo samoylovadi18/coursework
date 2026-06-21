@@ -10,6 +10,10 @@ using System.Globalization;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма управления сертификатами для менеджера.
+    /// Предоставляет функционал для просмотра, поиска, фильтрации и изменения статусов сертификатов.
+    /// </summary>
     public partial class EmloyForm : Form
     {
         private DataTable certificatesTable;
@@ -33,6 +37,10 @@ namespace dump
         private int returnedStatusId = 3;
         private int expiredStatusId = 4;
 
+        /// <summary>
+        /// Конструктор формы управления сертификатами.
+        /// Инициализирует компоненты и загружает данные.
+        /// </summary>
         public EmloyForm()
         {
             InitializeComponent();
@@ -47,6 +55,10 @@ namespace dump
             textBox4.Enabled = false;
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -102,6 +114,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -138,6 +155,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -153,6 +174,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -166,12 +192,21 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму менеджера.
+        /// </summary>
         private void EmloyForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -183,6 +218,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует компоненты формы: DataGridView, поиск, фильтры и кнопки.
+        /// </summary>
         private void InitializeComponents()
         {
             InitializeDataGridView();
@@ -218,7 +256,9 @@ namespace dump
             LoadCertificates();
         }
 
-        // ===== ОБНОВЛЕНИЕ СТАТУСОВ СЕРТИФИКАТОВ (ПРОСРОЧКА) =====
+        /// <summary>
+        /// Обновляет статус сертификатов на "Просрочен" при истечении срока действия (1 год).
+        /// </summary>
         private void UpdateExpiredCertificates()
         {
             try
@@ -270,7 +310,10 @@ namespace dump
             }
         }
 
-        // ===== КОНТЕКСТНОЕ МЕНЮ =====
+        /// <summary>
+        /// Обработчик клика правой кнопкой мыши по ячейке DataGridView.
+        /// Отображает контекстное меню для изменения статуса сертификата.
+        /// </summary>
         private void DataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex < 0 || e.Button != MouseButtons.Right) return;
@@ -301,12 +344,14 @@ namespace dump
             changeStatusItem.Click += (s, ev) => ChangeStatusToReturned(certificateId, currentStatus);
             contextMenu.Items.Add(changeStatusItem);
 
-            // Пункт "Детальная информация" - УДАЛЕН
-
             contextMenu.Show(dataGridView1, dataGridView1.PointToClient(Cursor.Position));
         }
 
-        // ===== ИЗМЕНЕНИЕ СТАТУСА НА "ВОЗВРАЩЁН" =====
+        /// <summary>
+        /// Изменяет статус сертификата на "Возвращён".
+        /// </summary>
+        /// <param name="certificateId">ID сертификата.</param>
+        /// <param name="currentStatus">Текущий статус сертификата.</param>
         private void ChangeStatusToReturned(int certificateId, string currentStatus)
         {
             int returnedStatusId = -1;
@@ -394,9 +439,11 @@ namespace dump
             }
         }
 
-        // ===== МЕТОДЫ SHOWCertificateDetails И ВСПОМОГАТЕЛЬНЫЕ УДАЛЕНЫ =====
-
-        // ===== МАСКИРОВАНИЕ ТЕЛЕФОНА В ТАБЛИЦЕ (скрываем 4 цифры в середине) =====
+        /// <summary>
+        /// Маскирует номер телефона для отображения (защита персональных данных).
+        /// </summary>
+        /// <param name="phone">Исходный номер телефона.</param>
+        /// <returns>Замаскированный номер телефона.</returns>
         private string MaskPhoneNumber(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return phone;
@@ -417,7 +464,9 @@ namespace dump
             }
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ DATA GRID VIEW (С ШРИФТОМ TIMES NEW ROMAN 14) =====
+        /// <summary>
+        /// Настраивает внешний вид и колонки DataGridView для отображения сертификатов.
+        /// </summary>
         private void InitializeDataGridView()
         {
             dataGridView1.ShowCellToolTips = false;
@@ -548,6 +597,10 @@ namespace dump
             dataGridView1.CellFormatting += DataGridView1_CellFormatting;
         }
 
+        /// <summary>
+        /// Обработчик форматирования ячеек DataGridView.
+        /// Форматирует цены, даты, маскирует телефоны и окрашивает статусы.
+        /// </summary>
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dataGridView1.Columns[e.ColumnIndex].Name == "price" && e.RowIndex >= 0 && e.Value != null && e.Value != DBNull.Value)
@@ -595,6 +648,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает стили колонок DataGridView.
+        /// </summary>
         private void SetupColumnStyles()
         {
             if (dataGridView1.Columns.Count > 0)
@@ -625,12 +681,20 @@ namespace dump
         private void textBoxSearch_Enter(object sender, EventArgs e) { }
         private void textBoxSearch_Leave(object sender, EventArgs e) { }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле поиска.
+        /// Разрешает ввод только цифр.
+        /// </summary>
         private void textBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле поиска.
+        /// Применяет фильтрацию по номеру сертификата.
+        /// </summary>
         private void textBoxSearch_TextChanged(object sender, EventArgs e)
         {
             if (isFormatting) return;
@@ -654,6 +718,9 @@ namespace dump
             isFormatting = false;
         }
 
+        /// <summary>
+        /// Загружает список статусов сертификатов в выпадающий список.
+        /// </summary>
         private void LoadStatusesToComboBox()
         {
             try
@@ -691,6 +758,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет ID статусов из загруженного словаря.
+        /// </summary>
         private void UpdateStatusIds()
         {
             foreach (var status in statusDictionary)
@@ -706,6 +776,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает сертификаты с применением фильтра по номеру.
+        /// </summary>
         private void LoadCertificatesWithFilter(string certificateNumber = "", bool exactMatch = false)
         {
             int statusId = -1;
@@ -718,6 +791,12 @@ namespace dump
             LoadCertificates(certificateNumber, statusId, exactMatch);
         }
 
+        /// <summary>
+        /// Загружает сертификаты из базы данных с применением фильтров.
+        /// </summary>
+        /// <param name="certificateNumber">Номер сертификата для поиска.</param>
+        /// <param name="statusId">ID статуса для фильтрации (-1 = все статусы).</param>
+        /// <param name="exactMatch">True для точного совпадения.</param>
         private void LoadCertificates(string certificateNumber = "", int statusId = -1, bool exactMatch = false)
         {
             try
@@ -782,6 +861,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранного статуса в фильтре.
+        /// Обновляет список сертификатов.
+        /// </summary>
         private void comboBoxStatusSert_SelectedIndexChanged(object sender, EventArgs e)
         {
             string searchText = textBoxSearch.Text;
@@ -800,6 +883,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки изменения статуса.
+        /// Изменяет статус выбранного сертификата на "Возвращён".
+        /// </summary>
         private void ButtonChangeStatus_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count > 0)
@@ -815,6 +902,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает все сертификаты.
+        /// </summary>
         private void LoadCertificates()
         {
             // Сначала обновляем просроченные сертификаты
@@ -822,11 +912,18 @@ namespace dump
             LoadCertificates("", -1, false);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// Очищает поиск и сбрасывает статус.
+        /// </summary>
         private void buttonReset_Click(object sender, EventArgs e)
         {
             ResetFilters();
         }
 
+        /// <summary>
+        /// Сбрасывает все фильтры и обновляет список сертификатов.
+        /// </summary>
         private void ResetFilters()
         {
             try
@@ -844,6 +941,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму менеджера.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -851,6 +952,9 @@ namespace dump
             manager.Show();
         }
 
+        /// <summary>
+        /// Класс для представления статуса в выпадающем списке.
+        /// </summary>
         public class StatusItem
         {
             public int Id { get; set; }

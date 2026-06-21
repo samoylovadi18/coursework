@@ -12,6 +12,10 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма управления пользователями системы.
+    /// Предоставляет функционал для добавления, редактирования, удаления и просмотра пользователей.
+    /// </summary>
     public partial class UsersForm : Form
     {
         private bool isLockDialogOpen = false;
@@ -32,6 +36,10 @@ namespace dump
         private bool isFormattingSearch = false;
         private System.Windows.Forms.ToolTip toolTip1;
 
+        /// <summary>
+        /// Конструктор формы управления пользователями.
+        /// Инициализирует компоненты и загружает данные.
+        /// </summary>
         public UsersForm()
         {
             InitializeComponent();
@@ -68,6 +76,10 @@ namespace dump
 
         #region Блокировка системы
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen || isLoggingOut) return;
@@ -123,6 +135,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -160,6 +177,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -175,6 +196,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -188,6 +214,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             if (!isLoggingOut)
@@ -197,6 +228,10 @@ namespace dump
 
         #endregion
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму администратора.
+        /// </summary>
         private void UsersForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing && !isLoggingOut)
@@ -210,6 +245,9 @@ namespace dump
 
         #region Инициализация
 
+        /// <summary>
+        /// Инициализирует внешний вид панели редактирования с рамкой.
+        /// </summary>
         private void InitializeEditPanelAppearance()
         {
             panelEdit.BorderStyle = BorderStyle.None;
@@ -226,6 +264,9 @@ namespace dump
                 Color.DarkGray, 4, ButtonBorderStyle.Solid);
         }
 
+        /// <summary>
+        /// Инициализирует валидацию текстовых полей ввода.
+        /// </summary>
         private void InitializeInputValidation()
         {
             textBoxFIO.MaxLength = 100;
@@ -255,12 +296,18 @@ namespace dump
             comboBoxRoleSort.Font = new Font("Times New Roman", 14);
         }
 
+        /// <summary>
+        /// Инициализирует элементы поиска и фильтрации.
+        /// </summary>
         private void InitializeSearchAndFilter()
         {
             comboBoxRoleSort.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxRoleSort.SelectedIndexChanged += comboBoxRoleSort_SelectedIndexChanged;
         }
 
+        /// <summary>
+        /// Инициализирует стили всех кнопок на форме.
+        /// </summary>
         private void InitializeButtons()
         {
             SetupButtonStyle(buttonAdd);
@@ -270,6 +317,10 @@ namespace dump
             SetupButtonStyle(btnResetFilter);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="button">Кнопка для стилизации.</param>
         private void SetupButtonStyle(Button button)
         {
             if (button == null) return;
@@ -288,6 +339,9 @@ namespace dump
             button.MouseLeave += (s, e) => button.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Настраивает внешний вид и колонки DataGridView для отображения пользователей.
+        /// </summary>
         private void InitializeDataGridView()
         {
             dataGridViewUsers.ShowCellToolTips = false;
@@ -381,6 +435,10 @@ namespace dump
 
         #region Валидация и форматирование
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле ввода ФИО.
+        /// Разрешает ввод только русских букв, пробелов и дефисов.
+        /// </summary>
         private void TextBoxFIO_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -409,6 +467,10 @@ namespace dump
             e.Handled = true;
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле поиска.
+        /// Разрешает ввод только русских букв, пробелов и дефисов.
+        /// </summary>
         private void TextBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -437,6 +499,10 @@ namespace dump
             e.Handled = true;
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле ФИО.
+        /// Форматирует текст в реальном времени (заглавные буквы).
+        /// </summary>
         private void TextBoxFIO_TextChanged(object sender, EventArgs e)
         {
             if (isFormattingFIO) return;
@@ -464,6 +530,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле поиска.
+        /// Форматирует текст и применяет фильтрацию.
+        /// </summary>
         private void TextBoxSearch_TextChanged(object sender, EventArgs e)
         {
             if (isFormattingSearch) return;
@@ -493,6 +563,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Форматирует текст поиска (заглавная буква в начале каждого слова).
+        /// </summary>
         private string FormatSearchText(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
@@ -513,6 +586,9 @@ namespace dump
             return new string(chars);
         }
 
+        /// <summary>
+        /// Форматирует ФИО в реальном времени (заглавные буквы).
+        /// </summary>
         private string FormatFIOInRealTime(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
@@ -533,6 +609,10 @@ namespace dump
             return new string(chars);
         }
 
+        /// <summary>
+        /// Обработчик потери фокуса полем поиска.
+        /// Приводит текст к отформатированному виду.
+        /// </summary>
         private void TextBoxSearch_Leave(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(textBoxSearch.Text))
@@ -543,8 +623,15 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ разделителем слова (пробел или дефис).
+        /// </summary>
         private bool IsWordSeparator(char c) => c == ' ' || c == '-';
 
+        /// <summary>
+        /// Обработчик валидации поля ФИО.
+        /// Проверяет корректность введённых данных.
+        /// </summary>
         private void TextBoxFIO_Validating(object sender, CancelEventArgs e)
         {
             string text = textBoxFIO.Text.Trim();
@@ -569,6 +656,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик потери фокуса полем ФИО.
+        /// Приводит текст к формату с заглавными буквами.
+        /// </summary>
         private void TextBoxFIO_Leave(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(textBoxFIO.Text))
@@ -579,6 +670,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Форматирует ФИО (заглавная буква в каждом слове, учёт дефисов).
+        /// </summary>
         private string FormatFIO(string fio)
         {
             if (string.IsNullOrWhiteSpace(fio)) return fio;
@@ -611,12 +705,20 @@ namespace dump
             return string.Join(" ", words);
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле логина.
+        /// Разрешает ввод только допустимых символов.
+        /// </summary>
         private void TextBoxLogin_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (char.IsControl(e.KeyChar)) return;
             if (!IsValidCharacter(e.KeyChar)) e.Handled = true;
         }
 
+        /// <summary>
+        /// Обработчик валидации поля логина.
+        /// Проверяет корректность введённых данных.
+        /// </summary>
         private void TextBoxLogin_Validating(object sender, CancelEventArgs e)
         {
             string text = textBoxLogin.Text.Trim();
@@ -657,12 +759,20 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле пароля.
+        /// Разрешает ввод только допустимых символов.
+        /// </summary>
         private void TextBoxPassword_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (char.IsControl(e.KeyChar)) return;
             if (!IsValidCharacter(e.KeyChar)) e.Handled = true;
         }
 
+        /// <summary>
+        /// Обработчик валидации поля пароля.
+        /// Проверяет корректность введённых данных.
+        /// </summary>
         private void TextBoxPassword_Validating(object sender, CancelEventArgs e)
         {
             string text = textBoxPassword.Text;
@@ -703,6 +813,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ допустимым для логина/пароля.
+        /// </summary>
         private bool IsValidCharacter(char c)
         {
             if ((c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')) return false;
@@ -713,11 +826,17 @@ namespace dump
             return false;
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ русской буквой.
+        /// </summary>
         private bool IsRussianLetter(char c)
         {
             return (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я') || c == 'ё' || c == 'Ё';
         }
 
+        /// <summary>
+        /// Проверяет, содержит ли строка недопустимые символы.
+        /// </summary>
         private bool ContainsInvalidCharacters(string text)
         {
             foreach (char c in text)
@@ -729,6 +848,9 @@ namespace dump
 
         #region Загрузка данных
 
+        /// <summary>
+        /// Загружает список ролей для фильтрации.
+        /// </summary>
         private void LoadRolesForFilter()
         {
             try
@@ -761,6 +883,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает список пользователей с применением фильтров.
+        /// </summary>
+        /// <param name="searchText">Текст для поиска по ФИО.</param>
+        /// <param name="roleId">ID роли для фильтрации (0 = все роли).</param>
         private void LoadUsers(string searchText = "", int roleId = 0)
         {
             try
@@ -807,6 +934,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает список ролей для выпадающего списка.
+        /// </summary>
         private DataTable LoadRoles()
         {
             DataTable roles = new DataTable();
@@ -836,12 +966,19 @@ namespace dump
 
         #region Фильтрация
 
+        /// <summary>
+        /// Обработчик изменения выбранной роли в фильтре.
+        /// Применяет фильтрацию.
+        /// </summary>
         private void comboBoxRoleSort_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxRoleSort.SelectedIndex >= 0)
                 ApplyFilters();
         }
 
+        /// <summary>
+        /// Применяет фильтры к списку пользователей.
+        /// </summary>
         private void ApplyFilters()
         {
             string searchText = textBoxSearch.Text.Trim();
@@ -857,6 +994,9 @@ namespace dump
 
         #region Работа с панелью редактирования
 
+        /// <summary>
+        /// Отображает панель редактирования.
+        /// </summary>
         private void ShowEditPanel()
         {
             if (!isEditMode)
@@ -873,6 +1013,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Скрывает панель редактирования и очищает поля.
+        /// </summary>
         private void HideEditPanel()
         {
             panelEdit.Visible = false;
@@ -887,6 +1030,9 @@ namespace dump
             ClearEditFields();
         }
 
+        /// <summary>
+        /// Очищает поля редактирования.
+        /// </summary>
         private void ClearEditFields()
         {
             textBoxFIO.Text = "";
@@ -896,6 +1042,9 @@ namespace dump
                 comboBoxRole.SelectedIndex = -1;
         }
 
+        /// <summary>
+        /// Загружает данные выбранного пользователя в поля редактирования.
+        /// </summary>
         private void LoadEditFields()
         {
             if (!isNewUser && currentUserId > 0)
@@ -933,6 +1082,10 @@ namespace dump
 
         #region CRUD операции
 
+        /// <summary>
+        /// Обработчик изменения выделения в DataGridView.
+        /// Обновляет состояние кнопки удаления.
+        /// </summary>
         private void DataGridViewUsers_SelectionChanged(object sender, EventArgs e)
         {
             if (dataGridViewUsers.SelectedRows.Count > 0)
@@ -955,6 +1108,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Добавить".
+        /// Открывает панель для создания нового пользователя.
+        /// </summary>
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             isNewUser = true;
@@ -964,6 +1121,10 @@ namespace dump
             textBoxPassword.Text = "";
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Редактировать".
+        /// Загружает данные выбранного пользователя в форму редактирования.
+        /// </summary>
         private void buttonEdit_Click(object sender, EventArgs e)
         {
             if (dataGridViewUsers.SelectedRows.Count == 0)
@@ -981,6 +1142,10 @@ namespace dump
             textBoxPassword.Text = "";
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Удалить".
+        /// Удаляет выбранного пользователя с проверкой прав.
+        /// </summary>
         private void buttonDelete_Click(object sender, EventArgs e)
         {
             if (dataGridViewUsers.SelectedRows.Count == 0)
@@ -1042,6 +1207,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Сохранить".
+        /// Сохраняет пользователя в базу данных (добавление или обновление).
+        /// </summary>
         private void buttonSave_Click(object sender, EventArgs e)
         {
             if (!ValidateChildren(ValidationConstraints.Enabled))
@@ -1228,6 +1397,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Отмена".
+        /// Закрывает панель редактирования без сохранения.
+        /// </summary>
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             // Проверяем, есть ли заполненные поля
@@ -1257,6 +1430,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем в шестнадцатеричном формате.</returns>
         private string ComputeSHA256Hash(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -1270,6 +1448,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Подсчитывает количество администраторов в системе, исключая указанного пользователя.
+        /// </summary>
+        /// <param name="excludeUserId">ID пользователя для исключения.</param>
+        /// <returns>Количество администраторов.</returns>
         private int CountAdminsExcludingUser(int excludeUserId)
         {
             try
@@ -1293,6 +1476,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Формирует понятное пользователю сообщение об ошибке дублирования.
+        /// </summary>
+        /// <param name="mysqlError">Текст ошибки MySQL.</param>
+        /// <param name="login">Логин пользователя.</param>
+        /// <returns>Понятное сообщение об ошибке.</returns>
         private string GetUserFriendlyDuplicateError(string mysqlError, string login)
         {
             if (mysqlError.Contains("users.login"))
@@ -1310,6 +1499,10 @@ namespace dump
             rolesTable = LoadRoles();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму администратора.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             isLoggingOut = true;
@@ -1318,6 +1511,10 @@ namespace dump
             admin.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// Очищает поиск и сбрасывает фильтр по роли.
+        /// </summary>
         private void btnResetFilter_Click(object sender, EventArgs e)
         {
             textBoxSearch.Text = "";

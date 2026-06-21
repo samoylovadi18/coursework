@@ -11,9 +11,18 @@ using Word = Microsoft.Office.Interop.Word;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма выдачи подарочных сертификатов.
+    /// Предоставляет функционал для создания, сохранения и печати сертификатов в Word.
+    /// </summary>
     public partial class AddSertificateForm : Form
     {
         private bool isLockDialogOpen = false;
+
+        /// <summary>
+        /// Конструктор формы выдачи сертификатов.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public AddSertificateForm()
         {
             InitializeComponent();
@@ -24,6 +33,11 @@ namespace dump
             InactivityManager.RegisterForm(this);
             InactivityManager.OnLockRequest += LockSystem;
         }
+
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -79,6 +93,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -115,6 +134,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -130,6 +153,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -143,12 +171,21 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму менеджера.
+        /// </summary>
         private void AddSertificateForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -160,6 +197,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует компоненты формы: настройка даты, маски телефона, стилей кнопок.
+        /// </summary>
         private void InitializeForm()
         {
             dtpIssueDate.Value = DateTime.Now;
@@ -199,6 +239,9 @@ namespace dump
             btnIssue.MouseLeave += (s, e) => btnIssue.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш - запрещает ввод пробелов.
+        /// </summary>
         private void TextBox_KeyPress_NoSpaces(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == ' ')
@@ -207,6 +250,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает предустановленные цены в выпадающий список.
+        /// </summary>
         private void LoadPricesToComboBox()
         {
             try
@@ -234,6 +280,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш - разрешает ввод только русских букв и дефиса.
+        /// </summary>
         private void TextBox_KeyPress_RussianOnly(object sender, KeyPressEventArgs e)
         {
             char c = e.KeyChar;
@@ -245,6 +294,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста - автоматически делает первую букву заглавной.
+        /// </summary>
         private void TextBox_TextChanged_CapitalizeFirst(object sender, EventArgs e)
         {
             TextBox textBox = sender as TextBox;
@@ -266,6 +318,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Выдать сертификат".
+        /// Выполняет валидацию и сохранение сертификата.
+        /// </summary>
         private void BtnIssue_Click(object sender, EventArgs e)
         {
             if (!ValidateFields())
@@ -274,6 +330,10 @@ namespace dump
             SaveCertificateToDatabase();
         }
 
+        /// <summary>
+        /// Проверяет корректность заполнения всех полей формы.
+        /// </summary>
+        /// <returns>True если все поля заполнены корректно, иначе False.</returns>
         private bool ValidateFields()
         {
             if (string.IsNullOrWhiteSpace(txtLastName.Text))
@@ -319,6 +379,9 @@ namespace dump
             return true;
         }
 
+        /// <summary>
+        /// Сохраняет сертификат в базу данных.
+        /// </summary>
         private void SaveCertificateToDatabase()
         {
             try
@@ -403,6 +466,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт сертификат в Word с диалогом выбора места сохранения.
+        /// </summary>
         private void CreateWordCertificateWithDialog(long certificateId, string lastName, string firstName,
             string middleName, string phone, decimal price, DateTime issueDate)
         {
@@ -443,6 +509,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт документ Word с сертификатом по указанному пути.
+        /// </summary>
         private void CreateWordCertificate(string filePath, long certificateId, string lastName, string firstName,
             string middleName, string phone, decimal price, DateTime issueDate)
         {
@@ -499,7 +568,7 @@ namespace dump
                 selection.TypeParagraph();
                 selection.TypeParagraph();
 
-                // ===== СУММА (ТОЛЬКО ЧИСЛА, БЕЗ СКОБОК И ПОВТОРОВ) =====
+                // ===== СУММА =====
                 selection.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
                 selection.Font.Size = 20;
                 selection.Font.Bold = 1;
@@ -594,6 +663,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Очищает все поля формы для ввода нового сертификата.
+        /// </summary>
         private void ClearForm()
         {
             txtLastName.Clear();
@@ -605,6 +677,10 @@ namespace dump
             dtpIssueDate.Value = DateTime.Now;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму менеджера.
+        /// </summary>
         private void PictureBox2_Click(object sender, EventArgs e)
         {
             this.Hide();

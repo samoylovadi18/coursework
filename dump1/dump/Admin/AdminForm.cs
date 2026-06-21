@@ -11,11 +11,19 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма главного меню администратора.
+    /// Предоставляет доступ к управлению пользователями, блюдами, заказами и справочниками.
+    /// </summary>
     public partial class AdminForm : Form
     {
         private bool isLockDialogOpen = false;
         private bool isLoggingOut = false; // Флаг выхода
 
+        /// <summary>
+        /// Конструктор формы администратора.
+        /// Инициализирует компоненты, настраивает стили кнопок и подписывается на события.
+        /// </summary>
         public AdminForm()
         {
             InitializeComponent();
@@ -107,6 +115,10 @@ namespace dump
             InactivityManager.OnLockRequest += () => LockSystem();
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen || isLoggingOut) return;
@@ -166,6 +178,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -211,6 +228,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -229,6 +250,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -244,6 +270,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия, если не выполняется выход из системы.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             if (!isLoggingOut)
@@ -253,6 +284,12 @@ namespace dump
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем (не системой) скрывает форму и открывает форму входа.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         private void AdminForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing && !isLoggingOut)
@@ -269,6 +306,12 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Пользователи".
+        /// Открывает форму управления пользователями.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void button1_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -276,6 +319,12 @@ namespace dump
             users.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик в правом верхнем углу).
+        /// Выполняет выход из системы и открывает форму входа.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             isLoggingOut = true;
@@ -284,6 +333,12 @@ namespace dump
             login.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Заказы".
+        /// Открывает форму управления заказами.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void button3_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -291,6 +346,12 @@ namespace dump
             Orders.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Меню".
+        /// Открывает форму управления меню блюд.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void button4_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -298,6 +359,12 @@ namespace dump
             adminMenu.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Справочники".
+        /// Открывает форму управления справочниками.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void button2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -307,7 +374,7 @@ namespace dump
 
         private void button5_Click(object sender, EventArgs e)
         {
-            
+
         }
     }
 }

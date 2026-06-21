@@ -12,6 +12,11 @@ using System.IO.Compression;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма системного администратора.
+    /// Предоставляет полный доступ к управлению базой данных: настройка подключения, резервное копирование,
+    /// восстановление, импорт/экспорт данных, управление безопасностью.
+    /// </summary>
     public partial class SisAdminForm : Form
     {
         private bool isPasswordVisible = false;
@@ -38,6 +43,10 @@ namespace dump
         private string currentUsername = "";
         private string currentPassword = "";
 
+        /// <summary>
+        /// Конструктор формы системного администратора.
+        /// Инициализирует компоненты, настраивает стили и загружает настройки.
+        /// </summary>
         public SisAdminForm()
         {
             InitializeComponent();
@@ -78,6 +87,10 @@ namespace dump
 
         // ===================== БЛОКИРОВКА СИСТЕМЫ =====================
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -133,6 +146,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -169,6 +187,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -184,6 +206,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -197,6 +224,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
@@ -205,6 +237,12 @@ namespace dump
 
         // ===================== ПОЛУЧЕНИЕ РАБОЧЕГО ПОДКЛЮЧЕНИЯ =====================
 
+        /// <summary>
+        /// Получает рабочее подключение к базе данных.
+        /// Сначала пытается использовать настройки из SettingsBD, затем из полей формы.
+        /// </summary>
+        /// <returns>Открытое подключение к MySQL.</returns>
+        /// <exception cref="Exception">Выбрасывается при невозможности подключения.</exception>
         private MySqlConnection GetWorkingConnection()
         {
             try
@@ -262,6 +300,9 @@ namespace dump
 
         // ===================== ВОССТАНОВЛЕНИЕ ИЗ SQL ФАЙЛА =====================
 
+        /// <summary>
+        /// Инициализирует функционал восстановления из SQL-скрипта.
+        /// </summary>
         private void InitializeScriptRestore()
         {
             openFileDialogScript = new OpenFileDialog();
@@ -281,6 +322,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки обзора SQL-файла.
+        /// </summary>
         private void BtnBrowseScript_Click(object sender, EventArgs e)
         {
             if (openFileDialogScript.ShowDialog() == DialogResult.OK)
@@ -289,6 +333,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки восстановления из SQL-скрипта.
+        /// Выполняет SQL-скрипт с отключением проверки внешних ключей.
+        /// </summary>
         private void BtnRestoreFromScript_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(txtScriptPath.Text) || !File.Exists(txtScriptPath.Text))
@@ -353,6 +401,10 @@ namespace dump
 
         // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму входа.
+        /// </summary>
         private void SisAdminForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -366,6 +418,9 @@ namespace dump
 
         // ===================== НАСТРОЙКИ ПОДКЛЮЧЕНИЯ =====================
 
+        /// <summary>
+        /// Загружает текущие настройки подключения из конфигурации.
+        /// </summary>
         private void LoadCurrentSettings()
         {
             try
@@ -396,6 +451,14 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет подключение к базе данных перед сохранением настроек.
+        /// </summary>
+        /// <param name="server">Адрес сервера.</param>
+        /// <param name="database">Имя базы данных.</param>
+        /// <param name="username">Имя пользователя.</param>
+        /// <param name="password">Пароль.</param>
+        /// <returns>True если подключение успешно.</returns>
         private bool TestConnectionBeforeSave(string server, string database, string username, string password)
         {
             try
@@ -458,6 +521,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Сохраняет настройки подключения в конфигурацию.
+        /// </summary>
         private void SaveConnectionSettings()
         {
             try
@@ -525,6 +591,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Выполняет тест подключения к базе данных.
+        /// </summary>
         private void TestConnection()
         {
             try
@@ -603,6 +672,9 @@ namespace dump
 
         // ===================== ВИДИМОСТЬ ПАРОЛЯ =====================
 
+        /// <summary>
+        /// Инициализирует поле ввода пароля и настраивает кнопку показа/скрытия.
+        /// </summary>
         private void InitializePasswordField()
         {
             txtPasswordField = this.Controls.Find("txtPassword", true).FirstOrDefault() as TextBox;
@@ -631,6 +703,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки показа/скрытия пароля.
+        /// </summary>
         private void Visible_password_Click(object sender, EventArgs e)
         {
             if (txtPasswordField == null) return;
@@ -671,6 +746,9 @@ namespace dump
             txtPasswordField.Focus();
         }
 
+        /// <summary>
+        /// Создаёт простую иконку глаза для отображения/скрытия пароля.
+        /// </summary>
         private Image CreateSimpleEyeIcon(bool open)
         {
             Bitmap bmp = new Bitmap(24, 24);
@@ -695,6 +773,9 @@ namespace dump
             return bmp;
         }
 
+        /// <summary>
+        /// Применяет единый стиль ко всем кнопкам на форме.
+        /// </summary>
         private void StyleAllButtons()
         {
             StyleButton(btnTestConnection);
@@ -746,6 +827,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="btn">Кнопка для стилизации.</param>
         private void StyleButton(Button btn)
         {
             if (btn == null) return;
@@ -765,6 +850,9 @@ namespace dump
 
         // ===================== БЛОКИРОВКА СИСТЕМЫ (В МИНУТАХ) =====================
 
+        /// <summary>
+        /// Инициализирует функционал настройки безопасности (автоматическая блокировка).
+        /// </summary>
         private void InitializeSecurityFeature()
         {
             if (chkAutoLock != null)
@@ -799,6 +887,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения состояния чекбокса автоматической блокировки.
+        /// </summary>
         private void ChkAutoLock_CheckedChanged(object sender, EventArgs e)
         {
             bool isChecked = chkAutoLock.Checked;
@@ -815,6 +906,9 @@ namespace dump
             LogMessage(isChecked ? "Блокировка включена" : "Блокировка выключена");
         }
 
+        /// <summary>
+        /// Обработчик изменения времени бездействия до блокировки.
+        /// </summary>
         private void NumInactivityTime_ValueChanged(object sender, EventArgs e)
         {
             if (numInactivityTime != null)
@@ -826,6 +920,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик сохранения настроек безопасности.
+        /// </summary>
         private void BtnSaveSecurity_Click(object sender, EventArgs e)
         {
             try
@@ -863,6 +960,9 @@ namespace dump
 
         // ===================== ВОССТАНОВЛЕНИЕ (ВСТРОЕННОЕ) =====================
 
+        /// <summary>
+        /// Инициализирует функционал встроенного восстановления структуры БД.
+        /// </summary>
         private void InitializeRestoreFeature()
         {
             if (rtbRestoreLog != null)
@@ -877,6 +977,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Записывает сообщение в лог восстановления с временной меткой.
+        /// </summary>
+        /// <param name="message">Текст сообщения.</param>
         private void LogMessage(string message)
         {
             if (rtbRestoreLog == null) return;
@@ -891,6 +995,9 @@ namespace dump
             rtbRestoreLog.ScrollToCaret();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки восстановления структуры БД.
+        /// </summary>
         private void BtnRestoreDB_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
@@ -909,6 +1016,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Выполняет полное восстановление структуры базы данных.
+        /// Удаляет все таблицы и создаёт новые с начальными данными.
+        /// </summary>
         private void RestoreDatabaseStructure()
         {
             try
@@ -958,6 +1069,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Удаляет все таблицы базы данных.
+        /// </summary>
         private void DropAllTables(MySqlConnection conn)
         {
             string[] tables = {
@@ -985,6 +1099,9 @@ namespace dump
             LogMessage($"  Всего удалено: {droppedCount}");
         }
 
+        /// <summary>
+        /// Создаёт все таблицы базы данных с начальными данными.
+        /// </summary>
         private void CreateAllTables(MySqlConnection conn)
         {
             // roles
@@ -1206,6 +1323,9 @@ namespace dump
         // Таблицы, исключенные из экспорта (пустой массив - все таблицы доступны для экспорта)
         private readonly string[] exportExcludedTables = new string[] { };
 
+        /// <summary>
+        /// Инициализирует функционал импорта/экспорта данных.
+        /// </summary>
         private void InitializeImportExportFeature()
         {
             if (cmbTables != null)
@@ -1257,6 +1377,9 @@ namespace dump
             LoadTableLists();
         }
 
+        /// <summary>
+        /// Загружает список таблиц для импорта/экспорта.
+        /// </summary>
         private void LoadTableLists()
         {
             try
@@ -1304,6 +1427,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки обзора файла для импорта.
+        /// </summary>
         private void BtnBrowseImport_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
@@ -1334,7 +1460,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Предпросмотр CSV файла
+        /// Выполняет предпросмотр CSV файла (первые 5 строк).
         /// </summary>
         private void PreviewCSVFile(string filePath)
         {
@@ -1361,8 +1487,11 @@ namespace dump
             }
         }
 
-        // ===================== ИМПОРТ (КАК В PROTOTIP) =====================
+        // ===================== ИМПОРТ =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки импорта данных из CSV.
+        /// </summary>
         private void BtnImport_Click(object sender, EventArgs e)
         {
             try
@@ -1648,8 +1777,11 @@ namespace dump
             }
         }
 
-        // ===================== ЭКСПОРТ (ПО АНАЛОГИИ С PROTOTIP) =====================
+        // ===================== ЭКСПОРТ =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки экспорта данных в CSV.
+        /// </summary>
         private void BtnExport_Click(object sender, EventArgs e)
         {
             try
@@ -1700,8 +1832,10 @@ namespace dump
         }
 
         /// <summary>
-        /// Экспорт таблицы в CSV (по аналогии с prototip)
+        /// Экспортирует таблицу в CSV файл.
         /// </summary>
+        /// <param name="tableName">Имя таблицы.</param>
+        /// <param name="filePath">Путь к файлу.</param>
         private void ExportToCSV(string tableName, string filePath)
         {
             try
@@ -1812,7 +1946,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Экранирование CSV поля
+        /// Экранирует поле для CSV (кавычки и разделители).
         /// </summary>
         private string EscapeCsvField(string field)
         {
@@ -1830,7 +1964,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Получение схемы таблицы
+        /// Получает схему таблицы (структуру колонок).
         /// </summary>
         private DataTable GetTableSchema(string tableName)
         {
@@ -1853,7 +1987,7 @@ namespace dump
         }
 
         /// <summary>
-        /// Получение автоинкрементных полей
+        /// Получает список автоинкрементных колонок таблицы.
         /// </summary>
         private List<string> GetAutoIncrementColumns(string tableName)
         {
@@ -1928,11 +2062,17 @@ namespace dump
 
         // ===================== ОБРАБОТЧИКИ КНОПОК =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки теста подключения.
+        /// </summary>
         private void btnTestConnection_Click(object sender, EventArgs e)
         {
             TestConnection();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сохранения настроек подключения.
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             SaveConnectionSettings();
@@ -1940,6 +2080,9 @@ namespace dump
 
         // ===================== РЕЗЕРВНОЕ КОПИРОВАНИЕ =====================
 
+        /// <summary>
+        /// Инициализирует систему резервного копирования.
+        /// </summary>
         private void InitializeBackupFeature()
         {
             txtBackupPath = this.Controls.Find("txtBackupPath", true).FirstOrDefault() as TextBox;
@@ -2004,6 +2147,9 @@ namespace dump
             LogBackupMessage("Система резервного копирования готова");
         }
 
+        /// <summary>
+        /// Загружает настройки автоматического резервного копирования из файла.
+        /// </summary>
         private void LoadBackupSettingsFromFile()
         {
             string settingsFile = Path.Combine(Application.StartupPath, "backup_settings.txt");
@@ -2070,6 +2216,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Сохраняет настройки автоматического резервного копирования в файл.
+        /// </summary>
         private void SaveBackupSettingsToFile()
         {
             string settingsFile = Path.Combine(Application.StartupPath, "backup_settings.txt");
@@ -2088,6 +2237,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения состояния чекбокса автоматического бэкапа.
+        /// </summary>
         private void ChkAutoBackup_CheckedChanged(object sender, EventArgs e)
         {
             if (chkAutoBackup != null)
@@ -2120,6 +2272,9 @@ namespace dump
             SaveBackupSettingsToFile();
         }
 
+        /// <summary>
+        /// Обработчик изменения интервала автоматического бэкапа.
+        /// </summary>
         private void NumBackupInterval_ValueChanged(object sender, EventArgs e)
         {
             if (numBackupInterval != null)
@@ -2136,6 +2291,9 @@ namespace dump
             SaveBackupSettingsToFile();
         }
 
+        /// <summary>
+        /// Таймер автоматического создания резервной копии.
+        /// </summary>
         private void AutoBackupTimer_Tick(object sender, EventArgs e)
         {
             string backupType = "full";
@@ -2146,6 +2304,9 @@ namespace dump
             System.Threading.Tasks.Task.Run(() => CreateBackup(backupType, true));
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки создания резервной копии.
+        /// </summary>
         private void BtnCreateBackup_Click(object sender, EventArgs e)
         {
             string backupType = "full";
@@ -2162,6 +2323,9 @@ namespace dump
             CreateBackup(backupType, false);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выбора папки для бэкапов.
+        /// </summary>
         private void BtnBrowseBackupPath_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog fbd = new FolderBrowserDialog())
@@ -2188,6 +2352,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт резервную копию базы данных.
+        /// </summary>
+        /// <param name="backupType">Тип бэкапа: full, structure, data.</param>
+        /// <param name="isAuto">True если бэкап автоматический.</param>
         private void CreateBackup(string backupType, bool isAuto)
         {
             if (InvokeRequired)
@@ -2360,6 +2529,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Возвращает префикс для имени файла бэкапа в зависимости от типа.
+        /// </summary>
         private string GetBackupPrefix(string backupType)
         {
             switch (backupType)
@@ -2375,6 +2547,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Возвращает название типа бэкапа на русском языке.
+        /// </summary>
         private string GetBackupTypeName(string backupType)
         {
             switch (backupType)
@@ -2390,6 +2565,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает список всех таблиц базы данных (исключая системные).
+        /// </summary>
         private List<string> GetTableList(MySqlConnection conn)
         {
             List<string> tables = new List<string>();
@@ -2411,6 +2589,9 @@ namespace dump
             return tables;
         }
 
+        /// <summary>
+        /// Получает SQL-скрипт структуры таблицы.
+        /// </summary>
         private string GetTableStructure(MySqlConnection conn, string tableName)
         {
             using (MySqlCommand cmd = new MySqlCommand($"SHOW CREATE TABLE `{tableName}`", conn))
@@ -2426,6 +2607,9 @@ namespace dump
             return "";
         }
 
+        /// <summary>
+        /// Получает SQL-скрипт данных таблицы (INSERT запросы).
+        /// </summary>
         private string GetTableData(MySqlConnection conn, string tableName)
         {
             StringBuilder dataScript = new StringBuilder();
@@ -2468,6 +2652,9 @@ namespace dump
             return dataScript.ToString();
         }
 
+        /// <summary>
+        /// Форматирует значение для SQL-запроса.
+        /// </summary>
         private string FormatSQLValue(object value)
         {
             if (value == null || value == DBNull.Value)
@@ -2514,6 +2701,11 @@ namespace dump
             return filePath;
         }
 
+        /// <summary>
+        /// Очищает старые резервные копии, оставляя только указанное количество последних.
+        /// </summary>
+        /// <param name="keepCount">Количество копий для сохранения.</param>
+        /// <returns>Количество удалённых файлов.</returns>
         private int CleanupOldBackups(int keepCount)
         {
             try
@@ -2540,6 +2732,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Записывает сообщение в лог резервного копирования.
+        /// </summary>
         private void LogBackupMessage(string message)
         {
             if (rtbRestoreLog != null)

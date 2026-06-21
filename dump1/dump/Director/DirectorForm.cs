@@ -11,10 +11,18 @@ using System.Windows.Forms;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма главного меню директора.
+    /// Предоставляет доступ к отчетам по заказам, статистике по сертификатам и топу блюд.
+    /// </summary>
     public partial class DirectorForm : Form
     {
         private bool isLockDialogOpen = false;
 
+        /// <summary>
+        /// Конструктор формы директора.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public DirectorForm()
         {
             InitializeComponent();
@@ -39,8 +47,10 @@ namespace dump
         // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
 
         /// <summary>
-        /// Обработчик закрытия формы - при нажатии на крестик переходим на LoginForm
+        /// Обработчик закрытия формы - при нажатии на крестик переходим на LoginForm.
         /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         private void DirectorForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Проверяем, что закрытие инициировано пользователем (крестик или Alt+F4)
@@ -61,6 +71,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -116,6 +130,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -152,6 +171,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -167,6 +190,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -180,12 +208,20 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Настраивает стили всех кнопок на форме.
+        /// </summary>
         private void SetupButtonStyles()
         {
             SetupPanelButtonStyle(buttonStatistics);
@@ -193,6 +229,10 @@ namespace dump
             SetupPanelButtonStyle(ButtonReport);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="btn">Кнопка для стилизации.</param>
         private void SetupPanelButtonStyle(Button btn)
         {
             btn.FlatStyle = FlatStyle.Flat;
@@ -206,6 +246,10 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Обработчик события загрузки формы.
+        /// Скрывает панель статистики при старте.
+        /// </summary>
         private void DirectorForm_Load(object sender, EventArgs e)
         {
             // Находим панель статистики
@@ -224,18 +268,27 @@ namespace dump
         // Обработчик нажатия на кнопку Statistics
 
 
-        // Закрытие панели через pictureBox4
+        /// <summary>
+        /// Обработчик нажатия кнопки закрытия панели статистики (крестик).
+        /// Скрывает панель статистики.
+        /// </summary>
         private void pictureBox4_Click(object sender, EventArgs e)
         {
             CloseStatisticsPanel();
         }
 
-        // Закрытие панели через pictureBox3
+        /// <summary>
+        /// Обработчик нажатия кнопки закрытия панели статистики.
+        /// Скрывает панель статистики.
+        /// </summary>
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             CloseStatisticsPanel();
         }
 
+        /// <summary>
+        /// Закрывает панель статистики.
+        /// </summary>
         private void CloseStatisticsPanel()
         {
             Panel statisticsPanel = this.Controls["panelStatistics"] as Panel;
@@ -249,7 +302,10 @@ namespace dump
             // ButtonRev НЕ ТРОГАЕМ
         }
 
-        // Выход
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик в правом верхнем углу).
+        /// Выполняет выход из системы и открывает форму входа.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;
@@ -264,6 +320,10 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Топ блюд".
+        /// Открывает форму с топом блюд.
+        /// </summary>
         private void buttonTopDish_Click(object sender, EventArgs e)
         {
             TopDishForm topDish = new TopDishForm();
@@ -272,6 +332,10 @@ namespace dump
             topDish.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Отчет по заказам".
+        /// Открывает форму с отчетом по заказам.
+        /// </summary>
         private void ButtonReport_Click(object sender, EventArgs e)
         {
             OrdersReportForm ordersReport = new OrdersReportForm();
@@ -280,6 +344,10 @@ namespace dump
             ordersReport.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Топ блюд" (альтернативная).
+        /// Открывает форму с топом блюд.
+        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             TopDishForm profit = new TopDishForm();
@@ -298,6 +366,10 @@ namespace dump
 
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Статистика".
+        /// Открывает форму со статистикой по сертификатам.
+        /// </summary>
         private void buttonStatistics_Click(object sender, EventArgs e)
         {
             this.Visible = false;

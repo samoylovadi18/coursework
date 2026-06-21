@@ -14,12 +14,20 @@ using System.IO;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма статистики по сертификатам для директора.
+    /// Предоставляет информацию о количестве, суммах и статусах сертификатов за выбранный период.
+    /// </summary>
     public partial class CertificateStatisticsForm : Form
     {
         private DataTable certificatesStats;
         private DateTime minDate = new DateTime(2024, 1, 1);
         private System.Windows.Forms.ToolTip toolTip1;
 
+        /// <summary>
+        /// Конструктор формы статистики сертификатов.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public CertificateStatisticsForm()
         {
             InitializeComponent();
@@ -53,6 +61,10 @@ namespace dump
             this.FormClosing += CertificateStatisticsForm_FormClosing;
         }
 
+        /// <summary>
+        /// Обработчик изменения даты в календарях.
+        /// Обновляет статистику.
+        /// </summary>
         private void DatePicker_ValueChanged(object sender, EventArgs e)
         {
             LoadStatistics();
@@ -63,6 +75,9 @@ namespace dump
             LoadStatistics();
         }
 
+        /// <summary>
+        /// Загружает статистику по сертификатам за выбранный период.
+        /// </summary>
         private void LoadStatistics()
         {
             try
@@ -94,6 +109,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму директора.
+        /// </summary>
         private void CertificateStatisticsForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -105,6 +124,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует дополнительные пользовательские компоненты формы.
+        /// </summary>
         private void InitializeCustomComponents()
         {
             if (datePickerStart == null)
@@ -148,6 +170,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает стиль кнопки экспорта.
+        /// </summary>
         private void SetupButtons()
         {
             btnExport.FlatStyle = FlatStyle.Flat;
@@ -162,6 +187,9 @@ namespace dump
             btnExport.MouseLeave += (s, e) => btnExport.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Создаёт пустую таблицу для отображения, когда нет данных.
+        /// </summary>
         private void CreateEmptyTable()
         {
             DataTable emptyTable = new DataTable();
@@ -175,6 +203,9 @@ namespace dump
             dgvCertificates.DataSource = emptyTable;
         }
 
+        /// <summary>
+        /// Настраивает внешний вид DataGridView для отображения статистики.
+        /// </summary>
         private void SetupDataGridView()
         {
             dgvCertificates.ReadOnly = true;
@@ -281,6 +312,11 @@ namespace dump
             dgvCertificates.Columns.Add(colMax);
         }
 
+        /// <summary>
+        /// Загружает статистику сертификатов из базы данных за указанный период.
+        /// </summary>
+        /// <param name="startDate">Дата начала периода.</param>
+        /// <param name="endDate">Дата окончания периода.</param>
         private void LoadCertificateStatistics(DateTime startDate, DateTime endDate)
         {
             string query = @"
@@ -314,6 +350,10 @@ namespace dump
 
         // ===================== ЭКСПОРТ В PDF =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки экспорта.
+        /// Экспортирует статистику в PDF-файл.
+        /// </summary>
         private void BtnExport_Click(object sender, EventArgs e)
         {
             try
@@ -347,6 +387,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Экспортирует данные в PDF-файл с использованием печати.
+        /// </summary>
+        /// <param name="filePath">Путь к сохраняемому файлу.</param>
         private void ExportToPdf(string filePath)
         {
             PrintDocument printDoc = new PrintDocument();
@@ -561,6 +605,10 @@ namespace dump
             printDoc.Print();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму директора.
+        /// </summary>
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             this.Visible = false;

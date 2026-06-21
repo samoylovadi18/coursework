@@ -15,6 +15,11 @@ namespace dump
     // ============================================================
     // 1. ФОРМА MENU (ГЛАВНАЯ ФОРМА С МЕНЮ)
     // ============================================================
+
+    /// <summary>
+    /// Главная форма меню для оформления заказа.
+    /// Отображает список блюд с возможностью фильтрации, поиска и добавления в корзину.
+    /// </summary>
     public partial class Menu : Form
     {
         private List<Dish> dishesList = new List<Dish>();
@@ -32,6 +37,10 @@ namespace dump
         private Color buttonColor = Color.DarkSeaGreen;
         private bool isLockDialogOpen = false;
 
+        /// <summary>
+        /// Конструктор формы меню.
+        /// Инициализирует компоненты, загружает данные и настраивает внешний вид.
+        /// </summary>
         public Menu()
         {
             InitializeComponent();
@@ -53,12 +62,18 @@ namespace dump
             InactivityManager.OnLockRequest += LockSystem;
         }
 
+        /// <summary>
+        /// Обновляет подарок в корзине при изменении состава заказа.
+        /// </summary>
         public void RefreshGiftFromCart()
         {
             UpdateGift();
             UpdateCartCount();
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -114,6 +129,9 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -150,6 +168,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
         private string GetPasswordFromDB()
         {
             try
@@ -165,6 +186,9 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -178,12 +202,18 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы. Отписывается от менеджера бездействия.
+        /// </summary>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик закрытия формы - при нажатии на крестик переходит на форму менеджера.
+        /// </summary>
         private void Menu_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -195,6 +225,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Класс для хранения информации о подарке.
+        /// </summary>
         public class Gift
         {
             public int Id_present { get; set; }
@@ -202,6 +235,9 @@ namespace dump
             public decimal FromPrice { get; set; }
         }
 
+        /// <summary>
+        /// Класс для хранения информации о подарке в корзине.
+        /// </summary>
         public class CartGift
         {
             public int Id_present { get; set; }
@@ -211,6 +247,9 @@ namespace dump
             public bool IsGift { get; set; } = true;
         }
 
+        /// <summary>
+        /// Класс для хранения информации о блюде в корзине.
+        /// </summary>
         public class CartItem
         {
             public int Id_dish { get; set; }
@@ -220,6 +259,9 @@ namespace dump
             public string WeightVolume { get; set; }
         }
 
+        /// <summary>
+        /// Класс для хранения информации о блюде из базы данных.
+        /// </summary>
         public class Dish
         {
             public int Id_dish { get; set; }
@@ -231,6 +273,9 @@ namespace dump
             public string WeightVolume { get; set; }
         }
 
+        /// <summary>
+        /// Класс для отображения блюда в DataGridView.
+        /// </summary>
         public class DishView
         {
             public string Name { get; set; }
@@ -241,17 +286,26 @@ namespace dump
             public string WeightVolume { get; set; }
         }
 
+        /// <summary>
+        /// Класс для хранения информации о категории.
+        /// </summary>
         public class Category
         {
             public int Id_category { get; set; }
             public string Name { get; set; }
         }
 
+        /// <summary>
+        /// Настраивает стили кнопок.
+        /// </summary>
         private void SetupButtonStyles()
         {
             SetupPanelButtonStyle(buttonReset);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
         private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
@@ -269,6 +323,9 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Загружает список подарков из базы данных.
+        /// </summary>
         private void LoadGiftsFromDatabase()
         {
             try
@@ -299,6 +356,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет подарок в корзине в зависимости от суммы заказа.
+        /// </summary>
         private void UpdateGift()
         {
             decimal total = cartItems.Sum(item => item.Price * item.Quantity);
@@ -335,6 +395,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет счётчик товаров в корзине.
+        /// </summary>
         private void UpdateCartCount()
         {
             int totalItems = cartItems.Sum(item => item.Quantity) + cartGifts.Sum(g => g.Quantity);
@@ -349,6 +412,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик клика правой кнопкой мыши по DataGridView.
+        /// Отображает контекстное меню для добавления блюда в корзину.
+        /// </summary>
         private void DataGridView1_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -368,6 +435,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Добавляет выбранное блюдо в корзину.
+        /// </summary>
         private void AddSelectedToCart()
         {
             if (dataGridView1.SelectedRows.Count > 0)
@@ -401,6 +471,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт изображение-заглушку для блюд без фотографии.
+        /// </summary>
         private void CreateDefaultImage()
         {
             defaultImage = new Bitmap(100, 100);
@@ -414,6 +487,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает данные о блюдах и категориях из базы данных.
+        /// </summary>
         private void LoadDataFromDatabase()
         {
             try
@@ -470,6 +546,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает элементы управления: поиск, фильтры и сортировку.
+        /// </summary>
         private void SetupControls()
         {
             if (textBoxSearch != null)
@@ -492,6 +571,9 @@ namespace dump
             RefreshCategoryComboBox();
         }
 
+        /// <summary>
+        /// Обновляет список категорий в выпадающем списке.
+        /// </summary>
         private void RefreshCategoryComboBox()
         {
             if (comboBoxCategory == null) return;
@@ -507,12 +589,18 @@ namespace dump
             comboBoxCategory.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Получает название категории по её ID.
+        /// </summary>
         private string GetCategoryName(int categoryId)
         {
             var category = categoriesList.FirstOrDefault(c => c.Id_category == categoryId);
             return category?.Name ?? "Неизвестно";
         }
 
+        /// <summary>
+        /// Применяет фильтрацию и сортировку в реальном времени.
+        /// </summary>
         private void ApplyRealTimeFiltering()
         {
             try
@@ -588,6 +676,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки возврата на форму менеджера.
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Hide();
@@ -595,6 +686,9 @@ namespace dump
             Manager.Show();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// </summary>
         private void buttonReset_Click(object sender, EventArgs e)
         {
             if (textBoxSearch != null)
@@ -605,6 +699,9 @@ namespace dump
                 comboBoxSortPrice.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки перехода к корзине.
+        /// </summary>
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             if (cartItems.Count == 0 && cartGifts.Count == 0)
@@ -639,6 +736,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле поиска.
+        /// Разрешает ввод только русских букв.
+        /// </summary>
         private void textBoxSearch_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (char.IsControl(e.KeyChar))
@@ -665,6 +766,9 @@ namespace dump
 
         private void Menu_Load(object sender, EventArgs e) { }
 
+        /// <summary>
+        /// Настраивает внешний вид DataGridView для отображения блюд.
+        /// </summary>
         private void InitializeDataGridView()
         {
             dataGridView1.ShowCellToolTips = false;
@@ -774,6 +878,11 @@ namespace dump
     // ============================================================
     // 2. ФОРМА СОСТАВ ЗАКАЗА (OrderCompositionForm)
     // ============================================================
+
+    /// <summary>
+    /// Форма просмотра и редактирования состава заказа.
+    /// Позволяет изменять количество блюд, удалять позиции и переходить к оформлению.
+    /// </summary>
     public class OrderCompositionForm : Form
     {
         private Label lblTitle;
@@ -798,8 +907,17 @@ namespace dump
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
         private Color selectionColor = Color.FromArgb(233, 242, 236);
 
+        /// <summary>
+        /// Событие, возникающее при изменении состава корзины.
+        /// </summary>
         public event Action CartChanged;
 
+        /// <summary>
+        /// Конструктор формы состава заказа.
+        /// </summary>
+        /// <param name="items">Список блюд в корзине.</param>
+        /// <param name="gifts">Список подарков в корзине.</param>
+        /// <param name="menu">Ссылка на родительскую форму меню.</param>
         public OrderCompositionForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts, Menu menu)
         {
             cartItems = items;
@@ -830,6 +948,9 @@ namespace dump
             RefreshCartDisplay();
         }
 
+        /// <summary>
+        /// Инициализирует компоненты формы.
+        /// </summary>
         private void InitializeComponent()
         {
             this.Text = "";
@@ -965,6 +1086,9 @@ namespace dump
             InitializeDataGridView();
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
         private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
@@ -987,6 +1111,9 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Настраивает внешний вид DataGridView для отображения корзины.
+        /// </summary>
         private void InitializeDataGridView()
         {
             dgvCart.EnableHeadersVisualStyles = false;
@@ -1016,6 +1143,9 @@ namespace dump
             dgvCart.CellBorderStyle = DataGridViewCellBorderStyle.Single;
         }
 
+        /// <summary>
+        /// Загружает данные корзины в DataGridView.
+        /// </summary>
         private void LoadCartData()
         {
             DataTable dt = new DataTable();
@@ -1059,6 +1189,9 @@ namespace dump
             ConfigureDataGridViewColumns();
         }
 
+        /// <summary>
+        /// Настраивает ширину и выравнивание колонок DataGridView.
+        /// </summary>
         private void ConfigureDataGridViewColumns()
         {
             try
@@ -1113,12 +1246,18 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Вычисляет общую сумму заказа.
+        /// </summary>
         private void CalculateTotal()
         {
             decimal total = cartItems.Sum(item => item.Price * item.Quantity);
             lblTotalValue.Text = total.ToString("N2") + " ₽";
         }
 
+        /// <summary>
+        /// Обновляет отображение корзины.
+        /// </summary>
         private void RefreshCartDisplay()
         {
             LoadCartData();
@@ -1128,6 +1267,9 @@ namespace dump
 
         private void DgvCart_SelectionChanged(object sender, EventArgs e) { }
 
+        /// <summary>
+        /// Обработчик удаления подарка из корзины.
+        /// </summary>
         private void BtnRemoveGift_Click(object sender, EventArgs e)
         {
             if (cartGifts.Count == 0)
@@ -1152,6 +1294,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик увеличения количества блюда.
+        /// </summary>
         private void BtnIncrease_Click(object sender, EventArgs e)
         {
             if (dgvCart.SelectedRows.Count == 0)
@@ -1187,6 +1332,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик уменьшения количества блюда.
+        /// </summary>
         private void BtnDecrease_Click(object sender, EventArgs e)
         {
             if (dgvCart.SelectedRows.Count == 0)
@@ -1247,6 +1395,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик удаления блюда из корзины.
+        /// </summary>
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (dgvCart.SelectedRows.Count == 0)
@@ -1299,6 +1450,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик перехода к оформлению заказа.
+        /// </summary>
         private void BtnContinue_Click(object sender, EventArgs e)
         {
             OrderDetailsForm form = new OrderDetailsForm(cartItems, cartGifts);
@@ -1308,8 +1462,13 @@ namespace dump
     }
 
     // ============================================================
-    // 3. ФОРМА ДЕТАЛИ ЗАКАЗА (OrderDetailsForm) - ИСПРАВЛЕННАЯ
+    // 3. ФОРМА ДЕТАЛИ ЗАКАЗА (OrderDetailsForm)
     // ============================================================
+
+    /// <summary>
+    /// Форма оформления заказа с детальной информацией.
+    /// Содержит поля для ввода данных клиента, выбора способа оплаты и оплаты сертификатом.
+    /// </summary>
     public class OrderDetailsForm : Form
     {
         private Label lblTitle;
@@ -1359,6 +1518,11 @@ namespace dump
 
         private bool isUpdatingTime = false;
 
+        /// <summary>
+        /// Конструктор формы оформления заказа.
+        /// </summary>
+        /// <param name="items">Список блюд в заказе.</param>
+        /// <param name="gifts">Список подарков в заказе.</param>
         public OrderDetailsForm(List<Menu.CartItem> items, List<Menu.CartGift> gifts)
         {
             cartItems = items;
@@ -1372,6 +1536,9 @@ namespace dump
             this.Text = "";
         }
 
+        /// <summary>
+        /// Настраивает ограничения по времени для заказа (с 08:00 до 22:00, минимум за час).
+        /// </summary>
         private void SetupTimeRestrictions()
         {
             DateTime now = DateTime.Now;
@@ -1562,6 +1729,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует компоненты формы.
+        /// </summary>
         private void InitializeComponent()
         {
             this.Text = "";
@@ -1650,7 +1820,6 @@ namespace dump
             grbCertificate.BackColor = Color.FromArgb(255, 255, 220);
             this.Controls.Add(grbCertificate);
 
-            // Чекбокс "Оплатить" - отдельно сверху
             rbCertificate = new RadioButton();
             rbCertificate.Text = "Оплатить";
             rbCertificate.Font = new Font("Times New Roman", 14);
@@ -1659,7 +1828,6 @@ namespace dump
             rbCertificate.CheckedChanged += RbCertificate_CheckedChanged;
             grbCertificate.Controls.Add(rbCertificate);
 
-            // Panel для второй строки (Номер + Проверить + Отменить оплату)
             Panel panelCertRow2 = new Panel();
             panelCertRow2.Location = new Point(15, 60);
             panelCertRow2.Size = new Size(860, 35);
@@ -1702,7 +1870,6 @@ namespace dump
             SetupPanelButtonStyle(btnCancelCertificate);
             panelCertRow2.Controls.Add(btnCancelCertificate);
 
-            // Строка с информацией о сертификате (остаток, статус)
             lblCertificateAmount = new Label();
             lblCertificateAmount.Text = "";
             lblCertificateAmount.Font = new Font("Times New Roman", 12);
@@ -1828,6 +1995,9 @@ namespace dump
             this.Controls.Add(btnSave);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
         private void SetupPanelButtonStyle(Button btn)
         {
             if (btn == null) return;
@@ -1850,6 +2020,10 @@ namespace dump
             btn.MouseLeave += (s, e) => btn.FlatAppearance.BorderColor = Color.Black;
         }
 
+        /// <summary>
+        /// Обработчик изменения состояния чекбокса оплаты сертификатом.
+        /// Включает/отключает поля для ввода номера сертификата.
+        /// </summary>
         private void RbCertificate_CheckedChanged(object sender, EventArgs e)
         {
             txtCertificateNumber.Enabled = rbCertificate.Checked;
@@ -1868,6 +2042,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик отмены оплаты сертификатом.
+        /// Сбрасывает состояние сертификата и возвращает к обычной оплате.
+        /// </summary>
         private void BtnCancelCertificate_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
@@ -1898,12 +2076,20 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле ввода номера сертификата.
+        /// Разрешает ввод только цифр.
+        /// </summary>
         private void TxtCertificateNumber_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Проверяет сертификат по номеру и применяет его к заказу.
+        /// Обрабатывает полную и частичную оплату.
+        /// </summary>
         private void BtnCheckCertificate_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtCertificateNumber.Text))
@@ -2022,6 +2208,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Пересчитывает общую сумму заказа с учётом сертификата.
+        /// </summary>
         private void CalculateTotal()
         {
             if (isCertificateValid && rbCertificate.Checked && !isPartialPayment)
@@ -2041,12 +2230,19 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Пересчитывает сумму при частичной оплате сертификатом.
+        /// </summary>
         private void CalculateTotalWithPartialPayment()
         {
             lblTotalValue.Text = $"{remainingToPay:N2} ₽ (Доплата)";
             lblTotalValue.ForeColor = Color.Red;
         }
 
+        /// <summary>
+        /// Обработчик изменения способа получения заказа.
+        /// Включает/отключает поле адреса.
+        /// </summary>
         private void RbDelivery_CheckedChanged(object sender, EventArgs e)
         {
             txtAddress.Enabled = rbDelivery.Checked;
@@ -2054,6 +2250,9 @@ namespace dump
                 txtAddress.Text = "";
         }
 
+        /// <summary>
+        /// Загружает список блюд в ListBox.
+        /// </summary>
         private void LoadOrderItems()
         {
             lstOrderItems.Items.Clear();
@@ -2065,6 +2264,10 @@ namespace dump
                 lstOrderItems.Items.Add($"🎁 {gift.Name} - ПОДАРОК (бесплатно)");
         }
 
+        /// <summary>
+        /// Обработчик сохранения заказа.
+        /// Выполняет валидацию и сохранение в базу данных.
+        /// </summary>
         private void BtnSave_Click(object sender, EventArgs e)
         {
             if (dtpDate.Value.Date < DateTime.Now.Date)
@@ -2201,6 +2404,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Сохраняет заказ в базу данных с использованием транзакции.
+        /// Обеспечивает атомарность операций: обновление сертификата, создание заказа и добавление блюд.
+        /// </summary>
         private void SaveToDatabase()
         {
             using (MySqlConnection conn = SettingsBD.GetConnection())
@@ -2332,6 +2539,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт чек в Word или текстовом формате.
+        /// </summary>
         private void CreateWordReceipt()
         {
             try
@@ -2363,6 +2573,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт документ Word с чеком.
+        /// </summary>
         private void CreateWordDocument(string filePath)
         {
             try
@@ -2542,6 +2755,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт текстовый файл с чеком.
+        /// </summary>
         private void CreateTextFile(string filePath)
         {
             using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
@@ -2607,6 +2823,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик закрытия формы.
+        /// Останавливает таймер обновления времени.
+        /// </summary>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             if (updateTimer != null)

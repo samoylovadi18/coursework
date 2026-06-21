@@ -1,2 +1,2 @@
 AutoBackup=False
-Interval=12
+Interval=24

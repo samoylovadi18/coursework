@@ -13,6 +13,10 @@ using System.Security.Cryptography;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма управления меню блюд для администратора.
+    /// Предоставляет функционал для добавления, редактирования, удаления и просмотра блюд.
+    /// </summary>
     public partial class AdminMenu : Form
     {
         private DataTable dishesTable;
@@ -43,6 +47,10 @@ namespace dump
         private Color selectionColor = Color.FromArgb(233, 242, 236);
         private Color headerBackColor = Color.FromArgb(97, 173, 123);
 
+        /// <summary>
+        /// Конструктор формы управления меню.
+        /// Инициализирует компоненты, настраивает внешний вид и загружает данные.
+        /// </summary>
         public AdminMenu()
         {
             InitializeComponent();
@@ -75,6 +83,10 @@ namespace dump
             InactivityManager.OnLockRequest += LockSystem;
         }
 
+        /// <summary>
+        /// Блокирует систему при длительном бездействии пользователя.
+        /// Отображает диалоговое окно для ввода пароля разблокировки.
+        /// </summary>
         private void LockSystem()
         {
             if (isLockDialogOpen) return;
@@ -130,6 +142,11 @@ namespace dump
             }));
         }
 
+        /// <summary>
+        /// Проверяет введённый пароль для разблокировки системы.
+        /// </summary>
+        /// <param name="txtPassword">Поле ввода пароля.</param>
+        /// <param name="lockDialog">Диалоговое окно блокировки.</param>
         private void CheckPasswordAndUnlock(TextBox txtPassword, Form lockDialog)
         {
             bool isCorrect = false;
@@ -166,6 +183,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает хеш пароля текущего пользователя из базы данных.
+        /// </summary>
+        /// <returns>Строка с хешем пароля или null в случае ошибки.</returns>
         private string GetPasswordFromDB()
         {
             try
@@ -181,6 +202,11 @@ namespace dump
             catch { return null; }
         }
 
+        /// <summary>
+        /// Вычисляет хеш SHA-256 для переданного пароля.
+        /// </summary>
+        /// <param name="password">Пароль в открытом виде.</param>
+        /// <returns>Строка с хешем пароля в шестнадцатеричном формате.</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -194,12 +220,23 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// Отписывается от менеджера бездействия.
+        /// </summary>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             InactivityManager.UnregisterForm();
             base.OnFormClosed(e);
         }
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму администратора.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события закрытия формы.</param>
         private void AdminMenu_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -211,6 +248,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Освобождает управляемые ресурсы формы.
+        /// </summary>
+        /// <param name="disposing">True если освобождение выполняется явно.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -227,6 +268,9 @@ namespace dump
             base.Dispose(disposing);
         }
 
+        /// <summary>
+        /// Создаёт изображение-заглушку для блюд без фотографии.
+        /// </summary>
         private void CreateDefaultImage()
         {
             defaultImage = new Bitmap(80, 80);
@@ -241,6 +285,11 @@ namespace dump
             pbDishPhoto.Image = (Image)defaultImage.Clone();
         }
 
+        /// <summary>
+        /// Вычисляет MD5-хеш изображения для проверки дубликатов.
+        /// </summary>
+        /// <param name="imageBytes">Массив байтов изображения.</param>
+        /// <returns>Строка с хешем в шестнадцатеричном формате.</returns>
         private string ComputeImageHash(byte[] imageBytes)
         {
             if (imageBytes == null || imageBytes.Length == 0)
@@ -253,6 +302,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, используется ли данное фото для другого блюда.
+        /// </summary>
+        /// <param name="photoBytes">Массив байтов фотографии.</param>
+        /// <param name="excludeDishId">ID блюда для исключения при проверке (при редактировании).</param>
+        /// <returns>True если фото уже используется.</returns>
         private bool CheckPhotoDuplicate(byte[] photoBytes, int excludeDishId = -1)
         {
             if (photoBytes == null || photoBytes.Length == 0)
@@ -290,6 +345,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Получает название блюда по фотографии.
+        /// </summary>
+        /// <param name="photoBytes">Массив байтов фотографии.</param>
+        /// <returns>Название блюда или пустая строка.</returns>
         private string GetDishNameByPhoto(byte[] photoBytes)
         {
             if (photoBytes == null || photoBytes.Length == 0)
@@ -312,6 +372,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Настраивает внешний вид и колонки DataGridView для отображения блюд.
+        /// </summary>
         private void SetupDataGridView()
         {
             dgvDishes.AutoGenerateColumns = false;
@@ -461,6 +524,12 @@ namespace dump
             dgvDishes.CellFormatting += DgvDishes_CellFormatting;
         }
 
+        /// <summary>
+        /// Обработчик форматирования ячеек DataGridView.
+        /// Форматирует отображение цены и себестоимости.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события форматирования.</param>
         private void DgvDishes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvDishes.Columns[e.ColumnIndex].Name == "price_display" && e.RowIndex >= 0)
@@ -485,6 +554,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает список блюд из базы данных.
+        /// </summary>
         private void LoadDishes()
         {
             try
@@ -541,6 +613,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет список категорий в выпадающем списке фильтра.
+        /// </summary>
         private void UpdateCategoryFilter()
         {
             try
@@ -573,6 +648,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обновляет список категорий в выпадающем списке редактирования.
+        /// </summary>
         private void RefreshEditCategories()
         {
             try
@@ -609,6 +687,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает фотографию блюда из базы данных.
+        /// </summary>
+        /// <param name="dishId">ID блюда.</param>
         private void LoadDishPhoto(int dishId)
         {
             try
@@ -649,6 +731,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает данные блюда в форму редактирования.
+        /// </summary>
+        /// <param name="dishId">ID блюда.</param>
         private void LoadDishData(int dishId)
         {
             try
@@ -705,6 +791,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Очищает фотографию блюда в форме редактирования.
+        /// </summary>
         private void ClearDishPhoto()
         {
             if (pbDishPhoto.Image != null && pbDishPhoto.Image != defaultImage)
@@ -716,6 +805,12 @@ namespace dump
             btnDeletePhoto.Enabled = false;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки загрузки фото.
+        /// Открывает диалог выбора файла и загружает изображение.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void BtnUploadPhoto_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -770,6 +865,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки удаления фото.
+        /// Удаляет фотографию блюда.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void BtnDeletePhoto_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Удалить фотографию?", "Подтверждение",
@@ -779,6 +880,14 @@ namespace dump
                 ClearDishPhoto();
         }
 
+        /// <summary>
+        /// Сжимает изображение до указанных размеров и качества.
+        /// </summary>
+        /// <param name="imagePath">Путь к исходному изображению.</param>
+        /// <param name="maxWidth">Максимальная ширина.</param>
+        /// <param name="maxHeight">Максимальная высота.</param>
+        /// <param name="quality">Качество сжатия (0-100).</param>
+        /// <returns>Массив байтов сжатого изображения.</returns>
         private byte[] CompressImage(string imagePath, int maxWidth, int maxHeight, int quality)
         {
             using (Image image = Image.FromFile(imagePath))
@@ -817,6 +926,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Инициализирует стили всех кнопок на форме.
+        /// </summary>
         private void InitializeButtonStyles()
         {
             SetupButtonStyle(btnAdd);
@@ -827,6 +939,10 @@ namespace dump
             SetupButtonStyle(btnDeletePhoto);
         }
 
+        /// <summary>
+        /// Применяет единый стиль к кнопке.
+        /// </summary>
+        /// <param name="button">Кнопка для стилизации.</param>
         private void SetupButtonStyle(Button button)
         {
             button.FlatStyle = FlatStyle.Flat;
@@ -839,6 +955,9 @@ namespace dump
             button.Font = new Font("Times New Roman", 14, FontStyle.Regular);
         }
 
+        /// <summary>
+        /// Настраивает внешний вид панели редактирования с рамкой.
+        /// </summary>
         private void InitializeEditPanelAppearance()
         {
             panelEditDish.BorderStyle = BorderStyle.None;
@@ -853,6 +972,9 @@ namespace dump
             };
         }
 
+        /// <summary>
+        /// Настраивает валидацию текстовых полей ввода.
+        /// </summary>
         private void SetupValidationTextBoxes()
         {
             txtEditDishName.MaxLength = 100;
@@ -940,11 +1062,20 @@ namespace dump
             txtWeightVolume.MaxLength = 20;
         }
 
+        /// <summary>
+        /// Проверяет, является ли символ русской буквой.
+        /// </summary>
+        /// <param name="c">Проверяемый символ.</param>
+        /// <returns>True если символ является русской буквой.</returns>
         private bool IsRussianLetter(char c)
         {
             return (c >= 'А' && c <= 'Я') || (c >= 'а' && c <= 'я') || c == 'Ё' || c == 'ё';
         }
 
+        /// <summary>
+        /// Обработчик нажатия клавиш в поле ввода цены.
+        /// Разрешает ввод только цифр и запятой.
+        /// </summary>
         private void TextBoxPrice_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',')
@@ -955,6 +1086,10 @@ namespace dump
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Форматирует текст в поле цены при потере фокуса.
+        /// </summary>
+        /// <param name="textBox">Поле ввода для форматирования.</param>
         private void FormatPriceTextBoxOnLeave(TextBox textBox)
         {
             if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -974,6 +1109,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Извлекает числовое значение из отформатированного текста цены.
+        /// </summary>
+        /// <param name="formattedText">Отформатированный текст с символом ₽.</param>
+        /// <returns>Числовое значение цены.</returns>
         private decimal GetPriceFromFormattedText(string formattedText)
         {
             if (string.IsNullOrWhiteSpace(formattedText))
@@ -983,6 +1123,10 @@ namespace dump
             return decimal.TryParse(cleanText, NumberStyles.Any, russianCulture, out decimal value) ? value : 0;
         }
 
+        /// <summary>
+        /// Получает ID выбранной категории из выпадающего списка.
+        /// </summary>
+        /// <returns>ID категории или -1 если не выбрана.</returns>
         private int GetSelectedCategoryId()
         {
             if (comboEditCategory.SelectedIndex <= 0)
@@ -995,6 +1139,9 @@ namespace dump
             return -1;
         }
 
+        /// <summary>
+        /// Отображает панель редактирования блюда.
+        /// </summary>
         private void ShowEditPanel()
         {
             panelEditDish.Visible = true;
@@ -1003,12 +1150,18 @@ namespace dump
             editLabel.Font = new Font("Times New Roman", 16, FontStyle.Bold);
         }
 
+        /// <summary>
+        /// Скрывает панель редактирования и очищает форму.
+        /// </summary>
         private void HideEditPanel()
         {
             panelEditDish.Visible = false;
             ClearEditForm();
         }
 
+        /// <summary>
+        /// Очищает все поля формы редактирования.
+        /// </summary>
         private void ClearEditForm()
         {
             txtEditDishName.Text = "";
@@ -1022,6 +1175,9 @@ namespace dump
             currentDishPhotoBytes = null;
         }
 
+        /// <summary>
+        /// Сохраняет текущие значения полей для отслеживания изменений.
+        /// </summary>
         private void SaveOriginalValues()
         {
             originalDishNameValue = txtEditDishName.Text.Trim();
@@ -1043,6 +1199,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Проверяет, были ли внесены изменения в форму редактирования.
+        /// </summary>
+        /// <returns>True если есть изменения.</returns>
         private bool HasChanges()
         {
             if (txtEditDishName.Text.Trim() != originalDishNameValue) return true;
@@ -1064,6 +1224,12 @@ namespace dump
             return false;
         }
 
+        /// <summary>
+        /// Проверяет, существует ли блюдо с таким названием в базе данных.
+        /// </summary>
+        /// <param name="dishName">Название блюда.</param>
+        /// <param name="excludeDishId">ID блюда для исключения (при редактировании).</param>
+        /// <returns>True если дубликат найден.</returns>
         private bool CheckDishDuplicate(string dishName, int excludeDishId = -1)
         {
             try
@@ -1086,6 +1252,10 @@ namespace dump
             catch { return false; }
         }
 
+        /// <summary>
+        /// Сохраняет блюдо в базу данных (добавление или обновление).
+        /// </summary>
+        /// <returns>True если сохранение успешно.</returns>
         private bool SaveDish()
         {
             if (string.IsNullOrWhiteSpace(txtEditDishName.Text))
@@ -1199,6 +1369,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Добавить".
+        /// Открывает панель для создания нового блюда.
+        /// </summary>
         private void AddButton_Click(object sender, EventArgs e)
         {
             isEditMode = false;
@@ -1211,6 +1385,10 @@ namespace dump
             ShowEditPanel();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Редактировать".
+        /// Загружает данные выбранного блюда в форму редактирования.
+        /// </summary>
         private void EditButton_Click(object sender, EventArgs e)
         {
             if (dgvDishes.SelectedRows.Count == 0)
@@ -1226,7 +1404,10 @@ namespace dump
             ShowEditPanel();
         }
 
-        // ===================== ИСПРАВЛЕННЫЙ МЕТОД УДАЛЕНИЯ =====================
+        /// <summary>
+        /// Обработчик нажатия кнопки "Удалить".
+        /// Удаляет выбранное блюдо с проверкой наличия в заказах.
+        /// </summary>
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             if (dgvDishes.SelectedRows.Count == 0)
@@ -1315,6 +1496,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Отмена".
+        /// Проверяет наличие изменений и закрывает панель редактирования.
+        /// </summary>
         private void CancelButton_Click(object sender, EventArgs e)
         {
             if (HasChanges())
@@ -1340,6 +1525,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения выделения в DataGridView.
+        /// Обновляет состояние кнопок редактирования и удаления.
+        /// </summary>
         private void DataGridView_SelectionChanged(object sender, EventArgs e)
         {
             bool hasSelection = dgvDishes.SelectedRows.Count > 0;
@@ -1347,16 +1536,27 @@ namespace dump
             btnDelete.Enabled = hasSelection;
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле поиска.
+        /// Применяет фильтрацию.
+        /// </summary>
         private void SearchTextBox_TextChanged(object sender, EventArgs e)
         {
             FilterData();
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранной категории в фильтре.
+        /// Применяет фильтрацию.
+        /// </summary>
         private void CategoryFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             FilterData();
         }
 
+        /// <summary>
+        /// Фильтрует список блюд по поисковому запросу и категории.
+        /// </summary>
         private void FilterData()
         {
             if (dishesTable == null) return;
@@ -1377,6 +1577,10 @@ namespace dump
             dgvDishes.DataSource = filteredRows.Any() ? filteredRows.CopyToDataTable() : dishesTable.Clone();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки сброса фильтров.
+        /// Очищает поиск и сбрасывает категорию.
+        /// </summary>
         private void buttonReset_Click(object sender, EventArgs e)
         {
             txtSearch.Text = "";
@@ -1386,6 +1590,9 @@ namespace dump
                 dgvDishes.DataSource = dishesTable;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             this.Visible = false;

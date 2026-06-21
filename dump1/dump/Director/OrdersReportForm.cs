@@ -15,6 +15,10 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace dump
 {
+    /// <summary>
+    /// Форма отчетов по заказам и выручке для директора.
+    /// Предоставляет возможность просмотра и экспорта отчетов в Excel.
+    /// </summary>
     public partial class OrdersReportForm : Form
     {
         private DataTable ordersData;
@@ -26,6 +30,9 @@ namespace dump
 
         private System.Windows.Forms.ToolTip toolTip1;
 
+        /// <summary>
+        /// Класс для хранения информации о позиции заказа (блюдо/подарок).
+        /// </summary>
         private class OrderDetailItem
         {
             public string Name { get; set; }
@@ -36,6 +43,10 @@ namespace dump
             public string DisplayName => IsGift ? $"🎁 {Name} (Подарок)" : Name;
         }
 
+        /// <summary>
+        /// Конструктор формы отчетов по заказам.
+        /// Инициализирует компоненты и настраивает внешний вид.
+        /// </summary>
         public OrdersReportForm()
         {
             InitializeComponent();
@@ -117,6 +128,12 @@ namespace dump
         }
 
         // ===== МАСКИРОВАНИЕ НОМЕРА ТЕЛЕФОНА (ЗАЩИТА ПЕРСОНАЛЬНЫХ ДАННЫХ) =====
+
+        /// <summary>
+        /// Маскирует номер телефона для отображения (защита персональных данных).
+        /// </summary>
+        /// <param name="phone">Исходный номер телефона.</param>
+        /// <returns>Замаскированный номер телефона.</returns>
         private string MaskPhone(string phone)
         {
             if (string.IsNullOrEmpty(phone)) return "";
@@ -137,6 +154,10 @@ namespace dump
 
         // ===================== ОБРАБОТЧИК ЗАКРЫТИЯ ФОРМЫ =====================
 
+        /// <summary>
+        /// Обработчик события закрытия формы.
+        /// При закрытии формы пользователем скрывает её и открывает форму директора.
+        /// </summary>
         private void OrdersReportForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -148,6 +169,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения состояния чекбокса фильтрации по периоду.
+        /// Включает/отключает выбор дат и обновляет данные.
+        /// </summary>
         private void ChkFilterByPeriod_CheckedChanged(object sender, EventArgs e)
         {
             filterByPeriod = chkFilterByPeriod.Checked;
@@ -157,6 +182,10 @@ namespace dump
             LoadOrders();
         }
 
+        /// <summary>
+        /// Обработчик изменения даты в календарях.
+        /// Обновляет данные при активной фильтрации.
+        /// </summary>
         private void DatePicker_ValueChanged(object sender, EventArgs e)
         {
             if (filterByPeriod)
@@ -186,6 +215,9 @@ namespace dump
             LoadOrders();
         }
 
+        /// <summary>
+        /// Настраивает внешний вид DataGridView для отображения заказов.
+        /// </summary>
         private void SetupDataGridView()
         {
             if (dgvOrders == null) return;
@@ -324,6 +356,11 @@ namespace dump
         }
 
         // ===== ФОРМАТИРОВАНИЕ ЯЧЕЕК (МАСКИРОВАНИЕ ТЕЛЕФОНА) =====
+
+        /// <summary>
+        /// Обработчик форматирования ячеек DataGridView.
+        /// Маскирует номер телефона.
+        /// </summary>
         private void DgvOrders_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex >= 0 && e.Value != null)
@@ -337,6 +374,9 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает данные заказов из базы данных.
+        /// </summary>
         private void LoadOrders()
         {
             try
@@ -363,6 +403,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает заказы из базы данных за указанный период.
+        /// </summary>
+        /// <param name="startDate">Дата начала периода.</param>
+        /// <param name="endDate">Дата окончания периода.</param>
+        /// <returns>DataTable с данными заказов.</returns>
         private DataTable LoadOrdersFromDB(DateTime startDate, DateTime endDate)
         {
             DataTable dt = new DataTable();
@@ -409,6 +455,9 @@ namespace dump
             return dt;
         }
 
+        /// <summary>
+        /// Обновляет статистику по заказам (общая выручка, количество заказов, блюд).
+        /// </summary>
         private void UpdateStatistics()
         {
             try
@@ -428,17 +477,30 @@ namespace dump
 
         // ===================== ДЕТАЛИ ЗАКАЗА (С МАСКИРОВАНИЕМ ТЕЛЕФОНА) =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Детали заказа".
+        /// Открывает форму с деталями заказа.
+        /// </summary>
         private void ButtonDetail_Click(object sender, EventArgs e)
         {
             ShowOrderDetails();
         }
 
+        /// <summary>
+        /// Обработчик двойного клика по строке в DataGridView.
+        /// Открывает форму с деталями заказа.
+        /// </summary>
         private void DgvOrders_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
             ShowOrderDetails();
         }
 
+        /// <summary>
+        /// Загружает детали заказа из базы данных.
+        /// </summary>
+        /// <param name="orderId">ID заказа.</param>
+        /// <returns>Список позиций заказа.</returns>
         private List<OrderDetailItem> LoadOrderDetails(int orderId)
         {
             List<OrderDetailItem> items = new List<OrderDetailItem>();
@@ -498,6 +560,9 @@ namespace dump
             return items;
         }
 
+        /// <summary>
+        /// Отображает форму с деталями выбранного заказа.
+        /// </summary>
         private void ShowOrderDetails()
         {
             try
@@ -613,6 +678,11 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Создаёт DataTable для деталей заказа.
+        /// </summary>
+        /// <param name="items">Список позиций заказа.</param>
+        /// <returns>DataTable с данными.</returns>
         private DataTable CreateOrderDetailsDataTable(List<OrderDetailItem> items)
         {
             DataTable dt = new DataTable();
@@ -636,6 +706,10 @@ namespace dump
             return dt;
         }
 
+        /// <summary>
+        /// Создаёт DataGridView для отображения деталей заказа.
+        /// </summary>
+        /// <returns>Настроенный DataGridView.</returns>
         private DataGridView CreateOrderDetailsDataGridView()
         {
             DataGridView dgv = new DataGridView();
@@ -759,6 +833,10 @@ namespace dump
 
         // ===================== ЭКСПОРТ ЗАКАЗОВ (С МАСКИРОВАННЫМ ТЕЛЕФОНОМ) =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки экспорта отчета по заказам.
+        /// Экспортирует данные в Excel.
+        /// </summary>
         private void BtnExportOrders_Click(object sender, EventArgs e)
         {
             try
@@ -825,6 +903,13 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Экспортирует данные заказов в Excel-файл.
+        /// </summary>
+        /// <param name="filePath">Путь к сохраняемому файлу.</param>
+        /// <param name="data">DataTable с данными.</param>
+        /// <param name="startDate">Начальная дата периода.</param>
+        /// <param name="endDate">Конечная дата периода.</param>
         private void ExportOrdersToExcel(string filePath, DataTable data, DateTime startDate, DateTime endDate)
         {
             Excel.Application excelApp = null;
@@ -966,6 +1051,10 @@ namespace dump
 
         // ===================== ЭКСПОРТ ВЫРУЧКИ (ИСПРАВЛЕННЫЙ) =====================
 
+        /// <summary>
+        /// Обработчик нажатия кнопки экспорта отчета по выручке.
+        /// Экспортирует данные в Excel.
+        /// </summary>
         private void BtnExportRevenue_Click(object sender, EventArgs e)
         {
             try
@@ -1032,6 +1121,12 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Загружает данные о выручке из базы данных.
+        /// </summary>
+        /// <param name="startDate">Дата начала периода.</param>
+        /// <param name="endDate">Дата окончания периода.</param>
+        /// <returns>DataTable с данными о выручке.</returns>
         private DataTable LoadRevenueFromDB(DateTime startDate, DateTime endDate)
         {
             DataTable dt = new DataTable();
@@ -1080,6 +1175,13 @@ namespace dump
             return dt;
         }
 
+        /// <summary>
+        /// Экспортирует данные о выручке в Excel-файл.
+        /// </summary>
+        /// <param name="filePath">Путь к сохраняемому файлу.</param>
+        /// <param name="data">DataTable с данными.</param>
+        /// <param name="startDate">Начальная дата периода.</param>
+        /// <param name="endDate">Конечная дата периода.</param>
         private void ExportRevenueToExcel(string filePath, DataTable data, DateTime startDate, DateTime endDate)
         {
             Excel.Application excelApp = null;
@@ -1276,6 +1378,10 @@ namespace dump
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки выхода (крестик).
+        /// Скрывает текущую форму и открывает форму директора.
+        /// </summary>
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             this.Visible = false;
